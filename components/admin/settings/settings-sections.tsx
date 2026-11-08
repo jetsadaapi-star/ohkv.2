@@ -19,6 +19,7 @@ import {
   Palette,
   Percent,
   ReceiptText,
+  CloudUpload,
   Rocket,
   Rss,
   Search,
@@ -73,6 +74,7 @@ export type AdminSettingsSectionId =
   | "metaCatalog"
   | "maintenance"
   | "storage"
+  | "deploy"
   | "aiAuthoring";
 
 type AdminSettingsGroupId =
@@ -364,6 +366,16 @@ export const ADMIN_SETTINGS_SECTIONS: AdminSettingsSection[] = [
     labelKey: "admin.settings.maintenance.title",
     defaultLabel: "Maintenance",
     icon: Wrench,
+  },
+  // Not a form: redeploys the store from GitHub through Coolify. Nothing on
+  // it is a setting; the configuration is the server's environment.
+  {
+    id: "deploy",
+    path: "deploy",
+    group: "advanced",
+    labelKey: "admin.deployPage.navLabel",
+    defaultLabel: "Deploy",
+    icon: CloudUpload,
   },
 ];
 

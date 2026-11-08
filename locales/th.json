@@ -17585,6 +17585,84 @@
         "endDate": "เลือกวันสิ้นสุด",
         "dateOrder": "วันสิ้นสุดอยู่ก่อนวันเริ่ม"
       }
+    },
+    "deployPage": {
+      "navLabel": "Deploy",
+      "title": "Deploy",
+      "description": "นำโค้ดล่าสุดจาก GitHub ขึ้นร้านจริง push การแก้ไขขึ้น GitHub ก่อน แล้วกด Deploy",
+      "retry": "ลองอีกครั้ง",
+      "loadFailed": "เชื่อมต่อบริการ deploy ไม่ได้",
+      "duration": "{minutes} นาที {seconds} วินาที",
+      "badge": {
+        "notConfigured": "ยังไม่ได้ตั้งค่า",
+        "deploying": "กำลัง deploy",
+        "upToDate": "เป็นเวอร์ชันล่าสุด",
+        "newCode": "มีโค้ดใหม่รอ deploy"
+      },
+      "setup": {
+        "title": "เซิร์ฟเวอร์นี้ยังไม่ได้ตั้งค่า Deploy",
+        "hint": "เพิ่ม environment variables เหล่านี้ให้แอปใน Coolify แล้ว redeploy จาก Coolify หนึ่งครั้ง:"
+      },
+      "live": {
+        "title": "เวอร์ชันที่ใช้งานอยู่บนร้าน",
+        "deployed": "deploy เมื่อ {when}",
+        "none": "ยังไม่มีการ deploy ที่สำเร็จ"
+      },
+      "latest": {
+        "title": "ล่าสุดบน GitHub ({branch})",
+        "open": "เปิดใน GitHub",
+        "by": "{author} · {when}",
+        "unknown": "อ่าน commit ล่าสุดจาก GitHub ไม่ได้"
+      },
+      "action": {
+        "title": "Deploy เวอร์ชันล่าสุด",
+        "upToDateTitle": "ร้านใช้ commit ล่าสุดอยู่แล้ว",
+        "hint": "ระบบจะ build เวอร์ชันใหม่เบื้องหลัง (ราว 5–10 นาที) ระหว่างนั้นร้านเปิดใช้ได้ตามปกติ แล้วสลับเป็นเวอร์ชันใหม่ภายในไม่กี่วินาที",
+        "force": "Build ใหม่ทั้งหมด (ไม่ใช้ cache) — ช้ากว่า ใช้เมื่อ deploy ปกติมีปัญหา",
+        "button": "Deploy เลย",
+        "running": "กำลัง deploy…"
+      },
+      "confirm": {
+        "title": "Deploy ขึ้นร้านจริง?",
+        "description": "จะ build {commit} “{message}” และสลับร้านไปใช้เวอร์ชันนี้เมื่อ build สำเร็จ",
+        "confirm": "Deploy",
+        "cancel": "ยกเลิก"
+      },
+      "progress": {
+        "title": "การ deploy {commit}",
+        "stages": {
+          "fetch": "ดึงโค้ด",
+          "build": "Build",
+          "start": "เริ่มเวอร์ชันใหม่",
+          "done": "ใช้งานจริง"
+        },
+        "switching": "ร้านกำลังสลับไปเวอร์ชันใหม่ — หน้านี้จะเชื่อมต่อใหม่เอง",
+        "waiting": "รอเริ่ม build…",
+        "finished": "Deploy สำเร็จ รีโหลดเพื่อใช้เวอร์ชันใหม่ในแท็บนี้",
+        "reload": "รีโหลด",
+        "failed": "Deploy ไม่สำเร็จ ร้านยังใช้เวอร์ชันเดิมต่อ ดูรายละเอียดใน log ด้านบน"
+      },
+      "history": {
+        "title": "ประวัติการ deploy",
+        "empty": "ยังไม่มีการ deploy",
+        "log": "ดู log",
+        "noCache": "ไม่ใช้ cache"
+      },
+      "status": {
+        "queued": "รอคิว",
+        "in_progress": "กำลัง build",
+        "finished": "สำเร็จ",
+        "failed": "ล้มเหลว",
+        "cancelled": "ยกเลิก",
+        "unknown": "ไม่ทราบ"
+      },
+      "toast": {
+        "started": "เริ่ม deploy แล้ว",
+        "alreadyRunning": "มีการ deploy ที่กำลังทำงานอยู่ — แสดงอันนั้นให้",
+        "startFailed": "เริ่ม deploy ไม่สำเร็จ",
+        "finished": "Deploy สำเร็จ",
+        "failed": "Deploy ล้มเหลว"
+      }
     }
   },
   "vendor": {

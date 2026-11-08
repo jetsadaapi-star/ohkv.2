@@ -56,6 +56,12 @@ services:
       LIVE_MEDIA_PUBLIC_URL: ${LIVE_MEDIA_PUBLIC_URL:-}
       LIVE_MEDIA_API_URL: http://mediamtx:9997
       LIVE_RTMP_PUBLIC_URL: ${LIVE_RTMP_PUBLIC_URL:-}
+      # Settings -> Deploy (lib/deploy/coolify.ts): redeploy from the admin.
+      COOLIFY_API_URL: ${COOLIFY_API_URL:-}
+      COOLIFY_API_TOKEN: ${COOLIFY_API_TOKEN:-}
+      COOLIFY_APP_UUID: ${COOLIFY_APP_UUID:-}
+      DEPLOY_GIT_REPO: ${DEPLOY_GIT_REPO:-}
+      DEPLOY_GIT_BRANCH: ${DEPLOY_GIT_BRANCH:-main}
     volumes:
       - next-cache:/app/.next/cache
 

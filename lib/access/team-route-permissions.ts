@@ -124,6 +124,8 @@ export const TEAM_API_RULES: readonly TeamRouteRule[] = [
   { prefix: "/api/admin/settings/notifications", ...areas.settings },
   // Each test talks to an outside service with the store's credentials.
   { prefix: "/api/admin/settings/test-payment", ...areas.sensitive },
+  // Rebuilds and restarts the store: the sensitive-settings holders only.
+  { prefix: "/api/admin/deploy", ...areas.sensitive },
   { prefix: "/api/admin/settings/test-storage", ...areas.sensitive },
   { prefix: "/api/admin/settings/test-oauth", ...areas.sensitive },
   { prefix: "/api/admin/settings/test-email", ...areas.sensitive },
@@ -228,6 +230,7 @@ export const TEAM_PAGE_RULES: readonly { prefix: string; anyOf: readonly string[
   { prefix: "/admin/settings", anyOf: [...areas.settings.read, A.VIEW_ACTIVITY_LOG] },
   { prefix: "/admin/settings/*", anyOf: areas.settings.read },
   { prefix: "/admin/settings/activity-log", anyOf: view(A.VIEW_ACTIVITY_LOG) },
+  { prefix: "/admin/settings/deploy", anyOf: areas.sensitive.read },
   { prefix: "/admin/staff", anyOf: areas.team.read },
   { prefix: "/admin/staff/new", anyOf: view(A.CREATE_TEAM_MEMBERS) },
   { prefix: "/admin/invoice-templates", anyOf: areas.settings.read },

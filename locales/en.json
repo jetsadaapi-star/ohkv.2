@@ -17585,6 +17585,84 @@
         "endDate": "Choose an end date.",
         "dateOrder": "The end date is before the start date."
       }
+    },
+    "deployPage": {
+      "navLabel": "Deploy",
+      "title": "Deploy",
+      "description": "Publish the latest code from GitHub to the live store. Push your changes first, then press Deploy.",
+      "retry": "Retry",
+      "loadFailed": "Couldn't reach the deploy service.",
+      "duration": "{minutes}m {seconds}s",
+      "badge": {
+        "notConfigured": "Not set up",
+        "deploying": "Deploying",
+        "upToDate": "Up to date",
+        "newCode": "New code to deploy"
+      },
+      "setup": {
+        "title": "Deploy isn't set up on this server",
+        "hint": "Add these environment variables to the app in Coolify, then redeploy once from Coolify:"
+      },
+      "live": {
+        "title": "Live on the store",
+        "deployed": "Deployed {when}",
+        "none": "No finished deployment yet."
+      },
+      "latest": {
+        "title": "Latest on GitHub ({branch})",
+        "open": "Open on GitHub",
+        "by": "{author} · {when}",
+        "unknown": "Couldn't read the latest commit from GitHub."
+      },
+      "action": {
+        "title": "Deploy the latest version",
+        "upToDateTitle": "The store runs the latest commit",
+        "hint": "The new version builds in the background (about 5–10 minutes) while the store stays open, then takes over in a few seconds.",
+        "force": "Rebuild from scratch (no cache) — slower, use when a deploy misbehaves",
+        "button": "Deploy now",
+        "running": "Deploying…"
+      },
+      "confirm": {
+        "title": "Deploy to the live store?",
+        "description": "Builds {commit} “{message}” and switches the store to it when the build succeeds.",
+        "confirm": "Deploy",
+        "cancel": "Cancel"
+      },
+      "progress": {
+        "title": "Deployment {commit}",
+        "stages": {
+          "fetch": "Fetch code",
+          "build": "Build",
+          "start": "Start new version",
+          "done": "Live"
+        },
+        "switching": "The store is switching to the new version — this page reconnects by itself.",
+        "waiting": "Waiting for the build to start…",
+        "finished": "Deployed. Reload to use the new version in this tab.",
+        "reload": "Reload",
+        "failed": "The deployment failed; the store keeps running the previous version. Check the log above."
+      },
+      "history": {
+        "title": "Recent deployments",
+        "empty": "No deployments yet.",
+        "log": "Log",
+        "noCache": "no cache"
+      },
+      "status": {
+        "queued": "Queued",
+        "in_progress": "Building",
+        "finished": "Done",
+        "failed": "Failed",
+        "cancelled": "Cancelled",
+        "unknown": "Unknown"
+      },
+      "toast": {
+        "started": "Deployment started",
+        "alreadyRunning": "A deployment is already running — showing it",
+        "startFailed": "Couldn't start the deployment",
+        "finished": "Deployment finished",
+        "failed": "Deployment failed"
+      }
     }
   },
   "vendor": {

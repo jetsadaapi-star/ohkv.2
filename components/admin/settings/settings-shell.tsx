@@ -88,6 +88,7 @@ function SettingsShellInner({ children }: { children: ReactNode }) {
     isDemoMode &&
     section !== "storage" &&
     section !== "activityLog" &&
+    section !== "deploy" &&
     section !== "invoices";
 
   return (

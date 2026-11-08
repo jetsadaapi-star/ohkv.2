@@ -1,8 +1,9 @@
 # Production stack for Coolify: the store, its MongoDB (one-node replica set,
-# for transactions), MinIO for media, MediaMTX for live selling and a small
-# scheduler that runs the jobs vercel.json lists. Domains are assigned in
-# Coolify (app -> 3000, minio -> 9000, mediamtx -> 8889); every ${VAR} below
-# is an environment variable set there.
+# for transactions), MediaMTX for live selling and a small scheduler that runs
+# the jobs vercel.json lists. Media lives in Cloudflare R2 (MinIO's community
+# edition is discontinued: no images, binaries or fixes). Domains are assigned
+# in Coolify (app -> 3000, mediamtx -> 8889); every ${VAR} below is an
+# environment variable set there.
 services:
   app:
     build:
@@ -44,13 +45,14 @@ services:
       SMTP_FROM: ${SMTP_FROM:-}
       CRON_SECRET: ${CRON_SECRET}
       MESSAGING_ENCRYPTION_KEY: ${MESSAGING_ENCRYPTION_KEY}
-      STORAGE_ENDPOINT: ${STORAGE_ENDPOINT}
-      STORAGE_REGION: ${STORAGE_REGION:-us-east-1}
+      STORAGE_ACCOUNT_ID: ${STORAGE_ACCOUNT_ID}
+      STORAGE_ACCESS_KEY_ID: ${STORAGE_ACCESS_KEY_ID}
+      STORAGE_SECRET_ACCESS_KEY: ${STORAGE_SECRET_ACCESS_KEY}
+      STORAGE_ENDPOINT: ${STORAGE_ENDPOINT:-}
+      STORAGE_REGION: ${STORAGE_REGION:-auto}
       STORAGE_BUCKET: ${STORAGE_BUCKET:-ohkshop-media}
       STORAGE_PRIVATE_BUCKET: ${STORAGE_PRIVATE_BUCKET:-ohkshop-private}
       STORAGE_PUBLIC_URL: ${STORAGE_PUBLIC_URL}
-      STORAGE_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
-      STORAGE_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
       LIVE_MEDIA_PUBLIC_URL: ${LIVE_MEDIA_PUBLIC_URL:-}
       LIVE_MEDIA_API_URL: http://mediamtx:9997
       LIVE_RTMP_PUBLIC_URL: ${LIVE_RTMP_PUBLIC_URL:-}
@@ -73,37 +75,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 30
-
-  minio:
-    image: minio/minio:latest
-    restart: unless-stopped
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    volumes:
-      - minio-data:/data
-    healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
-
-  minio-init:
-    image: minio/minio:latest
-    depends_on:
-      minio:
-        condition: service_healthy
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    entrypoint: >
-      sh -c "mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
-             mc mb -p local/ohkshop-media local/ohkshop-private &&
-             mc anonymous set download local/ohkshop-media &&
-             mc anonymous set none local/ohkshop-private"
-    restart: "no"
-    exclude_from_hc: true
 
   mediamtx:
     build:
@@ -128,5 +99,4 @@ services:
 
 volumes:
   mongo-data:
-  minio-data:
   next-cache:

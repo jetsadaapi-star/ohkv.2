@@ -1,0 +1,47 @@
+# MediaMTX — the live-video server behind the stores' live selling (/live).
+#
+# A store goes live from its browser (WHIP over WebRTC) or from OBS (RTMP);
+# shoppers watch over WebRTC (WHEP) with well under a second of delay. Every
+# publish and read is checked by the app (POST /api/live/media-auth): only the
+# store holding a session's stream key may publish to live/<session id>, and
+# only sessions that are on air can be watched.
+#
+# Production: the browser must reach the server's UDP/TCP port 8189 directly,
+# so put the server's public IP or hostname in webrtcAdditionalHosts and open
+# 8189/udp + 8189/tcp; serve 8889 over HTTPS (a reverse proxy) so pages on an
+# https:// store can call it.
+logLevel: info
+
+authMethod: http
+authHTTPAddress: http://app:3000/api/live/media-auth
+authHTTPExclude:
+  - action: api
+  - action: metrics
+  - action: pprof
+
+# Control API, used by the app to ask whether a stream is on air.
+# Only reachable inside the compose network (not published to the host).
+api: true
+apiAddress: :9997
+
+rtsp: false
+srt: false
+hls: false
+
+rtmp: true
+rtmpAddress: :1935
+
+webrtc: true
+webrtcAddress: :8889
+webrtcAllowOrigins: ["*"]
+webrtcLocalUDPAddress: :8189
+webrtcLocalTCPAddress: :8189
+# The Mac (OrbStack) reaches the media ports through localhost.
+webrtcAdditionalHosts: ["127.0.0.1"]
+
+pathDefaults:
+  # A store that reconnects (page reload, network blip) takes its stream back.
+  overridePublisher: true
+
+paths:
+  "~^live/[a-f0-9]{24}$":

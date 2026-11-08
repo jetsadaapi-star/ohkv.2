@@ -1,0 +1,260 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
+import { MapPin, Store } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { StoreProfileNotice } from "@/components/admin/store-profile-notice";
+import { ScopeChoice } from "@/components/admin/team/scope-choice";
+import type { StaffFormValues, StaffScopeOption } from "../staff-detail-types";
+
+interface ScopeTabProps {
+  form: StaffFormValues;
+  setField: <K extends keyof StaffFormValues>(
+    key: K,
+    value: StaffFormValues[K],
+  ) => void;
+  vendors: StaffScopeOption[];
+  locations: StaffScopeOption[];
+  /** The store profile the locations belong to is missing (its API code). */
+  locationsProblem?: string | null;
+  optionsLoading?: boolean;
+  readOnly?: boolean;
+}
+
+export function ScopeTab({
+  form,
+  setField,
+  vendors,
+  locations,
+  locationsProblem = null,
+  optionsLoading = false,
+  readOnly = false,
+}: ScopeTabProps) {
+  const t = useTranslations("admin.hc.scopeTab");
+  const [vendorQuery, setVendorQuery] = useState("");
+
+  const visibleVendors = useMemo(() => {
+    const query = vendorQuery.trim().toLowerCase();
+    if (!query) return vendors;
+    return vendors.filter((vendor) =>
+      vendor.name.toLowerCase().includes(query),
+    );
+  }, [vendorQuery, vendors]);
+
+  const regionCount = form.fulfillmentRegions
+    .split(/[\n,]+/)
+    .map((value) => value.trim())
+    .filter(Boolean).length;
+
+  const toggle = (
+    key: "vendorIds" | "locationIds",
+    value: string,
+    checked: boolean,
+  ) => {
+    const next = new Set(form[key]);
+    if (checked) next.add(value);
+    else next.delete(value);
+    setField(key, Array.from(next));
+  };
+
+  const unscoped =
+    form.vendorIds.length === 0 &&
+    form.locationIds.length === 0 &&
+    regionCount === 0;
+  // "Only these" with nothing picked yet still reaches everywhere; the
+  // choice is kept here so the pickers stay open while one is made.
+  const [limited, setLimited] = useState(!unscoped);
+
+  const chooseEverywhere = () => {
+    setLimited(false);
+    setField("vendorIds", []);
+    setField("locationIds", []);
+    setField("fulfillmentRegions", "");
+  };
+
+  return (
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="space-y-6 lg:col-span-2">
+        <Card>
+          <CardContent className="pt-6">
+            <ScopeChoice
+              limited={limited}
+              onChange={(next) => (next ? setLimited(true) : chooseEverywhere())}
+              disabled={readOnly}
+            />
+          </CardContent>
+        </Card>
+
+        {limited ? (
+          <>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5" />
+                  {t("locationsTitle")}
+                </CardTitle>
+                <CardDescription>
+                  {t("locationsDescription")}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {optionsLoading ? (
+                  <p className="text-sm text-muted-foreground">
+                    {t("loadingLocations")}
+                  </p>
+                ) : locations.length === 0 && locationsProblem ? (
+                  <StoreProfileNotice code={locationsProblem} compact />
+                ) : locations.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    {t("noLocations")}
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {locations.map((location) => (
+                      <label
+                        key={location._id}
+                        className="flex items-center gap-2 rounded-lg border p-3 text-sm hover:bg-accent/50"
+                      >
+                        <Checkbox
+                          checked={form.locationIds.includes(location._id)}
+                          disabled={readOnly}
+                          onCheckedChange={(checked) =>
+                            toggle("locationIds", location._id, Boolean(checked))
+                          }
+                        />
+                        <span className="truncate">{location.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Store className="h-5 w-5" />
+                  {t("vendorsTitle")}
+                </CardTitle>
+                <CardDescription>
+                  {t("vendorsDescription")}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {vendors.length > 8 && (
+                  <Input
+                    value={vendorQuery}
+                    onChange={(e) => setVendorQuery(e.target.value)}
+                    placeholder={t("searchVendors")}
+                  />
+                )}
+                {optionsLoading ? (
+                  <p className="text-sm text-muted-foreground">{t("loadingVendors")}</p>
+                ) : visibleVendors.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    {vendors.length === 0
+                      ? t("noVendors")
+                      : t("noVendorMatches")}
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {visibleVendors.map((vendor) => (
+                      <label
+                        key={vendor._id}
+                        className="flex items-center gap-2 rounded-lg border p-3 text-sm hover:bg-accent/50"
+                      >
+                        <Checkbox
+                          checked={form.vendorIds.includes(vendor._id)}
+                          disabled={readOnly}
+                          onCheckedChange={(checked) =>
+                            toggle("vendorIds", vendor._id, Boolean(checked))
+                          }
+                        />
+                        <span className="truncate">{vendor.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("regionsTitle")}</CardTitle>
+                <CardDescription>{t("regionsDescription")}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <Label htmlFor="staff-regions" className="sr-only">
+                    {t("regionsTitle")}
+                  </Label>
+                  <Textarea
+                    id="staff-regions"
+                    value={form.fulfillmentRegions}
+                    onChange={(e) => setField("fulfillmentRegions", e.target.value)}
+                    placeholder={t("regionsPlaceholder")}
+                    rows={3}
+                    disabled={readOnly}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        ) : null}
+      </div>
+
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("effectiveScopeTitle")}</CardTitle>
+            <CardDescription>
+              {t("effectiveScopeDescription")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-sm">
+            <div className="flex items-center justify-between gap-3 border-b py-2">
+              <span className="text-muted-foreground">{t("locationsTitle")}</span>
+              <Badge variant={form.locationIds.length ? "default" : "outline"}>
+                {form.locationIds.length
+                  ? t("countOfTotal", { count: form.locationIds.length, total: locations.length })
+                  : t("all")}
+              </Badge>
+            </div>
+            <div className="flex items-center justify-between gap-3 border-b py-2">
+              <span className="text-muted-foreground">{t("vendorsTitle")}</span>
+              <Badge variant={form.vendorIds.length ? "default" : "outline"}>
+                {form.vendorIds.length
+                  ? t("countOfTotal", { count: form.vendorIds.length, total: vendors.length })
+                  : t("all")}
+              </Badge>
+            </div>
+            <div className="flex items-center justify-between gap-3 py-2">
+              <span className="text-muted-foreground">{t("regions")}</span>
+              <Badge variant={regionCount ? "default" : "outline"}>
+                {regionCount || t("all")}
+              </Badge>
+            </div>
+
+            <p className="mt-3 rounded-lg border-l-2 border-primary bg-muted/50 p-3 text-xs text-muted-foreground">
+              {unscoped
+                ? t("noScopeSet")
+                : t("scopeNarrowing")}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}

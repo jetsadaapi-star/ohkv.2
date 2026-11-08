@@ -1,0 +1,168 @@
+# Oh-K Shop | OTOP ฮักกาฬสินธุ์ — local development stack (OrbStack / Docker)
+#
+#   docker compose up -d          # start MongoDB + app (first run installs deps)
+#   docker compose logs -f app    # follow the Next.js dev server
+#   docker compose down           # stop (data is kept in volumes)
+#
+# App:     http://localhost:3000   (also http://app.ohkshop.orb.local:3000 on OrbStack)
+# MongoDB: mongodb://localhost:27017/ohkshop
+name: ohkshop
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    # A one-node replica set: the app's finance ledger (inventory, payouts)
+    # writes in MongoDB transactions, which a standalone mongod cannot run.
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      # Also initiates the replica set on first start (idempotent).
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--quiet",
+          "--eval",
+          "try { rs.status().ok } catch (e) { rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'mongo:27017' }] }).ok }",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # S3-compatible storage for uploads (product images, short clips).
+  # API:     http://minio.ohkshop.orb.local:9000  (same name from Mac and containers)
+  # Console: http://minio.ohkshop.orb.local:9001  (MINIO_ROOT_USER / MINIO_ROOT_PASSWORD in .env)
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-ohkshop}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD in .env}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # One-shot: creates the buckets and makes the media bucket publicly readable.
+  minio-init:
+    # The server image ships the mc client (the separate minio/mc image is gone).
+    image: minio/minio:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-ohkshop}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    entrypoint: >
+      sh -c "mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
+             mc mb -p local/ohkshop-media local/ohkshop-private &&
+             mc anonymous set download local/ohkshop-media &&
+             mc anonymous set none local/ohkshop-private"
+    restart: "no"
+
+  # Live video for the stores' live selling (/live). See docker/mediamtx.yml.
+  #   8889      WebRTC signalling (browser publish = WHIP, watch = WHEP)
+  #   8189      WebRTC media (UDP, TCP fallback)
+  #   1935      RTMP (test tools; OBS should use WHIP so viewers get sound)
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    restart: unless-stopped
+    volumes:
+      - ./docker/mediamtx.yml:/mediamtx.yml:ro
+    ports:
+      - "8889:8889"
+      - "8189:8189/udp"
+      - "8189:8189/tcp"
+      - "1935:1935"
+
+  app:
+    image: node:24-bookworm-slim
+    working_dir: /app
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      # Inside the compose network MongoDB is reachable as "mongo", not localhost.
+      MONGODB_URI: mongodb://mongo:27017/ohkshop
+      MONGODB_DB_NAME: ohkshop
+      TZ: Asia/Bangkok
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
+      NEXT_TELEMETRY_DISABLED: "1"
+      NODE_OPTIONS: --max-old-space-size=6144
+      # Live selling: the media server's API inside the network.
+      LIVE_MEDIA_API_URL: http://mediamtx:9997
+    # Turbopack dev: compiles each page several times faster than webpack and
+    # keeps its compile cache in the next-build volume, so a restart does not
+    # start cold. Back to webpack: replace `--turbopack` with `--webpack`.
+    command: >
+      sh -c "corepack enable &&
+             pnpm install --frozen-lockfile --store-dir /pnpm-store &&
+             pnpm exec next dev --turbopack --hostname 0.0.0.0 --port 3000"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      # Linux node_modules / build output stay inside Docker, never on the Mac.
+      - node-modules:/app/node_modules
+      - next-build:/app/.next
+      - pnpm-store:/pnpm-store
+
+  # Production mode: fast pages (everything compiled ahead of time), no hot reload.
+  #   docker compose stop app
+  #   docker compose --profile prod up -d app-prod     # builds once on first start (~5-10 min)
+  # Rebuild after changing code:
+  #   docker compose --profile prod run --rm app-prod sh -c "corepack enable && pnpm build"
+  #   docker compose --profile prod restart app-prod
+  # Back to dev mode:
+  #   docker compose --profile prod stop app-prod && docker compose up -d app
+  app-prod:
+    profiles: ["prod"]
+    image: node:24-bookworm-slim
+    working_dir: /app
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/ohkshop
+      MONGODB_DB_NAME: ohkshop
+      TZ: Asia/Bangkok
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
+      NEXT_TELEMETRY_DISABLED: "1"
+    command: >
+      sh -c "corepack enable &&
+             pnpm install --frozen-lockfile --store-dir /pnpm-store &&
+             ( test -f .next/BUILD_ID || pnpm build ) &&
+             NODE_ENV=production pnpm start --hostname 0.0.0.0 --port 3000"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - node-modules:/app/node_modules
+      # Separate from the dev server's .next so the two never mix.
+      - next-build-prod:/app/.next
+      - pnpm-store:/pnpm-store
+
+volumes:
+  minio-data:
+  mongo-data:
+  node-modules:
+  next-build:
+  next-build-prod:
+  pnpm-store:

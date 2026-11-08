@@ -693,8 +693,13 @@ export interface Settings {
     providerKeys?: { gemini?: string | null; deepseek?: string | null; glm?: string | null };
     providerModels?: { gemini?: string; deepseek?: string; glm?: string };
     glmRegion?: "global" | "china";
-    textModel: "" | "gpt-4.1-mini" | "gpt-4.1" | "gpt-5-mini" | "gpt-5";
-    imageModel: "" | "gpt-image-1" | "gpt-image-1-mini";
+    /** An OpenAI text model id; "" = the default. */
+    textModel: string;
+    /** An OpenAI image model id; "" = the default. */
+    imageModel: string;
+    imageProvider?: "openai" | "gemini";
+    geminiImageModel?: string;
+    salesAgentProvider?: "openai" | "gemini";
     surfaces: {
       products: boolean;
       categories: boolean;

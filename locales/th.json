@@ -6190,7 +6190,7 @@
         "enabledHint": "เปิดหรือปิด AI Studio และปุ่ม AI ทั้งหมดในแดชบอร์ด AI Sales Agent มีสวิตช์แยกในหน้าของตัวเอง",
         "apiKey": "OpenAI API key",
         "apiKeySetPlaceholder": "••••••••  (บันทึกแล้ว — กรอกคีย์ใหม่เพื่อแทนที่)",
-        "apiKeyHint": "ใช้โดย AI Studio และ AI Sales Agent เว้นว่างเพื่อใช้ environment variable OPENAI_API_KEY ต่อไป",
+        "apiKeyHint": "ใช้ทุกส่วนที่เลือก OpenAI ไว้ ทั้งข้อความ รูปภาพ และ AI Sales Agent เว้นว่างเพื่อใช้ environment variable OPENAI_API_KEY ต่อไป",
         "testConnection": "ทดสอบการเชื่อมต่อ",
         "testFailed": "ทดสอบการเชื่อมต่อไม่สำเร็จ",
         "textModel": "โมเดลข้อความ",
@@ -6240,13 +6240,13 @@
           "lowerCost": "ค่าใช้จ่ายต่ำกว่า"
         },
         "providerTitle": "ผู้ให้บริการเขียนข้อความ",
-        "providerHint": "เลือก AI ที่ใช้เขียนคำบรรยายสินค้า SEO บทความ และการตอบรีวิวใน AI Studio แต่ละเจ้าเก็บคีย์แยกกัน สลับไปมาได้โดยไม่ต้องกรอกใหม่ ส่วนการสร้างรูปภาพใช้ OpenAI เสมอ",
+        "providerHint": "เลือก AI ที่ใช้เขียนคำบรรยายสินค้า SEO บทความ และการตอบรีวิวใน AI Studio แต่ละเจ้าเก็บคีย์แยกกัน สลับไปมาได้โดยไม่ต้องกรอกใหม่ ส่วนรูปภาพและ AI Sales Agent เลือกได้ด้านล่าง",
         "selected": "ใช้งานอยู่",
         "providerTag": {
-          "openai": "GPT-4.1 และ GPT-5 — ค่าเริ่มต้น อ่านรูปภาพได้",
-          "gemini": "Gemini 2.5 จาก Google — เร็ว อ่านรูปภาพได้ มีโควตาฟรี",
-          "deepseek": "DeepSeek V3 — เขียนเก่ง ราคาถูกมาก",
-          "glm": "Zhipu GLM-4.5/4.6 — มีรุ่น Flash ให้ใช้ฟรี"
+          "openai": "GPT-6 Luna, Terra, Sol และ Astra — อ่านรูปภาพได้",
+          "gemini": "Gemini 3.8 Flash และ 4 Argon จาก Google — อ่านรูปภาพได้",
+          "deepseek": "DeepSeek V4 Flash และ Pro — เขียนเก่ง ราคาถูก",
+          "glm": "Zhipu GLM-4.7 ถึง GLM-5.3 — ข้อความอย่างเดียว"
         },
         "keyReady": "มีคีย์แล้ว",
         "keyMissing": "ยังไม่มีคีย์",
@@ -6268,11 +6268,20 @@
         "glmRegionGlobal": "สากล (Z.ai)",
         "glmRegionChina": "จีนแผ่นดินใหญ่ (BigModel)",
         "glmRegionHint": "เลือกแพลตฟอร์มที่สร้างคีย์ไว้ คีย์ของ Z.ai ใช้กับ BigModel ไม่ได้ และกลับกันก็เช่นกัน",
-        "noVisionNote": "{name} อ่านรูปภาพไม่ได้ ข้อความ alt ของรูปจึงให้ OpenAI เขียนด้วยคีย์ด้านล่าง ถ้าไม่มีคีย์ OpenAI จะสร้างข้อความ alt ไม่ได้",
-        "imagesTitle": "รูปภาพและ AI Sales Agent (OpenAI)",
-        "imagesHint": "การสร้างและแก้ไขรูปภาพ แบนเนอร์หลัก และ AI Sales Agent ใช้ OpenAI เสมอ ไม่ว่าจะเลือกเจ้าไหนเขียนข้อความ",
+        "noVisionNote": "{name} รุ่นนี้อ่านรูปไม่ได้ ข้อความ alt ของรูปจึงให้ Gemini หรือ OpenAI เขียนแทน (เจ้าที่มีคีย์)",
+        "imagesTitle": "รูปภาพและแบนเนอร์หลัก",
+        "imagesHint": "เลือกผู้สร้างรูปสินค้า แก้ไขรูป และแบนเนอร์หลัก ใช้ OpenAI (gpt-image) หรือ Google Gemini (Nano Banana) ก็ได้",
         "imagesSharedKey": "ส่วนนี้ใช้คีย์ OpenAI ด้านบน",
-        "openaiKeyOtherProvider": "ใช้สำหรับรูปภาพ แบนเนอร์หลัก AI Sales Agent และข้อความ alt เมื่อผู้ให้บริการเขียนข้อความอ่านรูปไม่ได้ เว้นว่างไว้เพื่อใช้ OPENAI_API_KEY"
+        "openaiKeyOtherProvider": "ใช้เมื่อเลือก OpenAI สำหรับรูปภาพหรือ AI Sales Agent และใช้เขียนข้อความ alt เมื่อไม่มีผู้ให้บริการอื่นที่อ่านรูปได้ เว้นว่างไว้เพื่อใช้ OPENAI_API_KEY",
+        "imageProviderLabel": "ผู้ให้บริการสร้างรูป",
+        "sharedKeyHint": "คีย์ {name} ชุดนี้ใช้ร่วมกันทุกส่วนของ AI Studio เว้นว่างไว้เพื่อใช้ตัวแปรสภาพแวดล้อม",
+        "keyShownAbove": "ใช้คีย์ {name} ที่กรอกไว้ด้านบน",
+        "geminiImageNote": "Gemini เลือกคุณภาพรูปเอง และพื้นหลังจะทึบเสมอ (ทำพื้นโปร่งใสไม่ได้)",
+        "salesAgentTitle": "AI Sales Agent",
+        "salesAgentHint": "เลือกผู้ให้บริการที่ขับเคลื่อนผู้ช่วยขายในแชทหน้าร้าน ส่วนโมเดล น้ำเสียง และขีดจำกัด ตั้งที่หน้า AI Sales Agent",
+        "salesAgentProviderLabel": "ผู้ให้บริการ AI Sales Agent",
+        "salesAgentOpen": "ไปที่หน้าตั้งค่า AI Sales Agent",
+        "glmFreeNote": "รุ่นฟรีอย่าง glm-4.7-flash มีเฉพาะบน BigModel (จีนแผ่นดินใหญ่) เลือกแพลตฟอร์มนั้นด้านบนเพื่อใช้"
       },
       "analytics": {
         "title": "เชื่อมต่อการวิเคราะห์",
@@ -19085,7 +19094,7 @@
     "subtitle": "สร้างเนื้อหาสินค้า กราฟิก และ SEO ด้วย AI — มีในทุกแบบฟอร์มของร้านค้า",
     "statusConfigured": "ตั้งค่า AI แล้วและพร้อมใช้งาน",
     "statusNotConfigured": "ยังไม่ได้ตั้งค่า AI",
-    "statusNotConfiguredHint": "เพิ่ม OpenAI API key ในตั้งค่า → AI (หรือกำหนด OPENAI_API_KEY ใน environment) เพื่อเปิดใช้งานฟีเจอร์ AI",
+    "statusNotConfiguredHint": "เพิ่ม API key ของผู้ให้บริการที่เลือก (OpenAI, Gemini, DeepSeek หรือ GLM) ในตั้งค่า → AI เพื่อเปิดใช้งานฟีเจอร์ AI",
     "showcaseTitle": "ดูการทำงานจริง",
     "showcaseSubtitle": "ลากแถบเลื่อน — ปรับปรุงภาพในคลิกเดียวจาก AI Image Studio",
     "showcaseBefore": "ก่อน",
@@ -19203,8 +19212,8 @@
         "description": "ทำตามขั้นตอนเหล่านี้เพื่อให้ผู้ช่วยพร้อมให้บริการลูกค้า สถานะจะอัปเดตทันทีเมื่อคุณตั้งค่าแต่ละส่วน",
         "steps": {
           "apiKey": {
-            "title": "เพิ่ม OpenAI API key",
-            "description": "กำหนด OPENAI_API_KEY ใน environment ของเซิร์ฟเวอร์ แล้วรีสตาร์ทแอป ผู้ช่วยและวิดเจ็ตจะปิดใช้งานจนกว่าจะตรวจพบคีย์ที่ถูกต้อง",
+            "title": "เพิ่ม API key (OpenAI หรือ Gemini)",
+            "description": "เลือก OpenAI หรือ Gemini ให้ AI Sales Agent ในตั้งค่า → AI แล้วกรอกคีย์ของเจ้านั้น (หรือกำหนด OPENAI_API_KEY / GEMINI_API_KEY บนเซิร์ฟเวอร์) ผู้ช่วยและวิดเจ็ตจะปิดอยู่จนกว่าจะพบคีย์",
             "action": "เปิดการกำหนดค่า",
             "hint": "ใช้ฝั่งเซิร์ฟเวอร์เท่านั้น — คีย์จะไม่ถูกเปิดเผยต่อลูกค้า"
           },
@@ -19322,8 +19331,8 @@
       }
     },
     "configuration": {
-      "openAIConfigured": "ตั้งค่า OpenAI แล้ว",
-      "openAIMissing": "ไม่มี OPENAI_API_KEY",
+      "openAIConfigured": "คีย์ AI พร้อมใช้",
+      "openAIMissing": "ยังไม่มี API key ของผู้ให้บริการนี้",
       "widgetEnabled": "เปิดใช้งานวิดเจ็ตแล้ว",
       "widgetDisabled": "ปิดใช้งานวิดเจ็ตแล้ว",
       "modelRuntime": {
@@ -19341,7 +19350,8 @@
         "monthlyTokenBudget": "งบประมาณโทเค็นรายเดือน",
         "monthlyTokenBudgetDescription": "จำนวนโทเค็นที่ผู้ช่วยใช้ได้ต่อเดือนปฏิทินจากทุกแชท 0 = ไม่จำกัด เมื่อถึงงบประมาณแล้ว ลูกค้าจะได้รับคำตอบจากแค็ตตาล็อกโดยไม่ใช้โมเดลจนกว่าจะขึ้นเดือนใหม่",
         "monthlyTokenUsage": "ใช้ไปในเดือนนี้ ({month}): {tokens} โทเค็น จากการตอบของโมเดล {requests} ครั้ง",
-        "monthlyTokenBudgetReached": "ถึงงบประมาณแล้ว — ลูกค้าจะได้รับคำตอบจากแค็ตตาล็อกโดยไม่ใช้โมเดลจนถึงเดือนหน้า"
+        "monthlyTokenBudgetReached": "ถึงงบประมาณแล้ว — ลูกค้าจะได้รับคำตอบจากแค็ตตาล็อกโดยไม่ใช้โมเดลจนถึงเดือนหน้า",
+        "providerNote": "ใช้ {provider} — เปลี่ยนได้ที่ ตั้งค่า → AI"
       },
       "capabilities": {
         "title": "ความสามารถ"

@@ -1330,6 +1330,12 @@ export interface IAIAuthoringSettings {
   providerModels?: { gemini?: string; deepseek?: string; glm?: string };
   /** Z.ai (global) or BigModel (mainland China) for GLM. */
   glmRegion?: "global" | "china";
+  /** Who draws images and hero banners. Absent: OpenAI. */
+  imageProvider?: "openai" | "gemini";
+  /** The Gemini image model; "" = its default. */
+  geminiImageModel?: string;
+  /** Who runs the AI Sales Agent. Absent: OpenAI. */
+  salesAgentProvider?: "openai" | "gemini";
   /** Empty string = inherit OPENAI_AUTHORING_TEXT_MODEL env or the built-in default. */
   textModel: string;
   /** Empty string = inherit OPENAI_AUTHORING_IMAGE_MODEL env or the built-in default. */
@@ -3125,8 +3131,14 @@ const SettingsSchema = new Schema<ISettings>(
           enabled: { type: Boolean, default: false },
           model: {
             type: String,
-            enum: ["gpt-5", "gpt-5-mini", "gpt-5-nano", "gpt-4.1-mini"],
-            default: "gpt-5-mini",
+            // Current OpenAI and Gemini models, plus the retired ones a store
+            // may still hold (lib/ai-sales-agent/models.ts resolves those).
+            enum: [
+              "gpt-6-luna", "gpt-6.1-terra", "gpt-6.1-sol", "gpt-6-astra",
+              "gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-4-argon",
+              "gpt-5", "gpt-5-mini", "gpt-5-nano", "gpt-4.1-mini",
+            ],
+            default: "gpt-6-luna",
           },
           temperature: { type: Number, default: 0.3, min: 0, max: 1 },
           reasoningEffort: {
@@ -3239,14 +3251,23 @@ const SettingsSchema = new Schema<ISettings>(
             default: () => ({}),
           },
           glmRegion: { type: String, enum: ["global", "china"], default: "global" },
+          // OpenAI models (lib/ai-authoring/text-providers.ts, image-providers.ts);
+          // retired IDs stay allowed so a stored one still saves, and resolve
+          // to the current default.
           textModel: {
             type: String,
-            enum: ["", "gpt-4.1-mini", "gpt-4.1", "gpt-5-mini", "gpt-5"],
+            enum: [
+              "", "gpt-6-luna", "gpt-6.1-terra", "gpt-6.1-sol", "gpt-6-astra",
+              "gpt-4.1-mini", "gpt-4.1", "gpt-5-mini", "gpt-5",
+            ],
             default: "",
           },
+          imageProvider: { type: String, enum: ["openai", "gemini"], default: "openai" },
+          geminiImageModel: { type: String, maxlength: 100, match: /^$|^[A-Za-z0-9][A-Za-z0-9._:/-]*$/, default: "" },
+          salesAgentProvider: { type: String, enum: ["openai", "gemini"], default: "openai" },
           imageModel: {
             type: String,
-            enum: ["", "gpt-image-1", "gpt-image-1-mini"],
+            enum: ["", "gpt-image-2.6-flare", "gpt-image-2.6-sunburst", "gpt-image-1", "gpt-image-1-mini"],
             default: "",
           },
           surfaces: {

@@ -10,21 +10,13 @@ import type {
   AIAuthoringMediaResponse,
   AIAuthoringRequest,
 } from "./types";
-import { createAIAuthoringOpenAIClient } from "./openai";
 import { aiSourceFile } from "./source-image";
+import { createImage } from "./image-generation";
+import type { ResolvedAIImageConfig } from "./settings";
 
 const MAX_SOURCE_IMAGE_BYTES = 25 * 1024 * 1024;
 /** A source image has this long to arrive whole. */
 const SOURCE_IMAGE_DEADLINE_MS = 30_000;
-
-type OpenAIImageData = {
-  b64_json?: string;
-  url?: string;
-};
-
-type OpenAIImageResponseLike = {
-  data?: OpenAIImageData[];
-};
 
 function mimeTypeForFormat(format: AIAuthoringMediaOptions["outputFormat"]) {
   if (format === "jpeg") return "image/jpeg";
@@ -197,11 +189,6 @@ export function buildImagePrompt(
     .join("\n");
 }
 
-function getFirstBase64Image(response: OpenAIImageResponseLike): string {
-  const image = response.data?.find((item) => item.b64_json);
-  if (!image?.b64_json) throw new Error("AI image response did not include image data");
-  return image.b64_json;
-}
 
 /**
  * Upload a generated/edited base64 image to storage and shape it into the
@@ -251,6 +238,9 @@ async function storeGeneratedImage(
 }
 
 type AIAuthoringMediaRuntime = {
+  /** The provider that draws (Settings → AI → Images). */
+  image?: ResolvedAIImageConfig;
+  /** OpenAI key and model, used when `image` is absent. */
   apiKey?: string;
   model?: string;
   defaults?: Partial<Pick<AIAuthoringMediaOptions, "size" | "quality">>;
@@ -265,25 +255,27 @@ export async function generateAuthoringMedia(
   options: AIAuthoringMediaOptions = {},
   runtime: AIAuthoringMediaRuntime = {},
 ): Promise<AIAuthoringMediaResponse> {
-  const client = createAIAuthoringOpenAIClient(runtime.apiKey);
   const outputFormat = options.outputFormat || "png";
-  const response = (await client.images.generate({
-    model:
-      runtime.model ||
-      process.env.OPENAI_AUTHORING_IMAGE_MODEL ||
-      "gpt-image-1",
-    prompt: buildImagePrompt(
-      request,
-      runtime.styleGuidance,
-      runtime.brandColors,
-    ),
+  const buffer = await createImage({
+    image: imageConfigOf(runtime),
+    prompt: buildImagePrompt(request, runtime.styleGuidance, runtime.brandColors),
     size: options.size || runtime.defaults?.size || "1024x1024",
     quality: options.quality || runtime.defaults?.quality || "high",
-    output_format: outputFormat,
+    format: outputFormat,
     background: options.background || "transparent",
-  } as unknown as Parameters<typeof client.images.generate>[0])) as OpenAIImageResponseLike;
+  });
+  return storeGeneratedImage(request, buffer.toString("base64"), outputFormat);
+}
 
-  return storeGeneratedImage(request, getFirstBase64Image(response), outputFormat);
+/** The runtime's image provider, or OpenAI from its key and model. */
+function imageConfigOf(runtime: AIAuthoringMediaRuntime): ResolvedAIImageConfig {
+  return (
+    runtime.image ?? {
+      provider: "openai",
+      apiKey: runtime.apiKey,
+      model: runtime.model || process.env.OPENAI_AUTHORING_IMAGE_MODEL || "gpt-image-2.6-flare",
+    }
+  );
 }
 
 export function buildImageEditPrompt(request: AIAuthoringRequest): string {
@@ -352,25 +344,18 @@ export async function editAuthoringMedia(
   }
 
   const { buffer: sourceBuffer } = await fetchSourceImage(request.sourceUrl);
-  // Before the client is built: a source the provider cannot take should fail
-  // without touching the provider.
-  const sourceFile = await aiSourceFile(sourceBuffer, "source");
-
-  const client = createAIAuthoringOpenAIClient(runtime.apiKey);
+  // A source the provider cannot take should fail before the provider is
+  // called (aiSourceFile checks it; OpenAI re-reads it in createImage).
+  await aiSourceFile(sourceBuffer, "source");
   const outputFormat = options.outputFormat || "png";
-
-  const response = (await client.images.edit({
-    model:
-      runtime.model ||
-      process.env.OPENAI_AUTHORING_IMAGE_MODEL ||
-      "gpt-image-1",
-    image: sourceFile,
+  const buffer = await createImage({
+    image: imageConfigOf(runtime),
     prompt: buildImageEditPrompt(request),
     size: options.size || runtime.defaults?.size || "1024x1024",
     quality: options.quality || runtime.defaults?.quality || "high",
-    output_format: outputFormat,
+    format: outputFormat,
     background: options.background || "auto",
-  } as unknown as Parameters<typeof client.images.edit>[0])) as OpenAIImageResponseLike;
-
-  return storeGeneratedImage(request, getFirstBase64Image(response), outputFormat);
+    source: { buffer: sourceBuffer },
+  });
+  return storeGeneratedImage(request, buffer.toString("base64"), outputFormat);
 }

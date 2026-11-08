@@ -46,7 +46,7 @@ export async function getAIAuthoringAvailability(options: {
   return resolveAIAuthoringAvailability({
     settings: runtime.settings,
     apiKey: runtime.text.apiKey,
-    imageApiKey: runtime.apiKey,
+    imageApiKey: runtime.image.apiKey,
     ...options,
   });
 }
@@ -93,24 +93,26 @@ export async function assertAIAuthoringAllowed(options: {
   const surface =
     options.surface ??
     (options.entity ? surfaceForEntity(options.entity) : undefined);
-  // Images (and the hero banner, brief included) are OpenAI's; text is the
-  // picked provider's.
-  const usesOpenAI =
-    options.kind === "image" || surface === "heroBanner" || runtime.text.provider === "openai";
+  // Images and the hero banner need the image provider's key; text needs
+  // the text provider's.
+  const drawsImages = options.kind === "image" || surface === "heroBanner";
   const block = aiAuthoringBlock({
     settings,
-    apiKey: usesOpenAI ? runtime.apiKey : runtime.text.apiKey,
+    apiKey: drawsImages ? runtime.image.apiKey : runtime.text.apiKey,
     caller: options.caller,
     surface,
   });
 
   if (block === "unconfigured") {
+    const providerName = (drawsImages ? runtime.image.provider : runtime.text.provider) === "gemini"
+      ? "Gemini"
+      : drawsImages || runtime.text.provider === "openai"
+        ? "OpenAI"
+        : "the selected text provider";
     throw new ServiceUnavailableError(
-      usesOpenAI
-        ? runtime.text.provider === "openai"
-          ? "AI is not configured. Add an OpenAI API key in Settings → AI."
-          : "Images use OpenAI. Add an OpenAI API key in Settings → AI."
-        : "AI is not configured. Add an API key for the selected text provider in Settings → AI.",
+      drawsImages
+        ? `Images are drawn by ${providerName}. Add its API key in Settings → AI.`
+        : `AI is not configured. Add an API key for ${providerName} in Settings → AI.`,
     );
   }
   if (block) {

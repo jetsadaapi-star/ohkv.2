@@ -6190,7 +6190,7 @@
         "enabledHint": "Turns the AI Studio and every AI button on or off across the dashboard. The AI Sales Agent has its own switch on its own page.",
         "apiKey": "OpenAI API key",
         "apiKeySetPlaceholder": "••••••••  (saved — enter a new key to replace)",
-        "apiKeyHint": "Used by AI Studio and the AI Sales Agent. Leave empty to keep using the OPENAI_API_KEY environment variable.",
+        "apiKeyHint": "Used wherever OpenAI is chosen — text, images or the AI Sales Agent. Leave empty to keep using the OPENAI_API_KEY environment variable.",
         "testConnection": "Test Connection",
         "testFailed": "Connection test failed",
         "textModel": "Text model",
@@ -6240,13 +6240,13 @@
           "lowerCost": "lower cost"
         },
         "providerTitle": "Text provider",
-        "providerHint": "Who writes product copy, SEO, blog posts and review replies in AI Studio. Each provider keeps its own key, so switching loses nothing. Images always use OpenAI.",
+        "providerHint": "Who writes product copy, SEO, blog posts and review replies in AI Studio. Each provider keeps its own key, so switching loses nothing. Images and the AI Sales Agent are chosen below.",
         "selected": "In use",
         "providerTag": {
-          "openai": "GPT-4.1 and GPT-5 — the original, reads images",
-          "gemini": "Gemini 2.5 by Google — fast, reads images, free tier",
-          "deepseek": "DeepSeek V3 — strong writing at a very low price",
-          "glm": "Zhipu GLM-4.5/4.6 — includes a free Flash model"
+          "openai": "GPT-6 Luna, Terra, Sol and Astra — reads images",
+          "gemini": "Gemini 3.8 Flash and 4 Argon by Google — reads images",
+          "deepseek": "DeepSeek V4 Flash and Pro — strong writing at a low price",
+          "glm": "Zhipu GLM-4.7 to GLM-5.3 — text only"
         },
         "keyReady": "Key set",
         "keyMissing": "No key",
@@ -6268,11 +6268,20 @@
         "glmRegionGlobal": "Global (Z.ai)",
         "glmRegionChina": "Mainland China (BigModel)",
         "glmRegionHint": "Pick the platform your key was made on — a Z.ai key does not work on BigModel, and the other way round.",
-        "noVisionNote": "{name} can't read images, so image alt text is written by OpenAI with the key below. Without an OpenAI key, alt text is unavailable.",
-        "imagesTitle": "Images & AI Sales Agent (OpenAI)",
-        "imagesHint": "Image generation and edits, hero banners and the AI Sales Agent always run on OpenAI, whichever provider writes text.",
+        "noVisionNote": "{name} can't read images with this model, so image alt text is written by Gemini or OpenAI, whichever has a key.",
+        "imagesTitle": "Images & hero banners",
+        "imagesHint": "Who draws product images, image edits and hero banners. Pick OpenAI (gpt-image) or Google Gemini (Nano Banana).",
         "imagesSharedKey": "These use the OpenAI key above.",
-        "openaiKeyOtherProvider": "Used for images, hero banners, the AI Sales Agent, and alt text when the text provider can't read images. Leave empty to use OPENAI_API_KEY."
+        "openaiKeyOtherProvider": "Used when OpenAI is chosen for images or the AI Sales Agent, and for alt text when no other provider here can read images. Leave empty to use OPENAI_API_KEY.",
+        "imageProviderLabel": "Image provider",
+        "sharedKeyHint": "The same {name} key is used everywhere in AI Studio. Leave empty to use the environment variable.",
+        "keyShownAbove": "Uses the {name} key entered above.",
+        "geminiImageNote": "Gemini picks the quality itself and always paints an opaque background.",
+        "salesAgentTitle": "AI Sales Agent",
+        "salesAgentHint": "Who runs the shopping assistant in the store chat. Its model, tone and limits are set on the AI Sales Agent page.",
+        "salesAgentProviderLabel": "AI Sales Agent provider",
+        "salesAgentOpen": "Open AI Sales Agent settings",
+        "glmFreeNote": "Free models such as glm-4.7-flash exist only on BigModel (mainland China). Pick that platform above to use them."
       },
       "analytics": {
         "title": "Analytics Integration",
@@ -19085,7 +19094,7 @@
     "subtitle": "Create product content, graphics, and SEO with AI — built into every form in your store.",
     "statusConfigured": "AI is configured and ready",
     "statusNotConfigured": "AI is not configured yet",
-    "statusNotConfiguredHint": "Add your OpenAI API key in Settings → AI (or set OPENAI_API_KEY in the environment) to enable AI features.",
+    "statusNotConfiguredHint": "Add an API key for your chosen provider (OpenAI, Gemini, DeepSeek or GLM) in Settings → AI to enable AI features.",
     "showcaseTitle": "See it in action",
     "showcaseSubtitle": "Drag the slider — a one-click Enhance from the AI Image Studio.",
     "showcaseBefore": "Before",
@@ -19203,8 +19212,8 @@
         "description": "Work through these steps to get the agent ready for shoppers. Status updates live as you configure each section.",
         "steps": {
           "apiKey": {
-            "title": "Add your OpenAI API key",
-            "description": "Set OPENAI_API_KEY in your server environment, then restart the app. The agent and its widget stay disabled until a valid key is detected.",
+            "title": "Add an API key (OpenAI or Gemini)",
+            "description": "Pick OpenAI or Gemini for the AI Sales Agent in Settings → AI and add that provider's key there (or set OPENAI_API_KEY / GEMINI_API_KEY on the server). The agent and its widget stay disabled until a key is found.",
             "action": "Open configuration",
             "hint": "Server-side only — the key is never exposed to shoppers."
           },
@@ -19322,8 +19331,8 @@
       }
     },
     "configuration": {
-      "openAIConfigured": "OpenAI configured",
-      "openAIMissing": "Missing OPENAI_API_KEY",
+      "openAIConfigured": "AI key ready",
+      "openAIMissing": "No API key for this provider",
       "widgetEnabled": "Widget enabled",
       "widgetDisabled": "Widget disabled",
       "modelRuntime": {
@@ -19341,7 +19350,8 @@
         "monthlyTokenBudget": "Monthly token budget",
         "monthlyTokenBudgetDescription": "Tokens the assistant may spend per calendar month across all chats. 0 = unlimited. Once the budget is reached, shoppers get catalogue answers without the model until the month turns.",
         "monthlyTokenUsage": "Used this month ({month}): {tokens} tokens across {requests} model replies.",
-        "monthlyTokenBudgetReached": "Budget reached — shoppers are getting catalogue answers without the model until next month."
+        "monthlyTokenBudgetReached": "Budget reached — shoppers are getting catalogue answers without the model until next month.",
+        "providerNote": "Runs on {provider} — change it in Settings → AI."
       },
       "capabilities": {
         "title": "Capabilities"

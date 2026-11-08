@@ -47,6 +47,7 @@ export const POST = withApi(
       model: runtime.textModel,
       brandVoice: runtime.settings.brandVoice,
       text: runtime.text,
+      vision: runtime.vision,
     });
 
     return successResponse(draft);

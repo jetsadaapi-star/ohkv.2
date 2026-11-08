@@ -6,7 +6,8 @@ import { successResponse } from "@/lib/api/response";
 import { rateLimitByUser } from "@/lib/api/rate-limit-middleware";
 import {
   DEFAULT_AI_SALES_AGENT_SETTINGS,
-  isOpenAIConfigured,
+  isSalesAgentConfigured,
+  salesAgentProviderOf,
   normalizeAISalesAgentSettings,
 } from "@/lib/ai-sales-agent/settings";
 import { widgetColor } from "@/lib/theme-colors/theme-refs";
@@ -221,7 +222,8 @@ export const GET = withApi(
 
     return successResponse({
       settings: aiSettings,
-      configured: isOpenAIConfigured(settings.aiAuthoring),
+      configured: isSalesAgentConfigured(settings.aiAuthoring),
+      provider: salesAgentProviderOf(settings.aiAuthoring),
       faviconUrl: settings.general?.faviconUrl || "",
       // This month's spend against the budget, so the page can say where the
       // store stands before the widget goes quiet.
@@ -316,7 +318,8 @@ export const PUT = withApi(
 
     return successResponse({
       settings: saved,
-      configured: isOpenAIConfigured(fresh?.aiAuthoring),
+      configured: isSalesAgentConfigured(fresh?.aiAuthoring),
+      provider: salesAgentProviderOf(fresh?.aiAuthoring),
     });
   },
 );

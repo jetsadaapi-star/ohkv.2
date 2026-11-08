@@ -379,6 +379,8 @@ export type AIAuthoringContentRuntime = {
   brandVoice?: AIAuthoringBrandVoice;
   /** The text provider in effect; absent or "openai" keeps the Responses API. */
   text?: ResolvedAITextConfig;
+  /** A provider that reads images, for alt text (settings `vision`). */
+  vision?: ResolvedAITextConfig;
 };
 
 /** Another provider than OpenAI writes the text (Chat Completions). */
@@ -457,11 +459,17 @@ async function generateImageAltText(
     .filter(Boolean)
     .join("\n");
 
+  // Whoever can see the image: the configured vision provider, else the
+  // text provider when it reads images, else OpenAI by key.
+  const vision: ResolvedAITextConfig | undefined =
+    runtime.vision ??
+    (usesChatProvider(runtime) && runtime.text.supportsVision ? runtime.text : undefined);
+
   let rawAlt: string;
-  if (usesChatProvider(runtime) && runtime.text.supportsVision) {
-    const client = createAITextClient(runtime.text);
+  if (vision && vision.provider !== "openai") {
+    const client = createAITextClient(vision);
     const completion = await client.chat.completions.create({
-      model: runtime.text.model,
+      model: vision.model,
       messages: [
         { role: "system", content: altInstructions },
         {
@@ -475,14 +483,17 @@ async function generateImageAltText(
     });
     rawAlt = completion.choices[0]?.message?.content ?? "";
   } else {
-    // OpenAI writes it — the chosen provider, or the fallback for one that
-    // cannot see images (DeepSeek, GLM).
-    if (usesChatProvider(runtime) && !runtime.apiKey?.trim() && !process.env.OPENAI_API_KEY?.trim()) {
+    const openaiKey = vision?.apiKey ?? runtime.apiKey;
+    if (!openaiKey?.trim() && !process.env.OPENAI_API_KEY?.trim()) {
       throw new Error(
-        `${runtime.text.provider} cannot read images. Add an OpenAI API key in Settings → AI to write alt text.`,
+        "No AI provider here can read images. Add a Gemini or OpenAI key in Settings → AI to write alt text.",
       );
     }
-    rawAlt = await openAIAltText(runtime, altInstructions, imageUrl);
+    rawAlt = await openAIAltText(
+      { ...runtime, apiKey: openaiKey, model: vision?.model ?? runtime.model },
+      altInstructions,
+      imageUrl,
+    );
   }
 
   const alt = rawAlt

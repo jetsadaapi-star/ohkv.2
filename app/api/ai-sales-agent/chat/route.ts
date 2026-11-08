@@ -9,7 +9,7 @@ import {
 } from "@/lib/api/rate-limit-middleware";
 import { runAISalesAgent } from "@/lib/ai-sales-agent/engine";
 import {
-  isOpenAIConfigured,
+  isSalesAgentConfigured,
   normalizeAISalesAgentSettings,
   toPublicAISalesAgentConfig,
 } from "@/lib/ai-sales-agent/settings";
@@ -67,7 +67,7 @@ export const POST = withApi(
     const settings = await getSettings();
     const aiSettings = normalizeAISalesAgentSettings(settings.aiSalesAgent);
     if (!aiSettings.enabled) throw new ValidationError("AI Sales Agent is disabled");
-    if (!isOpenAIConfigured(settings.aiAuthoring)) {
+    if (!isSalesAgentConfigured(settings.aiAuthoring)) {
       throw new ValidationError("OpenAI API key is not configured");
     }
 

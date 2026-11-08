@@ -6,26 +6,26 @@ import {
 import {
   AI_EXTRA_TEXT_PROVIDERS,
   AI_TEXT_PROVIDER_INFO,
+  effectiveTextModel,
   isAITextProvider,
   isPlausibleModelId,
+  modelReadsImages,
   textProviderBaseURL,
   type AITextProvider,
 } from "@/lib/ai-authoring/text-providers";
+import {
+  AI_IMAGE_MODELS,
+  effectiveImageModel,
+  isAIImageProvider,
+  type AIImageProvider,
+} from "@/lib/ai-authoring/image-providers";
 
-const AI_AUTHORING_TEXT_MODEL_IDS = [
-  "gpt-4.1-mini",
-  "gpt-4.1",
-  "gpt-5-mini",
-  "gpt-5",
-] as const;
+const AI_AUTHORING_TEXT_MODEL_IDS = AI_TEXT_PROVIDER_INFO.openai.models.map((model) => model.id);
+const AI_AUTHORING_IMAGE_MODEL_IDS = AI_IMAGE_MODELS.openai.models.map((model) => model.id);
+const GEMINI_IMAGE_MODEL_IDS = AI_IMAGE_MODELS.gemini.models.map((model) => model.id);
 
-const AI_AUTHORING_IMAGE_MODEL_IDS = [
-  "gpt-image-1",
-  "gpt-image-1-mini",
-] as const;
-
-const DEFAULT_AI_AUTHORING_TEXT_MODEL = "gpt-4.1-mini";
-const DEFAULT_AI_AUTHORING_IMAGE_MODEL = "gpt-image-1";
+const DEFAULT_AI_AUTHORING_TEXT_MODEL = AI_TEXT_PROVIDER_INFO.openai.defaultModel;
+const DEFAULT_AI_AUTHORING_IMAGE_MODEL = AI_IMAGE_MODELS.openai.defaultModel;
 
 export const DEFAULT_AI_AUTHORING_SETTINGS: IAIAuthoringSettings = {
   enabled: true,
@@ -137,6 +137,11 @@ export function normalizeAIAuthoringSettings(
     providerKeys,
     providerModels,
     glmRegion: value.glmRegion === "china" ? "china" : "global",
+    imageProvider: isAIImageProvider(value.imageProvider) ? value.imageProvider : "openai",
+    geminiImageModel: GEMINI_IMAGE_MODEL_IDS.includes(value.geminiImageModel as string)
+      ? (value.geminiImageModel as string)
+      : "",
+    salesAgentProvider: value.salesAgentProvider === "gemini" ? "gemini" : "openai",
     textModel,
     imageModel,
     surfaces: {
@@ -214,6 +219,13 @@ export type ResolvedAITextConfig = {
   supportsVision: boolean;
 };
 
+/** Who draws images, and how to reach them. */
+export type ResolvedAIImageConfig = {
+  provider: AIImageProvider;
+  apiKey?: string;
+  model: string;
+};
+
 export type ResolvedAIAuthoringConfig = {
   settings: IAIAuthoringSettings;
   /** Resolved via credentials: DB value wins, OPENAI_API_KEY env fallback. */
@@ -222,6 +234,14 @@ export type ResolvedAIAuthoringConfig = {
   imageModel: string;
   /** The text provider in effect (OpenAI unless another is picked). */
   text: ResolvedAITextConfig;
+  /** The image provider in effect (images, edits, hero banners). */
+  image: ResolvedAIImageConfig;
+  /**
+   * A provider that can read an image, for alt text: the text provider when
+   * its model can, else Gemini, else OpenAI — whichever has a key. Absent
+   * when none can.
+   */
+  vision?: ResolvedAITextConfig;
 };
 
 /**
@@ -238,27 +258,47 @@ export function resolveAIAuthoringConfig(
     settings.textModel ||
     process.env.OPENAI_AUTHORING_TEXT_MODEL?.trim() ||
     DEFAULT_AI_AUTHORING_TEXT_MODEL;
+  const imageModel = effectiveImageModel(
+    "openai",
+    settings.imageModel || process.env.OPENAI_AUTHORING_IMAGE_MODEL?.trim() || DEFAULT_AI_AUTHORING_IMAGE_MODEL,
+  );
+  const geminiKey = resolveAITextProviderKey(settings, "gemini");
+
+  const chatConfig = (provider: Exclude<AITextProvider, "openai">, model: string): ResolvedAITextConfig => ({
+    provider,
+    apiKey: resolveAITextProviderKey(settings, provider),
+    baseURL: textProviderBaseURL(provider, settings.glmRegion),
+    model,
+    supportsVision: modelReadsImages(provider, model),
+  });
   const provider = settings.textProvider ?? "openai";
   const text: ResolvedAITextConfig =
     provider === "openai"
       ? { provider, apiKey, model: textModel, supportsVision: true }
-      : {
-          provider,
-          apiKey: resolveAITextProviderKey(settings, provider),
-          baseURL: textProviderBaseURL(provider, settings.glmRegion),
-          model:
-            settings.providerModels?.[provider] ||
-            AI_TEXT_PROVIDER_INFO[provider].defaultModel,
-          supportsVision: AI_TEXT_PROVIDER_INFO[provider].supportsVision,
-        };
+      : chatConfig(provider, effectiveTextModel(provider, settings.providerModels?.[provider]));
+
+  const imageProvider = settings.imageProvider ?? "openai";
+  const image: ResolvedAIImageConfig =
+    imageProvider === "gemini"
+      ? { provider: "gemini", apiKey: geminiKey, model: effectiveImageModel("gemini", settings.geminiImageModel) }
+      : { provider: "openai", apiKey, model: imageModel };
+
+  const vision: ResolvedAITextConfig | undefined =
+    text.apiKey && text.supportsVision
+      ? text
+      : geminiKey
+        ? chatConfig("gemini", effectiveTextModel("gemini", settings.providerModels?.gemini))
+        : apiKey
+          ? { provider: "openai", apiKey, model: textModel, supportsVision: true }
+          : undefined;
+
   return {
     settings,
     apiKey,
     text,
+    image,
+    vision,
     textModel,
-    imageModel:
-      settings.imageModel ||
-      process.env.OPENAI_AUTHORING_IMAGE_MODEL?.trim() ||
-      DEFAULT_AI_AUTHORING_IMAGE_MODEL,
+    imageModel: image.model,
   };
 }

@@ -1,4 +1,10 @@
-import { createAIAuthoringOpenAIClient, extractOutputText } from "../openai";
+import {
+  createAIAuthoringOpenAIClient,
+  createAITextClient,
+  extractJsonText,
+  extractOutputText,
+} from "../openai";
+import type { ResolvedAIImageConfig, ResolvedAITextConfig } from "../settings";
 import { ValidationError } from "@/lib/api/errors";
 
 import type {
@@ -173,6 +179,10 @@ export type HeroBannerRuntime = {
   apiKey?: string;
   textModel?: string;
   imageModel?: string;
+  /** The text provider that writes the brief (Settings → AI). */
+  text?: ResolvedAITextConfig;
+  /** The image provider that paints the banner. */
+  image?: ResolvedAIImageConfig;
 };
 
 export async function interpretHeroBannerPrompt(
@@ -180,17 +190,36 @@ export async function interpretHeroBannerPrompt(
   runtime: HeroBannerRuntime = {},
 ): Promise<{ brief: HeroBannerBrief; warning?: string }> {
   try {
-    const client = createAIAuthoringOpenAIClient(runtime.apiKey);
-    const response = await client.responses.create({
-      model:
-        runtime.textModel ||
-        process.env.OPENAI_AUTHORING_TEXT_MODEL ||
-        "gpt-4.1-mini",
-      instructions: buildHeroBriefInstructions(request.locale),
-      input: request.prompt,
-      text: buildHeroBriefResponseFormat(),
-    });
-    const output = extractOutputText(response);
+    let output: string;
+    if (runtime.text && runtime.text.provider !== "openai") {
+      // Chat providers get the schema in words and JSON mode.
+      const client = createAITextClient(runtime.text);
+      const completion = await client.chat.completions.create({
+        model: runtime.text.model,
+        messages: [
+          {
+            role: "system",
+            content: `${buildHeroBriefInstructions(request.locale)}\nReply with one JSON object only, no markdown. Every key must be present (null when unknown). JSON Schema: ${JSON.stringify(buildHeroBriefResponseFormat().format.schema)}`,
+          },
+          { role: "user", content: request.prompt },
+        ],
+        response_format: { type: "json_object" },
+      });
+      output = extractJsonText(completion.choices[0]?.message?.content ?? "");
+    } else {
+      const client = createAIAuthoringOpenAIClient(runtime.text?.apiKey ?? runtime.apiKey);
+      const response = await client.responses.create({
+        model:
+          runtime.text?.model ||
+          runtime.textModel ||
+          process.env.OPENAI_AUTHORING_TEXT_MODEL ||
+          "gpt-6-luna",
+        instructions: buildHeroBriefInstructions(request.locale),
+        input: request.prompt,
+        text: buildHeroBriefResponseFormat(),
+      });
+      output = extractOutputText(response);
+    }
     return { brief: normalizeHeroBannerBrief(JSON.parse(output), request) };
   } catch {
     return {

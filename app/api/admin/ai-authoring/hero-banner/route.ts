@@ -29,6 +29,8 @@ export const POST = withApi(
       apiKey: authoring.apiKey,
       textModel: authoring.textModel,
       imageModel: authoring.imageModel,
+      text: authoring.text,
+      image: authoring.image,
     });
     console.info("[AI Hero Banner]", {
       operation,

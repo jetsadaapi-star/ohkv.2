@@ -2,8 +2,11 @@ import OpenAI from "openai";
 import { Cart } from "@/models";
 import type { IAISalesAgentSettings, ISettings } from "@/models/settings.model";
 import { getSettings } from "@/models/settings.model";
-import { resolveOpenAICredentials } from "@/lib/settings/credentials";
-import { isReasoningModel } from "./models";
+import { resolveAITextProviderKey, resolveOpenAICredentials } from "@/lib/settings/credentials";
+import { textProviderBaseURL } from "@/lib/ai-authoring/text-providers";
+import { effectiveSalesAgentModel, isReasoningModel, type AISalesAgentProvider } from "./models";
+import { salesAgentProviderOf } from "./settings";
+import { createChatTurn } from "./chat-adapter";
 import { getAgentCategoryDirectory } from "./store-context";
 import { aiSalesToolHandlers } from "./tools";
 import { resolveConversation } from "./conversation-owner";
@@ -242,12 +245,23 @@ type CartItemLike = {
 
 type CartLike = { items?: CartItemLike[] };
 
-function createOpenAIClient(settings: ISettings) {
-  // One shared OpenAI credential across AI features: the key saved in
-  // Settings → AI wins, OPENAI_API_KEY env remains the fallback.
+type AgentClient = { client: OpenAI; provider: AISalesAgentProvider };
+
+/**
+ * The agent's provider (Settings → AI → "AI Sales Agent"): OpenAI with the
+ * shared key, or Gemini through its OpenAI-compatible endpoint with the
+ * Gemini key. Each key: Settings → AI wins, the env variable is the fallback.
+ */
+function createAgentClient(settings: ISettings): AgentClient {
+  const provider = salesAgentProviderOf(settings.aiAuthoring);
+  if (provider === "gemini") {
+    const apiKey = resolveAITextProviderKey(settings.aiAuthoring, "gemini");
+    if (!apiKey) throw new Error("Gemini API key is not configured");
+    return { provider, client: new OpenAI({ apiKey, baseURL: textProviderBaseURL("gemini"), timeout: 120_000, maxRetries: 1 }) };
+  }
   const { apiKey } = resolveOpenAICredentials(settings.aiAuthoring);
   if (!apiKey) throw new Error("OpenAI API key is not configured");
-  return new OpenAI({ apiKey });
+  return { provider, client: new OpenAI({ apiKey }) };
 }
 
 function getOutputText(response: OpenAIResponseLike): string {
@@ -473,19 +487,22 @@ function mergeToolResult(
 
 function buildResponseParams(
   settings: IAISalesAgentSettings,
+  provider: AISalesAgentProvider,
   locale: string,
   catalogueLanguage: string,
   input: unknown,
 ): Record<string, unknown> {
-  const reasoning = isReasoningModel(settings.model);
+  // A retired or other-provider model saved earlier runs as the default.
+  const model = effectiveSalesAgentModel(provider, settings.model);
   const params: Record<string, unknown> = {
-    model: settings.model,
+    model,
     instructions: buildInstructions(settings, locale, catalogueLanguage),
     input,
     tools: TOOL_DEFINITIONS,
   };
-  if (reasoning) {
-    params.reasoning = { effort: settings.reasoningEffort };
+  if (isReasoningModel(model)) {
+    // "minimal" was GPT-5's lowest setting; current models start at "low".
+    params.reasoning = { effort: settings.reasoningEffort === "minimal" ? "low" : settings.reasoningEffort };
   } else {
     params.temperature = settings.temperature;
   }
@@ -499,10 +516,18 @@ function buildResponseParams(
  * either way.
  */
 async function createResponse(
-  client: OpenAI,
+  agent: AgentClient,
   params: Record<string, unknown>,
   onDelta?: (text: string) => void,
 ): Promise<OpenAIResponseLike> {
+  const { client } = agent;
+  if (agent.provider === "gemini") {
+    return (await createChatTurn(
+      client,
+      params as unknown as Parameters<typeof createChatTurn>[1],
+      onDelta,
+    )) as unknown as OpenAIResponseLike;
+  }
   type CreateParams = Parameters<typeof client.responses.create>[0];
 
   if (!onDelta) {
@@ -667,12 +692,12 @@ export async function runAISalesAgent({
 
   if (!fallbackReason) {
     try {
-      const client = createOpenAIClient(storeSettings);
+      const agent = createAgentClient(storeSettings);
       const request = async () => {
         let streamed = "";
         const response = await createResponse(
-          client,
-          buildResponseParams(ctx.settings, ctx.locale, catalogueLanguage, input),
+          agent,
+          buildResponseParams(ctx.settings, agent.provider, ctx.locale, catalogueLanguage, input),
           onEvent
             ? (delta) => {
                 if (!streamed && hopTexts.some(Boolean)) {

@@ -1,5 +1,5 @@
 import type { IAISalesAgentSettings } from "@/models/settings.model";
-import { resolveOpenAICredentials } from "@/lib/settings/credentials";
+import { resolveAITextProviderKey, resolveOpenAICredentials } from "@/lib/settings/credentials";
 import {
   AI_SALES_AGENT_MODEL_IDS,
   AI_SALES_AGENT_REASONING_EFFORTS,
@@ -142,19 +142,32 @@ export function normalizeAISalesAgentSettings(
   };
 }
 
+type AIAuthoringKeys = {
+  apiKey?: string;
+  providerKeys?: { gemini?: string; deepseek?: string; glm?: string };
+  salesAgentProvider?: "openai" | "gemini";
+} | null;
+
+/** Who runs the agent: Settings → AI → "AI Sales Agent". */
+export function salesAgentProviderOf(aiAuthoring?: AIAuthoringKeys | undefined): "openai" | "gemini" {
+  return aiAuthoring?.salesAgentProvider === "gemini" ? "gemini" : "openai";
+}
+
 /**
- * Whether an OpenAI key is available. Pass `settings.aiAuthoring` so a key
+ * Whether the agent's provider has a key. Pass `settings.aiAuthoring` so a key
  * saved in Settings → AI counts; without it only the env fallback is seen.
  */
-export function isOpenAIConfigured(aiAuthoring?: { apiKey?: string } | null) {
-  return Boolean(resolveOpenAICredentials(aiAuthoring).apiKey);
+export function isSalesAgentConfigured(aiAuthoring?: AIAuthoringKeys | undefined) {
+  return salesAgentProviderOf(aiAuthoring) === "gemini"
+    ? Boolean(resolveAITextProviderKey(aiAuthoring ?? undefined, "gemini"))
+    : Boolean(resolveOpenAICredentials(aiAuthoring).apiKey);
 }
 
 export function toPublicAISalesAgentConfig(
   settings: IAISalesAgentSettings,
-  options?: { faviconUrl?: string; aiAuthoring?: { apiKey?: string } | null },
+  options?: { faviconUrl?: string; aiAuthoring?: AIAuthoringKeys },
 ): PublicAISalesAgentConfig {
-  const configured = isOpenAIConfigured(options?.aiAuthoring);
+  const configured = isSalesAgentConfigured(options?.aiAuthoring);
   return {
     enabled: Boolean(settings.enabled && configured),
     configured,

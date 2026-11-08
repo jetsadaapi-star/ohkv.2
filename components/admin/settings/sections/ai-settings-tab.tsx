@@ -11,6 +11,7 @@ import {
   LayoutGrid,
   Loader2,
   Megaphone,
+  MessagesSquare,
   Palette,
   Plug,
   Power,
@@ -39,6 +40,13 @@ import { credentialMeta } from "@/components/admin/settings/fields/use-credentia
 import { EnvSourceHint } from "@/components/admin/settings/fields/env-source-hint";
 import { SectionTitle } from "@/components/admin/form-sections";
 import { AIProviderMark } from "@/components/admin/settings/ai-provider-marks";
+import Link from "@/components/language/link";
+import {
+  AI_IMAGE_MODELS,
+  AI_IMAGE_PROVIDERS,
+  effectiveImageModel,
+  type AIImageProvider,
+} from "@/lib/ai-authoring/image-providers";
 import {
   AI_TEXT_PROVIDERS,
   AI_TEXT_PROVIDER_INFO,
@@ -51,24 +59,16 @@ import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 
 type AiAuthoringSettings = NonNullable<Settings["aiAuthoring"]>;
 
-/** A model's name, and what sets it apart (`admin.settings.ai.modelNotes`). */
+/** A model id, and what sets it apart (`admin.settings.ai.providerModelNotes`). */
 type ModelOption = {
   value: string;
-  name: string;
-  note?: "fastLowCost" | "higherQuality" | "bestQuality" | "lowerCost";
+  note?: "fast" | "balanced" | "best" | "reasoning" | "free";
 };
 
-const TEXT_MODELS: ModelOption[] = [
-  { value: "gpt-4.1-mini", name: "GPT-4.1 mini", note: "fastLowCost" },
-  { value: "gpt-4.1", name: "GPT-4.1", note: "higherQuality" },
-  { value: "gpt-5-mini", name: "GPT-5 mini" },
-  { value: "gpt-5", name: "GPT-5", note: "bestQuality" },
-];
-
-const IMAGE_MODELS: ModelOption[] = [
-  { value: "gpt-image-1", name: "GPT Image 1", note: "bestQuality" },
-  { value: "gpt-image-1-mini", name: "GPT Image 1 mini", note: "lowerCost" },
-];
+const TEXT_MODELS: ModelOption[] = AI_TEXT_PROVIDER_INFO.openai.models.map((model) => ({
+  value: model.id,
+  note: model.note,
+}));
 
 /** Sentinel for "inherit env/default" since Select can't hold "". */
 const DEFAULT_MODEL_VALUE = "__default__";
@@ -182,14 +182,23 @@ export function AiSettingsTab(props: {
     return { set: meta.set, hint: meta.hint, fromEnv, ready: meta.set || fromEnv || Boolean(typed) };
   };
   const configured = keyState(provider).ready;
-  const openaiReady = keyState("openai").ready;
+  const imageProvider: AIImageProvider = ai.imageProvider === "gemini" ? "gemini" : "openai";
+  const salesProvider: AIImageProvider = ai.salesAgentProvider === "gemini" ? "gemini" : "openai";
+  const activeImageModel = effectiveImageModel(
+    imageProvider,
+    (imageProvider === "gemini" ? ai.geminiImageModel : ai.imageModel) || undefined,
+  );
+  // Each key field appears once: with the text provider, else on the first
+  // card below that needs it.
+  const keyHere = {
+    image: imageProvider !== provider,
+    sales: salesProvider !== provider && salesProvider !== imageProvider,
+  };
 
   const tSafe = useFallbackTranslator(t);
 
   const modelLabel = (model: ModelOption) =>
-    model.note
-      ? `${model.name} — ${t(`admin.settings.ai.modelNotes.${model.note}`)}`
-      : model.name;
+    model.note ? `${model.value} — ${tAi(`providerModelNotes.${model.note}`)}` : model.value;
 
   const surfaceLabel = (key: (typeof SURFACE_KEYS)[number]) =>
     tSafe(
@@ -376,7 +385,11 @@ export function AiSettingsTab(props: {
                 <div className="space-y-2">
                   <Label>{tAi("textModel")}</Label>
                   <Select
-                    value={ai.textModel || DEFAULT_MODEL_VALUE}
+                    value={
+                      TEXT_MODELS.some((model) => model.value === ai.textModel)
+                        ? (ai.textModel as string)
+                        : DEFAULT_MODEL_VALUE
+                    }
                     onValueChange={(value) =>
                       updateNestedField("aiAuthoring.textModel", value === DEFAULT_MODEL_VALUE ? "" : value)
                     }
@@ -420,6 +433,7 @@ export function AiSettingsTab(props: {
                       })}
                     </div>
                     <p className="text-xs text-muted-foreground">{tAi("glmRegionHint")}</p>
+                    <p className="text-xs text-muted-foreground">{tAi("glmFreeNote")}</p>
                   </div>
                 ) : null}
 
@@ -490,7 +504,7 @@ export function AiSettingsTab(props: {
         </CardContent>
       </Card>
 
-      {/* Images (always OpenAI) */}
+      {/* Images and hero banners */}
       <Card>
         <CardHeader>
           <SectionTitle icon={<ImageIcon />} tone="sky">
@@ -499,38 +513,62 @@ export function AiSettingsTab(props: {
           <CardDescription>{tAi("imagesHint")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
-          {provider === "openai" ? (
-            <p className="flex items-center gap-2 text-xs text-muted-foreground">
-              <CheckCircle2 className={cn("size-3.5", openaiReady ? "text-emerald-500" : "text-muted-foreground")} />
-              {tAi("imagesSharedKey")}
-            </p>
-          ) : (
+          <ProviderChoice
+            label={tAi("imageProviderLabel")}
+            value={imageProvider}
+            onChange={(next) => updateNestedField("aiAuthoring.imageProvider", next)}
+            ready={(id) => keyState(id).ready}
+          />
+
+          {keyHere.image ? (
             <div className="rounded-2xl border bg-muted/20 p-4">
-              {keyField("openai", tAi("openaiKeyOtherProvider"))}
+              {keyField(imageProvider, tAi("sharedKeyHint", { name: AI_TEXT_PROVIDER_INFO[imageProvider].name }))}
             </div>
+          ) : (
+            <p className="flex items-center gap-2 text-xs text-muted-foreground">
+              <CheckCircle2
+                className={cn("size-3.5", keyState(imageProvider).ready ? "text-emerald-500" : "text-muted-foreground")}
+              />
+              {tAi("keyShownAbove", { name: AI_TEXT_PROVIDER_INFO[imageProvider].name })}
+            </p>
           )}
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-2">
-              <Label>{tAi("imageModel")}</Label>
-              <Select
-                value={ai.imageModel || DEFAULT_MODEL_VALUE}
-                onValueChange={(value) =>
-                  updateNestedField("aiAuthoring.imageModel", value === DEFAULT_MODEL_VALUE ? "" : value)
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={DEFAULT_MODEL_VALUE}>{tAi("modelDefault")}</SelectItem>
-                  {IMAGE_MODELS.map((model) => (
-                    <SelectItem key={model.value} value={model.value}>
-                      {modelLabel(model)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+
+          <div className="space-y-2">
+            <Label>{tAi("imageModel")}</Label>
+            <div className="flex flex-wrap gap-1.5">
+              {AI_IMAGE_MODELS[imageProvider].models.map((model) => {
+                const active = activeImageModel === model.id;
+                return (
+                  <button
+                    key={model.id}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() =>
+                      updateNestedField(
+                        imageProvider === "gemini" ? "aiAuthoring.geminiImageModel" : "aiAuthoring.imageModel",
+                        model.id === AI_IMAGE_MODELS[imageProvider].defaultModel ? "" : model.id,
+                      )
+                    }
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-xs transition",
+                      active
+                        ? "border-sky-500 bg-sky-500/10 text-sky-700 dark:text-sky-300"
+                        : "hover:border-sky-400/60",
+                    )}
+                  >
+                    {model.id}
+                    {model.note ? (
+                      <span className="font-sans text-[10px] text-muted-foreground">
+                        {tAi(`providerModelNotes.${model.note}`)}
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })}
             </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label>{tAi("imageSize")}</Label>
               <Select
@@ -549,26 +587,68 @@ export function AiSettingsTab(props: {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>{tAi("imageQuality")}</Label>
-              <Select
-                value={ai.imageDefaults?.quality || "high"}
-                onValueChange={(value) => updateNestedField("aiAuthoring.imageDefaults.quality", value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {["auto", "medium", "high"].map((quality) => (
-                    <SelectItem key={quality} value={quality}>
-                      {quality}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">{tAi("imageQualityHint")}</p>
-            </div>
+            {imageProvider === "openai" ? (
+              <div className="space-y-2">
+                <Label>{tAi("imageQuality")}</Label>
+                <Select
+                  value={ai.imageDefaults?.quality || "high"}
+                  onValueChange={(value) => updateNestedField("aiAuthoring.imageDefaults.quality", value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {["auto", "medium", "high"].map((quality) => (
+                      <SelectItem key={quality} value={quality}>
+                        {quality}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">{tAi("imageQualityHint")}</p>
+              </div>
+            ) : (
+              <p className="self-end rounded-xl border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+                {tAi("geminiImageNote")}
+              </p>
+            )}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* AI Sales Agent */}
+      <Card>
+        <CardHeader>
+          <SectionTitle icon={<MessagesSquare />} tone="rose">
+            {tAi("salesAgentTitle")}
+          </SectionTitle>
+          <CardDescription>{tAi("salesAgentHint")}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <ProviderChoice
+            label={tAi("salesAgentProviderLabel")}
+            value={salesProvider}
+            onChange={(next) => updateNestedField("aiAuthoring.salesAgentProvider", next)}
+            ready={(id) => keyState(id).ready}
+          />
+          {keyHere.sales ? (
+            <div className="rounded-2xl border bg-muted/20 p-4">
+              {keyField(salesProvider, tAi("sharedKeyHint", { name: AI_TEXT_PROVIDER_INFO[salesProvider].name }))}
+            </div>
+          ) : (
+            <p className="flex items-center gap-2 text-xs text-muted-foreground">
+              <CheckCircle2
+                className={cn("size-3.5", keyState(salesProvider).ready ? "text-emerald-500" : "text-muted-foreground")}
+              />
+              {tAi("keyShownAbove", { name: AI_TEXT_PROVIDER_INFO[salesProvider].name })}
+            </p>
+          )}
+          <Button asChild variant="outline" size="sm" className="gap-2 rounded-full">
+            <Link href="/admin/ai-sales-agent">
+              <MessagesSquare className="size-4" />
+              {tAi("salesAgentOpen")}
+            </Link>
+          </Button>
         </CardContent>
       </Card>
 
@@ -891,6 +971,57 @@ export function AiSettingsTab(props: {
         isDirty={isDirty}
         onSave={onSave}
       />
+    </div>
+  );
+}
+
+/** OpenAI or Gemini, as two cards. */
+function ProviderChoice({
+  label,
+  value,
+  onChange,
+  ready,
+}: {
+  label: string;
+  value: AIImageProvider;
+  onChange: (next: AIImageProvider) => void;
+  ready: (id: AIImageProvider) => boolean;
+}) {
+  const tAi = useTranslations("admin.settings.ai");
+  return (
+    <div role="radiogroup" aria-label={label} className="grid gap-2.5 sm:grid-cols-2">
+      {AI_IMAGE_PROVIDERS.map((id) => {
+        const active = id === value;
+        const isReady = ready(id);
+        return (
+          <button
+            key={id}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            onClick={() => onChange(id)}
+            className={cn(
+              "flex items-center gap-3 rounded-2xl border p-3 text-left transition",
+              active ? "border-violet-500 bg-violet-500/[0.06] ring-1 ring-violet-500/40" : "hover:border-violet-400/60",
+            )}
+          >
+            <AIProviderMark provider={id} className="size-9" />
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-bold">{AI_TEXT_PROVIDER_INFO[id].name}</span>
+              <span
+                className={cn(
+                  "mt-0.5 inline-flex items-center gap-1 text-[11px] font-medium",
+                  isReady ? "text-emerald-700 dark:text-emerald-400" : "text-muted-foreground",
+                )}
+              >
+                <span className={cn("size-1.5 rounded-full", isReady ? "bg-emerald-500" : "bg-muted-foreground/50")} />
+                {isReady ? tAi("keyReady") : tAi("keyMissing")}
+              </span>
+            </span>
+            {active ? <CheckCircle2 className="size-5 shrink-0 text-violet-600" /> : null}
+          </button>
+        );
+      })}
     </div>
   );
 }

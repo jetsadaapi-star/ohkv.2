@@ -67,7 +67,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { VendorPageHeader } from "@/components/vendor/vendor-page-header";
 import { VendorTilesSkeleton } from "@/components/vendor/vendor-tiles-skeleton";
 import {
-  AI_SALES_AGENT_MODELS,
+  effectiveSalesAgentModel,
+  salesAgentModelsFor,
   AI_SALES_AGENT_REASONING_EFFORTS,
   AI_SALES_AGENT_TONES,
 } from "@/lib/ai-sales-agent/models";
@@ -110,6 +111,8 @@ type TokenUsage = {
 type AdminPayload = {
   settings: IAISalesAgentSettings;
   configured: boolean;
+  /** Settings → AI → "AI Sales Agent" provider. */
+  provider?: "openai" | "gemini";
   faviconUrl?: string;
   usage?: TokenUsage;
   stats: {
@@ -162,7 +165,6 @@ type ConversationDetail = {
   }>;
 };
 
-const MODELS = AI_SALES_AGENT_MODELS;
 
 const emptyActionSet: Set<string> = new Set();
 
@@ -262,6 +264,7 @@ export function AISalesAgentAdmin({
     DEFAULT_AI_SALES_AGENT_SETTINGS,
   );
   const [configured, setConfigured] = React.useState(false);
+  const [provider, setProvider] = React.useState<"openai" | "gemini">("openai");
   const [usage, setUsage] = React.useState<TokenUsage | null>(null);
   const [faviconUrl, setFaviconUrl] = React.useState("");
   const [recentConversations, setRecentConversations] = React.useState<
@@ -320,6 +323,7 @@ export function AISalesAgentAdmin({
       const data = json.data as AdminPayload;
       setSettings(normalizeSettings(data.settings));
       setConfigured(Boolean(data.configured));
+      setProvider(data.provider === "gemini" ? "gemini" : "openai");
       setUsage(data.usage ?? null);
       setFaviconUrl(data.faviconUrl || "");
       setRecentConversations(data.conversations || []);
@@ -961,7 +965,7 @@ export function AISalesAgentAdmin({
                 ? t("configuration.widgetEnabled")
                 : t("configuration.widgetDisabled")}
             </StatusBadge>
-            <Badge variant="outline">{settings.model}</Badge>
+            <Badge variant="outline">{effectiveSalesAgentModel(provider, settings.model)}</Badge>
           </div>
 
           <Card className="rounded-2xl shadow-sm">
@@ -988,7 +992,7 @@ export function AISalesAgentAdmin({
               <div className="space-y-2">
                 <Label>{t("configuration.modelRuntime.model")}</Label>
                 <Select
-                  value={settings.model}
+                  value={effectiveSalesAgentModel(provider, settings.model)}
                   onValueChange={(value) =>
                     update("model", value as IAISalesAgentSettings["model"])
                   }
@@ -997,7 +1001,7 @@ export function AISalesAgentAdmin({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {MODELS.map((model) => (
+                    {salesAgentModelsFor(provider).map((model) => (
                       <SelectItem key={model.id} value={model.id}>
                         {model.label}
                       </SelectItem>
@@ -1005,7 +1009,10 @@ export function AISalesAgentAdmin({
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  {t("configuration.modelRuntime.modelDescription")}
+                  {t("configuration.modelRuntime.modelDescription")}{" "}
+                  {t("configuration.modelRuntime.providerNote", {
+                    provider: provider === "gemini" ? "Google Gemini" : "OpenAI",
+                  })}
                 </p>
               </div>
 

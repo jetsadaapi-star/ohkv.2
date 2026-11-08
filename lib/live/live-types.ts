@@ -50,6 +50,7 @@ export interface LiveDashboardItem {
   products: LiveProductSummary[];
   pinnedProductId: string | null;
   likeCount: number;
+  giftCount: number;
   peakViewers: number;
   totalViews: number;
   endedReason: string;
@@ -110,11 +111,19 @@ export interface LiveCard {
 
 export interface LiveChatItem {
   id: string;
-  kind: "chat" | "system";
+  kind: "chat" | "system" | "gift";
   name: string;
   text: string;
   host: boolean;
   at: string;
+  /** For a gift line: which gift and how many. */
+  gift?: { id: string; count: number };
+}
+
+/** A viewer who sent the most gifts in this live. */
+export interface LiveSupporter {
+  name: string;
+  count: number;
 }
 
 /** What a viewer's poll returns. */
@@ -125,6 +134,10 @@ export interface LiveRoomState {
   onAir: boolean;
   viewers: number;
   likeCount: number;
+  /** Gifts sent in this live, all kinds together. */
+  giftCount: number;
+  /** Who sent the most, best first. */
+  supporters: LiveSupporter[];
   pinnedProductId: string | null;
   messages: LiveChatItem[];
   /** Changes whenever the products or their prices change. */

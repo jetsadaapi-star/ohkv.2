@@ -21551,7 +21551,78 @@
     "totalViews": "{count, plural, one {# viewer} other {# viewers}}",
     "topTitle": "Top 5 lives",
     "topSubtitle": "The most-watched lives of the last 30 days",
-    "topEmpty": "The most-watched lives will show here once stores go live and get viewers."
+    "topEmpty": "The most-watched lives will show here once stores go live and get viewers.",
+    "gifts": {
+      "title": "Send a gift",
+      "button": "Gift",
+      "hint": "Cheer {store} on — your gift pops up on screen for everyone.",
+      "sent": "sent {gift}",
+      "free": "Free",
+      "freeNote": "Gifts are free for now. Up to 30 a minute; bigger gifts need a short wait between sends.",
+      "signIn": "Sign in to send gifts",
+      "notLive": "Gifts open while the store is live.",
+      "ownLive": "A store can't send gifts to its own live.",
+      "cooldown": "You can send this gift again in {seconds}s",
+      "limitMinute": "That's a lot of gifts! Try again in {seconds}s",
+      "failed": "Couldn't send the gift",
+      "supporters": "Top supporters",
+      "received": "Gifts received",
+      "items": {
+        "rose": "Rose",
+        "heart": "Heart",
+        "lotus": "Lotus",
+        "silk": "Phrae Wa silk",
+        "dino": "Kalasin dino",
+        "elephant": "Elephant",
+        "crown": "Crown",
+        "bangfai": "Bang Fai rocket"
+      }
+    },
+    "effects": {
+      "title": "Beauty & effects",
+      "hint": "Viewers see these too — change them any time, even on air.",
+      "reset": "Reset",
+      "unsupported": "This browser can't add effects, so the camera goes out as it is. Try Chrome, Edge or Safari.",
+      "tabs": {
+        "beauty": "Beauty",
+        "filter": "Filters",
+        "effect": "Effects",
+        "frame": "Frames"
+      },
+      "smooth": "Smooth skin",
+      "brighten": "Brighten",
+      "mirror": "Mirror the picture",
+      "mirrorHint": "Viewers see it flipped too — text on your products would read backwards.",
+      "filters": {
+        "natural": "Natural",
+        "bright": "Bright",
+        "warm": "Warm",
+        "cool": "Cool",
+        "vivid": "Vivid",
+        "pink": "Sweet pink",
+        "silk": "Phrae Wa",
+        "vintage": "Film",
+        "mono": "B&W"
+      },
+      "effects": {
+        "none": "None",
+        "hearts": "Hearts",
+        "sparkle": "Sparkle",
+        "petals": "Petals",
+        "confetti": "Confetti",
+        "snow": "Snow",
+        "coins": "Lucky coins"
+      },
+      "frames": {
+        "none": "None",
+        "silk": "Silk",
+        "sale": "Sale",
+        "neon": "Neon"
+      },
+      "banner": "Banner text",
+      "bannerPlaceholder": "e.g. 20% off — today only!",
+      "bannerHint": "Shows near the top of the picture"
+    }
   },
   "blog": {
     "readMore": "Read More",

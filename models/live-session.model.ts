@@ -1,5 +1,6 @@
 import { mongoose } from "@/lib/db";
 import { LIVE_LIMITS, LIVE_STATUSES } from "@/lib/live/live-types";
+import { LIVE_GIFT_IDS, LIVE_GIFT_LIMITS } from "@/lib/live/live-gifts";
 
 const { Schema, models, model } = mongoose;
 
@@ -68,6 +69,8 @@ const LiveSessionSchema = new Schema(
     productsVersion: { type: Number, default: 1 },
     priceSnapshot: { type: [PriceSnapshotSchema], default: [] },
     likeCount: { type: Number, default: 0 },
+    /** Gifts viewers sent, all kinds together. */
+    giftCount: { type: Number, default: 0 },
     peakViewers: { type: Number, default: 0 },
     /** Everyone who watched (one per player that joined), for the "most watched" ranking. */
     totalViews: { type: Number, default: 0 },
@@ -94,8 +97,11 @@ const LiveChatMessageSchema = new Schema(
     userId: { type: String, default: null },
     name: { type: String, maxlength: 80, default: "" },
     text: { type: String, maxlength: LIVE_LIMITS.chatText, required: true },
-    kind: { type: String, enum: ["chat", "system"], default: "chat" },
+    kind: { type: String, enum: ["chat", "system", "gift"], default: "chat" },
     host: { type: Boolean, default: false },
+    /** A gift line: the gift and how many (the text is left empty). */
+    giftId: { type: String, default: null },
+    giftCount: { type: Number, default: null },
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 );
@@ -105,6 +111,30 @@ LiveChatMessageSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24
 
 if (models.LiveChatMessage) delete models.LiveChatMessage;
 export const LiveChatMessage = model("LiveChatMessage", LiveChatMessageSchema);
+
+/**
+ * One gift a viewer sent (a batch of the same gift). Kept after the chat
+ * expires: it is the record paid gifts will be settled from, so it carries
+ * the coins it cost (0 while gifts are free) and the store it went to.
+ */
+const LiveGiftSchema = new Schema(
+  {
+    sessionId: { type: Schema.Types.ObjectId, ref: "LiveSession", required: true },
+    vendorId: { type: Schema.Types.ObjectId, ref: "Vendor", required: true },
+    userId: { type: String, required: true },
+    name: { type: String, maxlength: 80, default: "" },
+    giftId: { type: String, enum: LIVE_GIFT_IDS, required: true },
+    count: { type: Number, min: 1, max: LIVE_GIFT_LIMITS.batch, required: true },
+    coins: { type: Number, min: 0, default: 0 },
+  },
+  { timestamps: { createdAt: true, updatedAt: false } },
+);
+// Limits (a viewer's gifts in this live lately) and the supporters ranking.
+LiveGiftSchema.index({ sessionId: 1, userId: 1, createdAt: -1 });
+LiveGiftSchema.index({ vendorId: 1, createdAt: -1 });
+
+if (models.LiveGift) delete models.LiveGift;
+export const LiveGift = model("LiveGift", LiveGiftSchema);
 
 /** Who is watching: one row per open player, refreshed by its polls. */
 const LivePresenceSchema = new Schema({

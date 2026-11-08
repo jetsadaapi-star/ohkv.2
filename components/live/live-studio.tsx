@@ -9,6 +9,7 @@ import {
   Copy,
   ExternalLink,
   Eye,
+  Gift,
   Heart,
   Loader2,
   Mic,
@@ -36,6 +37,9 @@ import {
 import { useLiveRoom } from "./use-live-room";
 import { LiveChatList, LiveProductRow, useFloatingHearts } from "./live-ui";
 import { LiveEditorDialog } from "./live-editor-dialog";
+import { LiveEffectsPanel } from "./live-effects-panel";
+import { LiveSupporters, useGiftShow } from "./live-gifts-ui";
+import { useLiveEffects } from "./use-live-effects";
 import { cn } from "@/lib/utils";
 
 type Detail = LiveDashboardItem & { credentials: LiveStudioCredentials };
@@ -75,6 +79,9 @@ export function LiveStudio({ liveId }: { liveId: string }) {
   const previewRef = useRef<HTMLVideoElement>(null);
   const sessionRef = useRef<WebRtcSession | null>(null);
   const hearts = useFloatingHearts();
+  // The picture viewers get: the camera with beauty, filter and effects.
+  const effects = useLiveEffects(stream);
+  const media = effects.media;
 
   const load = useCallback(async () => {
     try {
@@ -96,6 +103,7 @@ export function LiveStudio({ liveId }: { liveId: string }) {
     countViewer: false,
   });
 
+  const gifts = useGiftShow(room.messages);
   const { remoteHearts, consumeRemoteHearts } = room;
   useEffect(() => {
     if (remoteHearts > 0) {
@@ -139,15 +147,6 @@ export function LiveStudio({ liveId }: { liveId: string }) {
 
   const replaceStream = useCallback(
     async (next: MediaStream) => {
-      // Live: swap the tracks the server is receiving without renegotiating.
-      const pc = sessionRef.current?.pc;
-      if (pc) {
-        for (const sender of pc.getSenders()) {
-          const kind = sender.track?.kind;
-          const track = kind ? next.getTracks().find((tr) => tr.kind === kind) : undefined;
-          if (track) await sender.replaceTrack(track);
-        }
-      }
       setStream((old) => {
         old?.getTracks().forEach((tr) => {
           if (!next.getTracks().includes(tr)) tr.stop();
@@ -166,8 +165,23 @@ export function LiveStudio({ liveId }: { liveId: string }) {
   };
 
   useEffect(() => {
-    if (previewRef.current && stream) previewRef.current.srcObject = stream;
-  }, [stream]);
+    if (previewRef.current && media) previewRef.current.srcObject = media;
+  }, [media]);
+
+  // Live: send the current picture and sound without renegotiating (a new
+  // camera, or the effects starting up).
+  useEffect(() => {
+    if (!media) return;
+    media.getVideoTracks().forEach((tr) => (tr.enabled = camOn));
+    const pc = sessionRef.current?.pc;
+    if (!pc) return;
+    for (const sender of pc.getSenders()) {
+      const kind = sender.track?.kind;
+      const track = kind ? media.getTracks().find((tr) => tr.kind === kind) : undefined;
+      if (track && sender.track !== track) void sender.replaceTrack(track).catch(() => {});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [media]);
 
   // Stop the camera when leaving the page.
   useEffect(
@@ -200,6 +214,7 @@ export function LiveStudio({ liveId }: { liveId: string }) {
     const on = !camOn;
     setCamOn(on);
     stream?.getVideoTracks().forEach((tr) => (tr.enabled = on));
+    media?.getVideoTracks().forEach((tr) => (tr.enabled = on));
   };
 
   /* Publishing --------------------------------------------------------- */
@@ -234,7 +249,7 @@ export function LiveStudio({ liveId }: { liveId: string }) {
       const json = await res.json();
       if (!res.ok || !json?.success) throw new Error(json?.message || t("actionFailed"));
       setDetail((d) => (d ? { ...d, ...(json.data as LiveDashboardItem) } : d));
-      if (stream) await startPublishing(stream, detail.credentials);
+      if (media) await startPublishing(media, detail.credentials);
       void room.refresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("actionFailed"));
@@ -245,10 +260,10 @@ export function LiveStudio({ liveId }: { liveId: string }) {
 
   // Back on the page of a live that is already on air: resume sending.
   useEffect(() => {
-    if (detail?.status === "live" && stream && publish === "idle") {
-      void startPublishing(stream, detail.credentials);
+    if (detail?.status === "live" && media && publish === "idle") {
+      void startPublishing(media, detail.credentials);
     }
-  }, [detail?.status, detail?.credentials, stream, publish, startPublishing]);
+  }, [detail?.status, detail?.credentials, media, publish, startPublishing]);
 
   const endLive = async () => {
     const ok = await confirm({
@@ -390,7 +405,12 @@ export function LiveStudio({ liveId }: { liveId: string }) {
                 autoPlay
                 playsInline
                 muted
-                className={cn("size-full object-cover", facing === "user" && "-scale-x-100", !camOn && "opacity-0")}
+                className={cn(
+                  "size-full object-cover",
+                  // With effects the preview is exactly what viewers get; plain, it mirrors like a selfie.
+                  !effects.active && facing === "user" && "-scale-x-100",
+                  !camOn && "opacity-0",
+                )}
               />
             ) : (
               <div className="flex size-full flex-col items-center justify-center gap-3 p-6 text-center text-white">
@@ -414,6 +434,12 @@ export function LiveStudio({ liveId }: { liveId: string }) {
               ) : null}
             </div>
             {hearts.layer}
+            {gifts.layer}
+            {stream && !media ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader2 className="size-6 animate-spin text-white/70" />
+              </div>
+            ) : null}
             {stream ? (
               <div className="absolute inset-x-0 bottom-3 flex justify-center gap-2">
                 <CircleButton label={micOn ? t("micOn") : t("micOff")} onClick={toggleMic} off={!micOn}>
@@ -469,8 +495,17 @@ export function LiveStudio({ liveId }: { liveId: string }) {
             <p className="rounded-2xl bg-muted p-3 text-center text-sm font-medium">{t("endedTitle")}</p>
           )}
 
-          {publish === "failed" && stream && status === "live" ? (
-            <Button variant="outline" className="w-full" onClick={() => void startPublishing(stream, detail.credentials)}>
+          {stream && status !== "ended" ? (
+            <LiveEffectsPanel
+              settings={effects.settings}
+              onChange={effects.update}
+              onReset={effects.reset}
+              supported={effects.supported}
+            />
+          ) : null}
+
+          {publish === "failed" && media && status === "live" ? (
+            <Button variant="outline" className="w-full" onClick={() => void startPublishing(media, detail.credentials)}>
               {t("publishFailed")} — {t("connecting")}
             </Button>
           ) : null}
@@ -511,6 +546,10 @@ export function LiveStudio({ liveId }: { liveId: string }) {
                 <Heart className="size-4 fill-rose-500 text-rose-500" />
                 {room.likeCount.toLocaleString(locale)}
               </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1" title={t("gifts.received")}>
+                <Gift className="size-4 text-amber-500" />
+                {room.giftCount.toLocaleString(locale)}
+              </span>
             </div>
           </div>
           {room.products.length === 0 ? (
@@ -550,6 +589,7 @@ export function LiveStudio({ liveId }: { liveId: string }) {
         {/* Chat */}
         <section className="flex h-[60vh] flex-col rounded-3xl border bg-card p-4 shadow-sm lg:col-start-2 lg:h-[420px] 2xl:col-start-auto 2xl:row-start-1 2xl:col-start-3 2xl:h-auto 2xl:max-h-[80vh]">
           <h2 className="mb-2 font-semibold">{t("chatTitle")}</h2>
+          <LiveSupporters supporters={room.supporters} variant="panel" className="mb-3" />
           <LiveChatList messages={room.messages} variant="panel" className="min-h-0 flex-1" />
           <form
             onSubmit={(e) => {

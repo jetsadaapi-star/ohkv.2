@@ -2167,6 +2167,57 @@ body[data-store-theme]
 }
 .live-heart { opacity: 0; animation: live-heart-rise 2.4s ease-out forwards; }
 
+/* Live gifts (components/live/live-gifts-ui.tsx). */
+@keyframes live-gift-banner {
+  0% { opacity: 0; transform: translateX(-110%); }
+  10% { opacity: 1; transform: translateX(0); }
+  85% { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateY(-14px); }
+}
+.live-gift-banner { animation: live-gift-banner 4.2s cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards; }
+@keyframes live-gift-combo {
+  0% { transform: scale(2.2); opacity: 0; }
+  40% { transform: scale(0.9); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.live-gift-combo { display: inline-block; animation: live-gift-combo 0.45s ease-out; }
+@keyframes live-gift-pop {
+  0% { opacity: 0; transform: translate(-50%, 30px) scale(0.2) rotate(-20deg); }
+  25% { opacity: 1; transform: translate(-50%, 0) scale(1.25) rotate(8deg); }
+  45% { transform: translate(-50%, 0) scale(1) rotate(0); }
+  80% { opacity: 1; transform: translate(-50%, -20px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -70px) scale(0.8); }
+}
+.live-gift-pop { opacity: 0; animation: live-gift-pop 1.8s ease-out forwards; }
+@keyframes live-gift-glow {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.live-gift-glow { animation: live-gift-glow 3.2s ease-out forwards; }
+@keyframes live-gift-mega {
+  0% { opacity: 0; transform: scale(0.1) rotate(-30deg); }
+  22% { opacity: 1; transform: scale(1.3) rotate(10deg); }
+  34% { transform: scale(0.95) rotate(-4deg); }
+  44% { transform: scale(1.05) rotate(0); }
+  80% { opacity: 1; transform: scale(1) translateY(-6px); }
+  100% { opacity: 0; transform: scale(1.6) translateY(-40px); }
+}
+.live-gift-mega { animation: live-gift-mega 3.2s ease-out forwards; }
+.live-gift-mega-label { opacity: 0; animation: live-gift-glow 3s 0.3s ease-out forwards; }
+@keyframes live-gift-ray {
+  0% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--ray)) translateY(0) scale(0.4); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--ray)) translateY(-150px) scale(1.1); }
+}
+.live-gift-ray { opacity: 0; animation: live-gift-ray 1.6s 0.4s ease-out forwards; }
+@media (prefers-reduced-motion: reduce) {
+  /* Fade only: no sliding, spinning or bursting. */
+  .live-gift-banner, .live-gift-mega { animation-name: live-gift-glow; }
+  .live-gift-pop, .live-gift-ray { display: none; }
+}
+
 /* Review clips: the double-tap heart (components/clips/clip-feed.tsx). */
 @keyframes clip-heart-burst {
   0% { opacity: 0; transform: scale(0.3) rotate(-12deg); }

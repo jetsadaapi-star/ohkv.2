@@ -6,6 +6,7 @@ import {
   BadgeCheck,
   CalendarClock,
   Eye,
+  Gift,
   Heart,
   Loader2,
   MapPin,
@@ -34,6 +35,7 @@ import { LIVE_LIMITS, type LiveChatItem, type LiveRoom } from "@/lib/live/live-t
 import { useLiveRoom } from "./use-live-room";
 import { EMBEDDED_CHECKOUT_OPEN, EmbeddedCheckoutProvider } from "@/components/checkout/embedded-checkout";
 import { LiveChatList, LiveProductRow, useFloatingHearts } from "./live-ui";
+import { LiveGiftSheet, LiveSupporters, useGiftShow } from "./live-gifts-ui";
 import { cn } from "@/lib/utils";
 
 /** The shopper's live room: the stream, chat, hearts, the pinned product and the bag. */
@@ -62,14 +64,19 @@ function LiveRoom({ room }: { room: LiveRoom }) {
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(true);
   const [bagOpen, setBagOpen] = useState(false);
+  const [giftOpen, setGiftOpen] = useState(false);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const hearts = useFloatingHearts();
+  const gifts = useGiftShow(live.messages);
   const pendingLikes = useRef(0);
 
   // Checkout opening over the room closes the product bag.
   useEffect(() => {
-    const closeBag = () => setBagOpen(false);
+    const closeBag = () => {
+      setBagOpen(false);
+      setGiftOpen(false);
+    };
     window.addEventListener(EMBEDDED_CHECKOUT_OPEN, closeBag);
     return () => window.removeEventListener(EMBEDDED_CHECKOUT_OPEN, closeBag);
   }, []);
@@ -307,9 +314,10 @@ function LiveRoom({ room }: { room: LiveRoom }) {
           </div>
         </div>
 
-        <p className="absolute inset-x-4 top-[4.25rem] line-clamp-1 text-sm font-semibold text-white drop-shadow">
-          {room.title}
-        </p>
+        <div className="absolute inset-x-4 top-[4.25rem] flex items-center gap-2">
+          <p className="line-clamp-1 min-w-0 flex-1 text-sm font-semibold text-white drop-shadow">{room.title}</p>
+          <LiveSupporters supporters={live.supporters} variant="overlay" className="shrink-0" />
+        </div>
 
         {playing && muted ? (
           <button
@@ -323,6 +331,7 @@ function LiveRoom({ room }: { room: LiveRoom }) {
         ) : null}
 
         {hearts.layer}
+        {gifts.layer}
 
         {/* Right rail */}
         <div className="absolute bottom-24 end-3 flex flex-col items-center gap-3 text-white">
@@ -332,6 +341,16 @@ function LiveRoom({ room }: { room: LiveRoom }) {
           <RailButton label={t("share")} onClick={() => void share()}>
             <Share2 className="size-5" />
           </RailButton>
+          {live.status === "live" ? (
+            <div className="flex flex-col items-center">
+              <RailButton label={t("gifts.title")} onClick={() => setGiftOpen(true)} tone="gift">
+                <Gift className="size-6" />
+              </RailButton>
+              <span className="mt-0.5 text-[11px] font-semibold drop-shadow">
+                {live.giftCount > 0 ? live.giftCount.toLocaleString(locale) : t("gifts.button")}
+              </span>
+            </div>
+          ) : null}
           <div className="flex flex-col items-center">
             <RailButton label={t("like")} onClick={like} tone="heart">
               <Heart className="size-6 fill-current" />
@@ -437,6 +456,16 @@ function LiveRoom({ room }: { room: LiveRoom }) {
         </div>
       </aside>
 
+      <LiveGiftSheet
+        open={giftOpen}
+        onOpenChange={setGiftOpen}
+        liveId={room.id}
+        signedIn={Boolean(session?.user)}
+        canSend={live.status === "live"}
+        storeName={room.store.name}
+        onSent={live.addMessage}
+      />
+
       <Sheet open={bagOpen} onOpenChange={setBagOpen}>
         <SheetContent side="bottom" className="max-h-[75vh] overflow-y-auto rounded-t-3xl">
           <SheetHeader>
@@ -466,7 +495,7 @@ function RailButton({
   children: React.ReactNode;
   label: string;
   onClick: () => void;
-  tone?: "heart";
+  tone?: "heart" | "gift";
 }) {
   return (
     <button
@@ -476,7 +505,11 @@ function RailButton({
       title={label}
       className={cn(
         "flex size-11 items-center justify-center rounded-full backdrop-blur transition-transform active:scale-90",
-        tone === "heart" ? "bg-rose-500/90 text-white shadow-lg shadow-rose-500/40" : "bg-black/35 hover:bg-black/50",
+        tone === "heart"
+          ? "bg-rose-500/90 text-white shadow-lg shadow-rose-500/40"
+          : tone === "gift"
+            ? "bg-linear-to-br from-amber-400 to-rose-500 text-white shadow-lg shadow-amber-500/40"
+            : "bg-black/35 hover:bg-black/50",
       )}
     >
       {children}

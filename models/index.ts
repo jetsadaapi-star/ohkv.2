@@ -101,4 +101,4 @@ export { PreorderWaitlist } from "./preorder-waitlist.model";
 export { PosRegisterSession } from "./pos-register-session.model";
 export { PosQuickKeys } from "./pos-quick-keys.model";
 export { ShortClip, ClipReaction, ClipComment } from "./short-clip.model";
-export { LiveSession, LiveChatMessage, LivePresence } from "./live-session.model";
+export { LiveSession, LiveChatMessage, LivePresence, LiveGift } from "./live-session.model";

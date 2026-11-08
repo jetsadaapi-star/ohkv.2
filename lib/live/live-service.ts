@@ -20,7 +20,8 @@ import { PRODUCT_CARD_SELECT } from "@/lib/products/storefront-product-cards";
 import type { ModernProduct } from "@/lib/products/modern-product";
 import { Product, Vendor } from "@/models";
 import { syncProductAggregates } from "@/models/product.model";
-import { LiveChatMessage, LivePresence, LiveSession } from "@/models/live-session.model";
+import { LiveChatMessage, LiveGift, LivePresence, LiveSession } from "@/models/live-session.model";
+import { LIVE_GIFT_LIMITS, liveGift } from "@/lib/live/live-gifts";
 import {
   LIVE_LIMITS,
   type LiveCard,
@@ -32,6 +33,7 @@ import {
   type LiveShopProduct,
   type LiveStatus,
   type LiveStoreInfo,
+  type LiveSupporter,
   type LiveStudioCredentials,
 } from "@/lib/live/live-types";
 
@@ -114,6 +116,7 @@ type LiveLean = {
   productsVersion?: number;
   priceSnapshot?: PriceSnapshot[];
   likeCount?: number;
+  giftCount?: number;
   peakViewers?: number;
   totalViews?: number;
   lastHeartbeatAt?: Date | null;
@@ -229,6 +232,7 @@ async function toDashboardItems(lives: LiveLean[]): Promise<LiveDashboardItem[]>
         .filter((p): p is LiveProductSummary => Boolean(p)),
       pinnedProductId: live.pinnedProductId ? String(live.pinnedProductId) : null,
       likeCount: live.likeCount ?? 0,
+      giftCount: live.giftCount ?? 0,
       peakViewers: live.peakViewers ?? 0,
       totalViews: live.totalViews ?? 0,
       endedReason: live.endedReason ?? "",
@@ -376,6 +380,8 @@ export async function deleteLive(id: string, scope: { vendorId?: string }) {
     LiveSession.deleteOne({ _id: live._id }),
     LiveChatMessage.deleteMany({ sessionId: live._id }),
     LivePresence.deleteMany({ sessionId: live._id }),
+    // Free gifts go with it; any that cost coins stay on the store's record.
+    LiveGift.deleteMany({ sessionId: live._id, coins: 0 }),
   ]);
 }
 
@@ -898,16 +904,132 @@ function chatItem(message: {
   name?: string;
   text: string;
   host?: boolean;
+  giftId?: string | null;
+  giftCount?: number | null;
   createdAt?: Date;
 }): LiveChatItem {
+  const gift = message.kind === "gift" && message.giftId ? { id: message.giftId, count: message.giftCount ?? 1 } : null;
   return {
     id: String(message._id),
-    kind: message.kind === "system" ? "system" : "chat",
+    kind: message.kind === "system" ? "system" : gift ? "gift" : "chat",
     name: message.name ?? "",
     text: message.text,
     host: message.host === true,
     at: message.createdAt ? new Date(message.createdAt).toISOString() : "",
+    ...(gift ? { gift } : {}),
   };
+}
+
+/* ------------------------------------------------------------------ */
+/* Gifts                                                               */
+/* ------------------------------------------------------------------ */
+
+// The supporters ranking is read by every viewer's poll; it is worked out at
+// most once per room every few seconds.
+const SUPPORTERS_TTL_MS = 5000;
+const supportersCache = new Map<string, { at: number; rows: LiveSupporter[] }>();
+
+async function liveSupporters(sessionId: Types.ObjectId): Promise<LiveSupporter[]> {
+  const key = String(sessionId);
+  const cached = supportersCache.get(key);
+  if (cached && Date.now() - cached.at < SUPPORTERS_TTL_MS) return cached.rows;
+  const rows = await LiveGift.aggregate<{ _id: string; name: string; count: number }>([
+    { $match: { sessionId } },
+    { $sort: { createdAt: -1 } },
+    { $group: { _id: "$userId", name: { $first: "$name" }, count: { $sum: "$count" } } },
+    { $sort: { count: -1, _id: 1 } },
+    { $limit: LIVE_GIFT_LIMITS.topSupporters },
+  ]);
+  const supporters = rows.map((row) => ({ name: row.name || "—", count: row.count }));
+  supportersCache.set(key, { at: Date.now(), rows: supporters });
+  if (supportersCache.size > 500) {
+    for (const [k, v] of supportersCache) if (Date.now() - v.at > SUPPORTERS_TTL_MS) supportersCache.delete(k);
+  }
+  return supporters;
+}
+
+/** A refusal the player words itself: which limit, and how long to wait. */
+function giftLimit(reason: "minute" | "cooldown", retryAfter: number) {
+  const error = new ValidationError(
+    reason === "minute" ? "Too many gifts this minute" : "Wait a moment before sending this gift again",
+  );
+  error.details = { reason: `gift_${reason}`, retryAfter };
+  return error;
+}
+
+/**
+ * A signed-in viewer sends a gift (a batch of taps on the same one). Free for
+ * now, so the limits are what keep it meaningful: so many a minute, and a
+ * cool-down on the bigger ones. Shows in the chat as a gift line, which every
+ * player and the studio pick up with their usual poll.
+ */
+export async function sendLiveGift(
+  id: string,
+  user: { id: string; name?: string | null },
+  giftId: string,
+  count: number,
+) {
+  if (!Types.ObjectId.isValid(id)) throw new NotFoundError("Live");
+  const gift = liveGift(giftId);
+  if (!gift) throw new ValidationError("Unknown gift");
+  const n = Math.max(1, Math.min(LIVE_GIFT_LIMITS.batch, Math.floor(count)));
+  await connectDB();
+  const live = await LiveSession.findById(id).select("status vendorId").lean<LiveLean | null>();
+  if (!live) throw new NotFoundError("Live");
+  if (live.status !== "live") throw new ValidationError("Gifts open when the live starts");
+  if (await Vendor.exists({ _id: live.vendorId, userId: user.id })) {
+    const error = new ValidationError("A store can't send gifts to its own live");
+    error.details = { reason: "gift_own" };
+    throw error;
+  }
+
+  const now = Date.now();
+  const recent = await LiveGift.find({
+    sessionId: live._id,
+    userId: user.id,
+    createdAt: { $gte: new Date(now - 60_000) },
+  })
+    .select("giftId count createdAt")
+    .lean<Array<{ giftId: string; count: number; createdAt: Date }>>();
+  const sentThisMinute = recent.reduce((sum, row) => sum + row.count, 0);
+  if (sentThisMinute + n > LIVE_GIFT_LIMITS.perMinute) {
+    const oldest = Math.min(...recent.map((row) => new Date(row.createdAt).getTime()));
+    throw giftLimit("minute", Math.max(1, Math.ceil((oldest + 60_000 - now) / 1000)));
+  }
+  const cooldown = LIVE_GIFT_LIMITS.cooldownSeconds[gift.tier] * 1000;
+  if (cooldown > 0) {
+    const last = recent
+      .filter((row) => liveGift(row.giftId)?.tier === gift.tier)
+      .reduce((latest, row) => Math.max(latest, new Date(row.createdAt).getTime()), 0);
+    if (last && now - last < cooldown) {
+      throw giftLimit("cooldown", Math.ceil((last + cooldown - now) / 1000));
+    }
+  }
+
+  const name = (user.name || "").trim().slice(0, 40);
+  await LiveGift.create({
+    sessionId: live._id,
+    vendorId: live.vendorId,
+    userId: user.id,
+    name,
+    giftId: gift.id,
+    count: n,
+    coins: gift.coins * n,
+  });
+  const [message] = await Promise.all([
+    LiveChatMessage.create({
+      sessionId: live._id,
+      userId: user.id,
+      name,
+      kind: "gift",
+      text: gift.emoji,
+      giftId: gift.id,
+      giftCount: n,
+    }),
+    LiveSession.updateOne({ _id: live._id }, { $inc: { giftCount: n } }),
+  ]);
+  supportersCache.delete(String(live._id));
+  return chatItem(message.toObject() as never);
 }
 
 /** A viewer's poll: status, counts, the pin, new chat, and products when they changed. */
@@ -937,12 +1059,13 @@ export async function getRoomState(
   const messageQuery: Record<string, unknown> = { sessionId };
   const after = options.after && Types.ObjectId.isValid(options.after) ? options.after : null;
   if (after) messageQuery._id = { $gt: new Types.ObjectId(after) };
-  const [rawMessages, viewers, onAir] = await Promise.all([
+  const [rawMessages, viewers, onAir, supporters] = await Promise.all([
     after
       ? LiveChatMessage.find(messageQuery).sort({ _id: 1 }).limit(LIVE_LIMITS.chatPage).lean()
       : LiveChatMessage.find(messageQuery).sort({ _id: -1 }).limit(30).lean().then((rows) => rows.reverse()),
     viewerCounts([sessionId]),
     live.status === "live" ? isOnAir(id) : Promise.resolve(false),
+    (live.giftCount ?? 0) > 0 ? liveSupporters(sessionId) : Promise.resolve([] as LiveSupporter[]),
   ]);
   const viewerCount = viewers.get(id) ?? 0;
   if (viewerCount > (live.peakViewers ?? 0)) {
@@ -956,6 +1079,8 @@ export async function getRoomState(
     onAir,
     viewers: viewerCount,
     likeCount: live.likeCount ?? 0,
+    giftCount: live.giftCount ?? 0,
+    supporters,
     pinnedProductId: live.pinnedProductId ? String(live.pinnedProductId) : null,
     messages: (rawMessages as unknown as Parameters<typeof chatItem>[0][]).map(chatItem),
     productsVersion: version,

@@ -11,6 +11,7 @@ import { refusalMessage } from "@/lib/api/client";
 import { useCurrency } from "@/providers/currency-provider";
 import type { LiveChatItem, LiveShopProduct, LiveStatus } from "@/lib/live/live-types";
 import { cn } from "@/lib/utils";
+import { GiftChatLine } from "./live-gifts-ui";
 
 /** System lines are stored as codes so each viewer reads them in their language. */
 export function useChatText() {
@@ -57,7 +58,9 @@ export function LiveChatList({
         <p className="py-6 text-center text-sm text-muted-foreground">{t("chatEmpty")}</p>
       ) : null}
       {messages.map((m) =>
-        m.kind === "system" ? (
+        m.kind === "gift" ? (
+          <GiftChatLine key={m.id} message={m} variant={variant} />
+        ) : m.kind === "system" ? (
           <p
             key={m.id}
             className={cn(

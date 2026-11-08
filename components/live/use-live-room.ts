@@ -7,6 +7,7 @@ import {
   type LiveRoomState,
   type LiveShopProduct,
   type LiveStatus,
+  type LiveSupporter,
 } from "@/lib/live/live-types";
 
 const MAX_MESSAGES = 120;
@@ -45,6 +46,8 @@ export function useLiveRoom(options: {
   const [pinnedProductId, setPinned] = useState<string | null>(options.initialPinned ?? null);
   const [products, setProducts] = useState<LiveShopProduct[]>(options.initialProducts ?? []);
   const [messages, setMessages] = useState<LiveChatItem[]>([]);
+  const [giftCount, setGiftCount] = useState(0);
+  const [supporters, setSupporters] = useState<LiveSupporter[]>([]);
   /** Hearts other people sent since the last poll, for the floating animation. */
   const [remoteHearts, setRemoteHearts] = useState(0);
   const lastId = useRef<string | null>(null);
@@ -73,6 +76,8 @@ export function useLiveRoom(options: {
       ownLikes.current = 0;
       lastLikes.current = state.likeCount;
       setLikeCount(state.likeCount);
+      setGiftCount(state.giftCount ?? 0);
+      setSupporters(state.supporters ?? []);
       if (state.products) setProducts(state.products);
       version.current = state.productsVersion;
       if (state.messages.length) {
@@ -115,6 +120,8 @@ export function useLiveRoom(options: {
     onAir,
     viewers,
     likeCount,
+    giftCount,
+    supporters,
     pinnedProductId,
     products,
     messages,

@@ -1,5 +1,6 @@
 "use client";
 
+import { CarrierQuickPick } from "@/components/shipping/carrier-quick-pick";
 import Link from "@/components/language/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -160,6 +161,7 @@ interface VendorOrder {
   addressHold?: AddressHold;
   /** The shopper's note and checkout-field answers — they may be instructions for this shipment. */
   customerNote?: string;
+  giftWrap?: { enabled?: boolean; message?: string };
   checkoutFields?: OrderCheckoutField[];
   subOrders: VendorSubOrder[];
   finance: VendorOrderFinance;
@@ -1113,6 +1115,7 @@ export function VendorOrderDetails({
             className=""
             customerNote={order.customerNote}
             checkoutFields={order.checkoutFields}
+            giftWrap={order.giftWrap}
           />
 
           <Card>
@@ -1235,6 +1238,7 @@ export function VendorOrderDetails({
                 value={carrier}
                 onChange={(event) => setCarrier(event.target.value)}
               />
+              <CarrierQuickPick value={carrier} onChange={setCarrier} trackingNumber={trackingNumber} />
             </div>
             <div className="space-y-2">
             <Label htmlFor="vendor-details-tracking">{tv("trackingNumber")}</Label>

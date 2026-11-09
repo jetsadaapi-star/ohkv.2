@@ -1048,6 +1048,7 @@ async function createStripeOrderFromCart(
       // online-checkout routes); already validated against the checkout
       // settings there.
       customerNote: cart.checkoutDetails?.customerNote || undefined,
+      ...(cart.checkoutDetails?.giftWrap?.enabled ? { giftWrap: cart.checkoutDetails.giftWrap } : {}),
       contactPhone: cart.checkoutDetails?.contactPhone || undefined,
       checkoutFields: cart.checkoutDetails?.checkoutFields?.length
         ? cart.checkoutDetails.checkoutFields

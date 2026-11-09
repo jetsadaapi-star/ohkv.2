@@ -41,6 +41,8 @@ export const CHANNEL_AUDIT_FIELDS = [
   "publicPageUsername",
   "publicInstagramUsername",
   "publicTelegramUsername",
+  "publicLineId",
+  "lineNotifyCustomers",
   "messengerHumanAgentEnabled",
 ] as const;
 
@@ -102,7 +104,11 @@ function snapshot(channel: ChannelAuditSource): Record<string, unknown> {
       publicPageUsername: channel.publicPageUsername,
       publicInstagramUsername: channel.publicInstagramUsername,
       publicTelegramUsername: channel.publicTelegramUsername,
+      publicLineId: channel.publicLineId,
     }),
+    ...(channel.provider === "line"
+      ? { lineNotifyCustomers: channel.lineNotifyCustomers !== false }
+      : {}),
     ...(supportsHumanAgentWindow(channel.provider)
       ? {
           messengerHumanAgentEnabled: Boolean(
@@ -125,6 +131,7 @@ function changedFields(
 /** What a person would call the channel: the number or @handle customers use. */
 function publicHandle(channel: ChannelAuditSource) {
   if (channel.publicPhoneNumberE164) return channel.publicPhoneNumberE164;
+  if (channel.publicLineId) return channel.publicLineId;
   const username =
     channel.publicPageUsername ||
     channel.publicInstagramUsername ||

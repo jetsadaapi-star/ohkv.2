@@ -1,5 +1,6 @@
 "use client";
 
+import { GiftWrapCard } from "@/components/checkout/gift-wrap-card";
 import * as z from "zod";
 import Link from "@/components/language/link";
 import { useForm, useWatch, type FieldErrors } from "react-hook-form";
@@ -4363,6 +4364,15 @@ function CheckoutForm({
                       )}
                     </div>
                     </section>
+                  ) : null}
+
+                  {/* Wrapped as a gift: the fee is part of each parcel's
+                      delivery charge, so the quote is asked again. */}
+                  {fulfillmentMethod !== "pickup" && !isDigitalOnly ? (
+                    <GiftWrapCard
+                      onChange={() => setShippingRateRetry((value) => value + 1)}
+                      parcels={Math.max(1, vendorRateGroups.length)}
+                    />
                   ) : null}
 
                   {/* Additional information — the order note and the store's

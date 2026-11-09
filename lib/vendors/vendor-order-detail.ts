@@ -153,6 +153,7 @@ export async function vendorOrderDetail(
     // What the shopper wrote at checkout is often for whoever packs the
     // parcel ("leave with the guard", a gift message).
     customerNote: order.customerNote,
+    giftWrap: (order as { giftWrap?: { enabled?: boolean; message?: string } }).giftWrap,
     checkoutFields: order.checkoutFields,
     subOrders: [subOrder],
     finance: {

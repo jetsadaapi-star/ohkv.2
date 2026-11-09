@@ -487,6 +487,13 @@
           "phone": "Phone sign-in linked"
         }
       }
+    },
+    "lineUpdates": {
+      "title": "Order updates on LINE",
+      "description": "Order and return status sent to your LINE by the store's Official Account.",
+      "addFriend": "Add the store on LINE",
+      "addFriendHint": "Add it as a friend so updates can reach you.",
+      "signInHint": "Add it as a friend, and sign in with LINE once, to get order updates there."
     }
   },
   "customerProfile": {
@@ -1552,7 +1559,16 @@
     "additionalInformation": "Additional information",
     "orderNote": "Order note",
     "orderNotePlaceholder": "Special instructions for your order",
-    "dutiesCollectedNow": "Collected now — nothing to pay on delivery"
+    "dutiesCollectedNow": "Collected now — nothing to pay on delivery",
+    "giftWrap": {
+      "title": "Wrap it as a gift",
+      "fee": "+{fee} (included in delivery)",
+      "feeParcels": "+{fee} per parcel ({parcels} parcels, included in delivery)",
+      "free": "Free",
+      "message": "Message for the recipient",
+      "messagePlaceholder": "Write a few words for the recipient (optional)",
+      "orderTitle": "Wrap as a gift"
+    }
   },
   "orders": {
     "title": "My Orders",
@@ -4278,7 +4294,8 @@
       "mobileTitle": "Menu",
       "mobileDescription": "Links to every part of the dashboard.",
       "activityLog": "Activity log",
-      "staffMembers": "Members"
+      "staffMembers": "Members",
+      "flashSales": "Flash Sale"
     },
     "pos": "Point of Sale",
     "posLocations": "POS Locations",
@@ -5435,7 +5452,18 @@
         "refundAdminFeeUpTo": "% up to",
         "tax": "Tax",
         "taxMoved": "Tax rates, tax classes and your registration are now in Tax Settings.",
-        "taxLink": "Open Tax Settings"
+        "taxLink": "Open Tax Settings",
+        "giftWrap": {
+          "title": "Gift wrapping",
+          "description": "Let shoppers have their order wrapped as a gift, with a message for the recipient.",
+          "enable": "Offer gift wrapping at checkout",
+          "enableHint": "Shown on the checkout page for deliveries (not pickup or downloads).",
+          "fee": "Wrapping fee",
+          "feeHint": "Added to each parcel's delivery charge — whoever packs a parcel wraps it. 0 wraps for free.",
+          "perParcel": "{currency} per parcel",
+          "allowMessage": "Gift message",
+          "allowMessageHint": "Shoppers can write up to 200 characters, shown to whoever packs the order."
+        }
       },
       "invoices": {
         "title": "Invoice Settings",
@@ -6695,7 +6723,7 @@
       },
       "messaging": {
         "title": "Omnichannel Messaging",
-        "description": "Live chat hours, escalation, and the WhatsApp, Messenger, Instagram and Telegram accounts the marketplace replies from"
+        "description": "Live chat hours, escalation, and the WhatsApp, Messenger, Instagram, Telegram and LINE accounts the marketplace replies from"
       },
       "boosting": {
         "title": "Product Boosting",
@@ -15597,7 +15625,9 @@
         "profileImageAlt": "{name} profile image",
         "vendorFallback": "Vendor",
         "upload": "Upload",
-        "demoMode": "Demo mode"
+        "demoMode": "Demo mode",
+        "lineHint": "Shoppers open a chat with your LINE account from your products and store page.",
+        "lineIdLabel": "LINE ID or line.me link"
       },
       "orderCreateForm": {
         "addressPartStreet": "street",
@@ -17909,6 +17939,50 @@
         "finished": "Deployment finished",
         "failed": "Deployment failed"
       }
+    },
+    "flashSales": {
+      "title": "Flash Sale",
+      "description": "Time-limited discounts on chosen products, with an optional cap on units. Prices switch on and back by themselves.",
+      "new": "New flash sale",
+      "editTitle": "Edit flash sale",
+      "empty": "No flash sales yet",
+      "emptyHint": "Create one to show a countdown deal on the home page and product pages.",
+      "loadFailed": "Flash sales could not be loaded",
+      "saved": "Flash sale saved",
+      "saveFailed": "That didn't work. Try again.",
+      "endConfirm": "End \"{name}\" now? Prices go back to normal.",
+      "deleteConfirm": "Delete \"{name}\"? Prices go back to normal if it is running.",
+      "summary": "{products} products · {sold} units ordered",
+      "edit": "Edit",
+      "endNow": "End now",
+      "delete": "Delete",
+      "more": "+{count} more",
+      "state": {
+        "scheduled": "Scheduled",
+        "live": "On now",
+        "ended": "Ended",
+        "cancelled": "Ended early"
+      },
+      "skipped": {
+        "sold_out": "Sold out",
+        "live_deal": "On a live deal",
+        "missing": "Not found"
+      },
+      "formHint": "The sale price is written onto each product for the window and taken off at the end.",
+      "name": "Name",
+      "namePlaceholder": "e.g. 9.9 Silk Day",
+      "startsAt": "Starts",
+      "endsAt": "Ends",
+      "bulkDiscount": "Discount for all (%)",
+      "applyAll": "Apply",
+      "products": "Products",
+      "product": "Product",
+      "discount": "Discount",
+      "limit": "Unit cap",
+      "noLimit": "No cap",
+      "note": "Units are counted from orders placed during the sale; once a cap is reached that product goes back to its regular price within a minute. The discount reduces the seller's revenue on their own products.",
+      "cancel": "Cancel",
+      "save": "Save sale"
     }
   },
   "vendor": {
@@ -20115,6 +20189,13 @@
           "connect": "Connect. {storeName} registers the webhook itself, so there is nothing to paste into a dashboard.",
           "share": "Share the bot's t.me link so customers can start a conversation.",
           "caution": "Telegram needs no app review and has no reply window — a bot may answer any chat that has started it, at any time."
+        },
+        "line": {
+          "oa": "Create a LINE Official Account (LINE OA Manager), then turn on the Messaging API in its settings.",
+          "provider": "Choose the same provider as your LINE Login channel, so customers who sign in with LINE can get order updates there.",
+          "credentials": "In the LINE Developers console, copy the channel secret (Basic settings) and issue a long-lived channel access token (Messaging API).",
+          "connect": "Connect. {storeName} registers the webhook URL itself — then switch on Use webhook in the console and turn off Auto-reply messages.",
+          "caution": "Every message the store pushes counts against your LINE OA plan's monthly quota. Replies to chats and order updates both count."
         }
       },
       "noPermission": "You do not have permission to manage provider connections.",
@@ -20144,7 +20225,7 @@
       "humanAgent": "Human Agent replies",
       "humanAgentHint": "Allow manual support replies for up to seven days. Enable only after Meta approves the Human Agent permission; this cannot be used for automated or promotional messages.",
       "connectProvider": "Connect {provider}",
-      "description": "Connect a WhatsApp Business phone number, Facebook Page, Instagram professional account, or Telegram bot to receive and reply inside the omnichannel inbox. Access tokens are encrypted and are never returned by the API.",
+      "description": "Connect a WhatsApp Business phone number, Facebook Page, Instagram professional account, Telegram bot, or LINE Official Account to receive and reply inside the omnichannel inbox. Access tokens are encrypted and are never returned by the API.",
       "webhookUrlHint": "Use this callback URL and the server's META_WEBHOOK_VERIFY_TOKEN in the Meta developer dashboard.",
       "businessAccount": "Business account",
       "publicContact": "Public contact",
@@ -20158,7 +20239,14 @@
       "humanAgentEnabled": "Human Agent replies enabled",
       "humanAgentDisabled": "Human Agent replies disabled",
       "humanAgentFailed": "Unable to update Human Agent",
-      "orConnectManually": "or connect manually"
+      "orConnectManually": "or connect manually",
+      "lineNotify": "Send order updates on LINE",
+      "lineNotifyHint": "Customers who signed in with LINE and added this account as a friend get their order and return updates here. Each update counts against the monthly message quota.",
+      "lineNotifyFailed": "Unable to update LINE order updates",
+      "lineAccessToken": "Channel access token (long-lived)",
+      "lineChannelSecret": "Channel secret",
+      "publicLineId": "LINE ID (optional)",
+      "publicLineHint": "For the storefront's add-friend link; taken from the account itself when blank."
     },
     "today": "Today",
     "yesterday": "Yesterday",
@@ -22965,6 +23053,25 @@
       "step2Title": "Attach the transfer slip",
       "step2Body": "Choose the slip image, then tap “Send slip” before time runs out.",
       "itemsCount": "{count, plural, one {# item} other {# items}} in this order"
+    },
+    "carrierPick": {
+      "label": "Couriers",
+      "detected": "Looks like {carrier} — tap to use"
     }
+  },
+  "flashSale": {
+    "days": "days",
+    "endsIn": "Ends in",
+    "startsIn": "Starts in",
+    "off": "{percent}% off right now",
+    "comingOff": "{percent}% off soon",
+    "sold": "{sold}/{limit} sold",
+    "soldOut": "Sold out",
+    "pageTitle": "Flash Sale",
+    "pageSubtitle": "Big discounts for a short time only — while stocks last.",
+    "none": "No flash sale right now",
+    "noneHint": "Check back soon for the next deal.",
+    "browse": "Browse products",
+    "upcoming": "Coming up"
   }
 }

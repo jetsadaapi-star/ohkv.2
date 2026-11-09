@@ -1,4 +1,5 @@
 import { Fragment, Suspense, type CSSProperties, type ReactNode } from "react";
+import { FlashSaleProductBanner } from "@/components/flash-sale/flash-sale-client";
 import { getTranslations } from "next-intl/server";
 import { messageTemplate } from "@/lib/i18n/message-template";
 import {
@@ -544,7 +545,12 @@ export async function ProductDetails({
         );
       }
       case "price":
-        return <ProductIsland island="price" />;
+        return (
+          <>
+            <FlashSaleProductBanner productId={String(product._id)} />
+            <ProductIsland island="price" />
+          </>
+        );
       case "variants":
         return hasOptions ? <ProductIsland island="variants" /> : null;
       case "quantity-cart":

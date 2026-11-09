@@ -1,5 +1,6 @@
 "use client";
 
+import { LineGlyph } from "@/components/ui/brand-glyphs";
 import { VendorPageHeader } from "@/components/vendor/vendor-page-header";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -1525,6 +1526,58 @@ export function VendorSettingsForm({
                       }))
                     }
                     placeholder={th("telegramUsernamePlaceholder")}
+                    disabled={!canManageChannels}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4 rounded-xl border p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-1">
+                    <Label className="inline-flex items-center gap-1.5">
+                      <LineGlyph className="size-4 text-[#06C755]" />
+                      LINE
+                    </Label>
+                    <p className="text-xs text-muted-foreground">{th("lineHint")}</p>
+                  </div>
+                  <Switch
+                    checked={Boolean(settings.vendor.messaging.line?.enabled)}
+                    onCheckedChange={(enabled) =>
+                      setSettings((prev) => ({
+                        ...prev,
+                        vendor: {
+                          ...prev.vendor,
+                          messaging: {
+                            ...prev.vendor.messaging,
+                            line: { lineId: prev.vendor.messaging.line?.lineId ?? "", enabled },
+                          },
+                        },
+                      }))
+                    }
+                    disabled={!canManageChannels}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="vendor-line-id">{th("lineIdLabel")}</Label>
+                  <Input
+                    id="vendor-line-id"
+                    value={settings.vendor.messaging.line?.lineId ?? ""}
+                    onChange={(event) =>
+                      setSettings((prev) => ({
+                        ...prev,
+                        vendor: {
+                          ...prev.vendor,
+                          messaging: {
+                            ...prev.vendor.messaging,
+                            line: {
+                              enabled: Boolean(prev.vendor.messaging.line?.enabled),
+                              lineId: event.target.value,
+                            },
+                          },
+                        },
+                      }))
+                    }
+                    placeholder="@yourshop"
                     disabled={!canManageChannels}
                   />
                 </div>

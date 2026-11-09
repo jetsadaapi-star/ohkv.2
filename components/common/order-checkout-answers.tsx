@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, Gift } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { OrderCheckoutField } from "@/types";
@@ -9,6 +9,8 @@ import type { OrderCheckoutField } from "@/types";
 interface OrderCheckoutAnswersProps {
   customerNote?: string;
   checkoutFields?: OrderCheckoutField[];
+  /** Wrapped as a gift, with its message — for whoever packs the parcel. */
+  giftWrap?: { enabled?: boolean; message?: string } | null;
   className?: string;
   /**
    * `stack` (default) lists the answers down a side column, as the admin and
@@ -27,6 +29,7 @@ interface OrderCheckoutAnswersProps {
 export function OrderCheckoutAnswers({
   customerNote,
   checkoutFields,
+  giftWrap,
   className,
   layout = "stack",
 }: OrderCheckoutAnswersProps) {
@@ -34,7 +37,8 @@ export function OrderCheckoutAnswers({
   const tr = (key: string, fallback: string) => (t.has(key) ? t(key) : fallback);
   const fields = (checkoutFields ?? []).filter((field) => field.value);
   const note = customerNote?.trim();
-  if (!note && fields.length === 0) return null;
+  const gift = giftWrap?.enabled ? giftWrap : null;
+  if (!note && fields.length === 0 && !gift) return null;
 
   const display = (field: OrderCheckoutField) =>
     field.type === "checkbox"
@@ -59,6 +63,24 @@ export function OrderCheckoutAnswers({
             : "space-y-3",
         )}
       >
+        {gift ? (
+          <div
+            className={cn(
+              "flex gap-3 rounded-xl bg-[color-mix(in_oklab,var(--highlight)_14%,transparent)] p-3 ring-1 ring-inset ring-[color-mix(in_oklab,var(--highlight)_45%,transparent)]",
+              layout === "columns" && "sm:col-span-full",
+            )}
+          >
+            <Gift className="mt-0.5 size-4 shrink-0 text-primary" />
+            <div className="min-w-0">
+              <p className="font-semibold">{tr("checkout.giftWrap.orderTitle", "Wrap as a gift")}</p>
+              {gift.message ? (
+                <p className="mt-0.5 whitespace-pre-wrap break-words text-muted-foreground">
+                  “{gift.message}”
+                </p>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
         {fields.map((field) => (
           <div key={field.key} className="min-w-0">
             <p className="text-muted-foreground">{field.label}</p>

@@ -986,6 +986,20 @@ function syncEffectiveStoreRate(settings: Awaited<ReturnType<typeof getSettings>
 }
 
 function validateOrderSettings(data: Record<string, unknown>) {
+  if (Object.prototype.hasOwnProperty.call(data, "giftWrap")) {
+    const wrap = data.giftWrap;
+    if (!wrap || typeof wrap !== "object") throw new ValidationError("Gift wrapping settings are invalid");
+    const { enabled, fee, allowMessage } = wrap as Record<string, unknown>;
+    const amount = Number(fee ?? 0);
+    if (!Number.isFinite(amount) || amount < 0 || amount > 100_000) {
+      throw new ValidationError("The gift wrapping fee must be between 0 and 100,000");
+    }
+    data.giftWrap = {
+      enabled: enabled === true,
+      fee: Math.round(amount * 100) / 100,
+      allowMessage: allowMessage !== false,
+    };
+  }
   if (Object.prototype.hasOwnProperty.call(data, "prefix")) {
     if (typeof data.prefix !== "string") {
       throw new ValidationError("Order prefix must be text");

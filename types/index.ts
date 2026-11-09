@@ -229,6 +229,7 @@ export interface ICustomerProfile {
   emailNotifications: EmailNotificationPreferences;
   /** Covers order, pre-order and return texts. Absent on profiles saved before SMS. */
   smsNotifications?: { orderUpdates: boolean };
+  lineNotifications?: { orderUpdates: boolean };
   /** The shopper app's push topics. Absent on profiles saved before them. */
   pushNotifications?: { orderUpdates: boolean; messages: boolean };
 
@@ -1185,7 +1186,10 @@ export interface ICart {
     customerNote?: string;
     contactPhone?: string;
     checkoutFields?: OrderCheckoutField[];
+    giftWrap?: { enabled: boolean; message?: string; fee?: number };
   };
+  /** Gift wrapping the shopper chose at checkout (lib/orders/gift-wrap.ts). */
+  giftWrap?: { enabled?: boolean; message?: string };
 }
 
 // ============================================
@@ -1808,6 +1812,8 @@ export interface IOrder {
   notes?: string;
   /** The note the shopper left at checkout (checkout settings `orderNote`). */
   customerNote?: string;
+  /** Wrapped as a gift, with the message for the recipient (lib/orders/gift-wrap.ts). */
+  giftWrap?: { enabled: boolean; message?: string; fee?: number };
   /**
    * The phone the shopper gave to be reached on (checkout settings
    * `contact.mode`) — may differ from the delivery phone on the address.

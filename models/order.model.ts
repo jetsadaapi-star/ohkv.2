@@ -1868,6 +1868,17 @@ const OrderSchema = new Schema<IOrder>(
       type: String,
       maxlength: 1000,
     },
+    giftWrap: {
+      type: new Schema(
+        {
+          enabled: { type: Boolean, default: false },
+          message: { type: String, trim: true, maxlength: 200 },
+          fee: { type: Number, min: 0 },
+        },
+        { _id: false },
+      ),
+      default: undefined,
+    },
     contactPhone: {
       type: String,
       trim: true,

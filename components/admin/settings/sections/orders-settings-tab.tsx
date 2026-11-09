@@ -78,6 +78,12 @@ export function OrdersSettingsTab(props: {
   const { settings, isSaving, isDirty, updateNestedField, onSave } = props;
   const orders = settings.orders;
   const currencyCode = settings.general.defaultCurrency || "USD";
+  const tGift = useTranslations("admin.settings.orders.giftWrap");
+  const giftWrap = {
+    enabled: Boolean(orders.giftWrap?.enabled),
+    fee: Number(orders.giftWrap?.fee ?? 0),
+    allowMessage: orders.giftWrap?.allowMessage !== false,
+  };
   // These two are read by `legacyShipping()` in lib/shipping.ts and nowhere
   // else, and that runs only while zone shipping is off. Left looking editable
   // once zones are live, an admin sets a free-shipping threshold here and it
@@ -196,6 +202,54 @@ export function OrdersSettingsTab(props: {
               </>
             )}
 
+          </SettingList>
+        </CardContent>
+      </Card>
+
+      {/* Gift wrapping at checkout — lib/orders/gift-wrap.ts. The fee rides on
+          each parcel's delivery charge, so every way of paying prices it. */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{tGift("title")}</CardTitle>
+          <CardDescription>{tGift("description")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SettingList>
+            <SettingSwitchItem
+              title={tGift("enable")}
+              description={tGift("enableHint")}
+              checked={Boolean(orders.giftWrap?.enabled)}
+              onCheckedChange={(checked) =>
+                updateNestedField("orders.giftWrap", { ...giftWrap, enabled: checked })
+              }
+            />
+            {orders.giftWrap?.enabled ? (
+              <>
+                <SettingRow inputId="giftWrapFee" label={tGift("fee")} hint={tGift("feeHint")}>
+                  <NumberInput
+                    id="giftWrapFee"
+                    className="w-28"
+                    min={0}
+                    max={100000}
+                    step={1}
+                    value={giftWrap.fee}
+                    whenEmpty={0}
+                    onValueChange={(next) =>
+                      updateNestedField("orders.giftWrap", { ...giftWrap, fee: next ?? 0 })
+                    }
+                  />
+                  <SettingUnit>{tGift("perParcel", { currency: currencyCode })}</SettingUnit>
+                </SettingRow>
+                <SettingSwitchItem
+                  title={tGift("allowMessage")}
+                  description={tGift("allowMessageHint")}
+                  checked={giftWrap.allowMessage}
+                  onCheckedChange={(checked) =>
+                    updateNestedField("orders.giftWrap", { ...giftWrap, allowMessage: checked })
+                  }
+                />
+              </>
+            ) : null}
           </SettingList>
         </CardContent>
       </Card>

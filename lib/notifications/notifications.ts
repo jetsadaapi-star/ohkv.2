@@ -8,6 +8,7 @@
  * channel on for the event (Settings → Notifications).
  */
 
+import { deliverLineNotification } from "@/lib/notifications/line-notify";
 import { connectDB } from "@/lib/db";
 import {
   CustomerProfile,
@@ -674,6 +675,25 @@ async function dispatchNotification(options: DispatchOptions) {
     );
     if (options.requireOutbox && channels.inApp && !record.notification) throw new Error("The order notification could not be recorded");
     if (record.duplicate && !options.requireOutbox) return record.notification;
+  }
+
+  // The store's LINE OA, for a customer who signed in with LINE: on top of the
+  // matrix, never instead of it, and never in the way of it.
+  if (
+    recipient.userId &&
+    notification.data?.recipientRole === USER_ROLES.CUSTOMER &&
+    hasAnyNotificationChannel(channels)
+  ) {
+    const link = options.sms?.link ?? notification.link;
+    await deliverLineNotification({
+      userId: recipient.userId,
+      text: buildNotificationSmsBody({
+        storeName: storeNameOf(settings),
+        message: options.sms?.message ?? notification.message,
+        link: link ? absoluteLink(link) : undefined,
+      }),
+      dedupeSeed: `${recipient.userId}:${JSON.stringify(notification.dedupe ?? notification.data ?? notification.title)}`,
+    });
   }
 
   const wantsEmail = channels.email && !options.skip?.email && (!options.requireOutbox || isEmailDeliveryConfigured(settings));

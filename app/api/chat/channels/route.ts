@@ -7,8 +7,10 @@ import { requireConversationViewer } from "@/lib/conversations/service";
 import { resolveConversationViewer } from "@/lib/conversations/viewer";
 import {
   connectMetaChannel,
+  connectLineChannel,
   connectTelegramChannel,
   disconnectChannel,
+  updateLineNotifySetting,
   listChannelConnections,
   updateChannelSettings,
   verifyConnectedChannel,
@@ -47,6 +49,16 @@ const ConnectSchema = z.discriminatedUnion("provider", [
     displayName: z.string().trim().max(160).optional(),
   }),
   z.object({
+    provider: z.literal("line"),
+    // From the LINE Developers console: Messaging API → channel access token
+    // (long-lived), and Basic settings → channel secret.
+    channelAccessToken: z.string().trim().min(100).max(1000),
+    channelSecret: z.string().trim().length(32),
+    publicLineId: z.string().trim().max(120).optional(),
+    displayName: z.string().trim().max(160).optional(),
+    lineNotifyCustomers: z.boolean().optional(),
+  }),
+  z.object({
     provider: z.literal("instagram"),
     // Instagram Direct is served through the linked Facebook Page, so the
     // credential is that Page's access token and the identity is the Instagram
@@ -73,6 +85,7 @@ const DisconnectSchema = z.object({
 const UpdateSchema = z.object({
   connectionId: z.string().trim().min(1),
   messengerHumanAgentEnabled: z.boolean().optional(),
+  lineNotifyCustomers: z.boolean().optional(),
 });
 
 export const GET = withApi({ auth: "user" }, async ({ request, session }) => {
@@ -106,7 +119,18 @@ export const POST = withApi({ auth: "user" }, async ({ request, session }) => {
   );
   const auditContext = channelAuditContext(request, session, viewer);
   const connection =
-    body.provider === "telegram"
+    body.provider === "line"
+      ? await connectLineChannel({
+          viewer,
+          channelAccessToken: body.channelAccessToken,
+          channelSecret: body.channelSecret,
+          publicLineId: body.publicLineId,
+          displayName: body.displayName,
+          lineNotifyCustomers: body.lineNotifyCustomers,
+          webhookUrl: `${request.nextUrl.origin}/api/webhooks/line`,
+          auditContext,
+        })
+      : body.provider === "telegram"
       ? await connectTelegramChannel({
           viewer,
           botToken: body.botToken,
@@ -134,6 +158,16 @@ export const PATCH = withApi({ auth: "user" }, async ({ request, session }) => {
   const viewer = requireConversationViewer(
     await resolveConversationViewer({ session }),
   );
+  if (body.lineNotifyCustomers !== undefined) {
+    return successResponse({
+      connection: await updateLineNotifySetting({
+        viewer,
+        connectionId: body.connectionId,
+        lineNotifyCustomers: body.lineNotifyCustomers,
+        auditContext: channelAuditContext(request, session, viewer),
+      }),
+    });
+  }
   return successResponse({
     connection:
       body.messengerHumanAgentEnabled === undefined

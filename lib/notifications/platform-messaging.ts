@@ -173,7 +173,7 @@ export async function getPlatformMessagingSettings(): Promise<PlatformMessagingS
       status: "active",
     })
       .select(
-        "provider publicPhoneNumberE164 publicPageUsername publicInstagramUsername publicTelegramUsername",
+        "provider publicPhoneNumberE164 publicPageUsername publicInstagramUsername publicTelegramUsername publicLineId",
       )
       .lean<
         Array<{
@@ -182,6 +182,7 @@ export async function getPlatformMessagingSettings(): Promise<PlatformMessagingS
           publicPageUsername?: string;
           publicInstagramUsername?: string;
           publicTelegramUsername?: string;
+          publicLineId?: string;
         }>
       >(),
     getPlatformMessagingConfiguration(),
@@ -192,6 +193,7 @@ export async function getPlatformMessagingSettings(): Promise<PlatformMessagingS
   const messenger = byProvider("messenger");
   const instagram = byProvider("instagram");
   const telegram = byProvider("telegram");
+  const line = byProvider("line");
   // Explicit field pick, never `...config` — spreading leaked escalationEmail,
   // escalationAfterMinutes and the business-hours schedule into the public
   // product payload.
@@ -220,6 +222,10 @@ export async function getPlatformMessagingSettings(): Promise<PlatformMessagingS
     telegram: {
       enabled: Boolean(telegram?.publicTelegramUsername),
       username: telegram?.publicTelegramUsername || "",
+    },
+    line: {
+      enabled: Boolean(line?.publicLineId),
+      lineId: line?.publicLineId || "",
     },
   };
 }

@@ -19,6 +19,11 @@ export interface VendorMessagingSettings {
     enabled: boolean;
     username: string;
   };
+  /** A LINE ID ("@shop") for the line.me chat link — the channel Thai shoppers use most. */
+  line?: {
+    enabled: boolean;
+    lineId: string;
+  };
 }
 
 export const DEFAULT_VENDOR_MESSAGING: VendorMessagingSettings = {
@@ -40,6 +45,10 @@ export const DEFAULT_VENDOR_MESSAGING: VendorMessagingSettings = {
   telegram: {
     enabled: false,
     username: "",
+  },
+  line: {
+    enabled: false,
+    lineId: "",
   },
 };
 
@@ -104,6 +113,10 @@ export function resolveVendorMessaging(
     source.telegram && typeof source.telegram === "object"
       ? (source.telegram as Record<string, unknown>)
       : {};
+  const line =
+    source.line && typeof source.line === "object"
+      ? (source.line as Record<string, unknown>)
+      : {};
 
   return {
     liveChatEnabled: source.liveChatEnabled !== false,
@@ -129,6 +142,10 @@ export function resolveVendorMessaging(
     telegram: {
       enabled: telegram.enabled === true,
       username: normalizeTelegramUsername(telegram.username),
+    },
+    line: {
+      enabled: line.enabled === true,
+      lineId: normalizeLineContactId(line.lineId),
     },
     messenger: {
       enabled: messenger.enabled === true,
@@ -163,6 +180,28 @@ export function vendorTelegramUrl(settings: VendorMessagingSettings) {
     return undefined;
   }
   return `https://t.me/${encodeURIComponent(settings.telegram.username)}`;
+}
+
+/**
+ * "@shop", "shop" or a line.me link → "@shop" — or a personal LINE ID
+ * (no "@"), which line.me cannot open, kept as typed for the ti/p link's
+ * "~id" form. "" when unusable.
+ */
+export function normalizeLineContactId(value: unknown) {
+  if (typeof value !== "string") return "";
+  let id = value.trim();
+  const fromLink = id.match(/line\.me\/(?:R\/)?ti\/p\/([^/?#]+)/i);
+  if (fromLink) id = decodeURIComponent(fromLink[1]);
+  id = id.replace(/^%40/, "@").replace(/^~/, "");
+  return /^@?[A-Za-z0-9._-]{3,40}$/.test(id) ? id : "";
+}
+
+export function vendorLineUrl(settings: VendorMessagingSettings) {
+  const id = settings.line?.enabled ? settings.line.lineId : "";
+  if (!id) return undefined;
+  // An Official Account id starts with "@"; a personal LINE ID is opened
+  // through the "~" form of the same link.
+  return `https://line.me/R/ti/p/${encodeURIComponent(id.startsWith("@") ? id : `~${id}`)}`;
 }
 
 export function vendorInstagramUrl(settings: VendorMessagingSettings) {

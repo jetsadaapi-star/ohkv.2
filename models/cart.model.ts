@@ -292,6 +292,16 @@ const CartSchema = new Schema<ICart>(
       type: Schema.Types.Mixed,
       default: undefined,
     },
+    giftWrap: {
+      type: new Schema(
+        {
+          enabled: { type: Boolean, default: false },
+          message: { type: String, trim: true, maxlength: 200 },
+        },
+        { _id: false },
+      ),
+      default: undefined,
+    },
   },
   {
     timestamps: true,
@@ -299,6 +309,30 @@ const CartSchema = new Schema<ICart>(
     toObject: { virtuals: true },
   }
 );
+
+/**
+ * A gift-wrap choice belongs to the parcel the shopper was buying: when the
+ * cart is emptied — an order placed, or the last line removed — it goes with
+ * the items, so the next order is never wrapped (and charged) unasked. Done
+ * here because carts are emptied from many places (every payment finalizer,
+ * COD, the cart routes).
+ */
+CartSchema.pre("save", function () {
+  if (Array.isArray(this.items) && this.items.length === 0 && this.get("giftWrap")) {
+    this.set("giftWrap", undefined);
+  }
+});
+CartSchema.pre(["updateOne", "findOneAndUpdate", "updateMany"], function () {
+  const update = this.getUpdate() as Record<string, unknown> | null;
+  if (!update || Array.isArray(update)) return;
+  const set = update.$set as Record<string, unknown> | undefined;
+  const emptied = Array.isArray(set?.items) && (set!.items as unknown[]).length === 0;
+  if (!emptied) return;
+  this.setUpdate({
+    ...update,
+    $unset: { ...((update.$unset as Record<string, unknown>) ?? {}), giftWrap: "" },
+  });
+});
 
 // Indexes
 CartSchema.index({ userId: 1 });

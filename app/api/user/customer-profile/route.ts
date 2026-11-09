@@ -7,6 +7,7 @@ import { withApi } from "@/lib/api/handler";
 import { normalizeNotificationSettings } from "@/lib/notifications/notification-settings";
 import { isSmsDeliveryConfigured } from "@/lib/sms/sms";
 import { setMarketingConsent } from "@/lib/customers/marketing-consent";
+import { lineUpdatesAvailableFor } from "@/lib/notifications/line-notify";
 import {
   MARKETING_CONSENT_SOURCE,
   MARKETING_CONSENT_STATE,
@@ -50,6 +51,9 @@ export const GET = withApi(
       smsUpdatesAvailable:
         isSmsDeliveryConfigured(settings) &&
         (customerChannels.orderUpdates.sms || customerChannels.returnUpdates.sms),
+      // The store's LINE OA sends order updates, and whether this account can
+      // get them (signed in with LINE) or should add the OA first.
+      line: await lineUpdatesAvailableFor(session.user.id),
     });
   },
 );
@@ -110,6 +114,9 @@ export const PUT = withApi(
         ...existing?.emailNotifications,
         ...parsed.emailNotifications,
       };
+    }
+    if (parsed.lineNotifications?.orderUpdates !== undefined) {
+      updateFields["lineNotifications.orderUpdates"] = parsed.lineNotifications.orderUpdates;
     }
     if (parsed.smsNotifications?.orderUpdates !== undefined) {
       updateFields["smsNotifications.orderUpdates"] =

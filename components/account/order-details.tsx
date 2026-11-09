@@ -1515,6 +1515,7 @@ export function OrderDetails({ orderId, locale }: OrderDetailsProps) {
         layout="columns"
         customerNote={order.customerNote}
         checkoutFields={order.checkoutFields}
+        giftWrap={(order as { giftWrap?: { enabled?: boolean; message?: string } }).giftWrap}
       />
 
       {/* Order Items */}

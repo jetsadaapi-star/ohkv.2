@@ -252,6 +252,12 @@ const CustomerProfileSchema = new Schema<ICustomerProfile>(
       type: SmsNotificationsSchema,
       default: () => ({}),
     },
+    // Order and return updates on the store's LINE Official Account
+    // (lib/notifications/line-notify.ts). On unless the customer turns it off.
+    lineNotifications: {
+      type: new Schema({ orderUpdates: { type: Boolean, default: true } }, { _id: false }),
+      default: () => ({}),
+    },
     pushNotifications: {
       type: PushNotificationsSchema,
       default: () => ({}),

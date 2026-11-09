@@ -65,6 +65,17 @@ export function TelegramGlyph({ className }: { className?: string }) {
   );
 }
 
+export function LineGlyph({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
+      <path
+        fillRule="evenodd"
+        d="M21.6 10.9c0-4.3-4.3-7.8-9.6-7.8s-9.6 3.5-9.6 7.8c0 3.85 3.42 7.08 8.03 7.69.31.07.74.2.84.47.1.24.06.62.03.86l-.14.82c-.04.24-.19.95.83.52 1.02-.43 5.52-3.25 7.53-5.57 1.39-1.53 2.08-3.08 2.08-4.78ZM8.83 13.2H6.93a.5.5 0 0 1-.5-.5V8.88a.5.5 0 1 1 1 0v3.32h1.4a.5.5 0 1 1 0 1Zm1.98-.5a.5.5 0 1 1-1 0V8.88a.5.5 0 1 1 1 0v3.82Zm4.6 0a.5.5 0 0 1-.9.3l-1.96-2.66v2.36a.5.5 0 1 1-1 0V8.88a.5.5 0 0 1 .9-.3l1.96 2.66V8.88a.5.5 0 1 1 1 0v3.82Zm3.08-2.42a.5.5 0 1 1 0 1h-1.4v.9h1.4a.5.5 0 1 1 0 1h-1.9a.5.5 0 0 1-.5-.5V8.88c0-.28.22-.5.5-.5h1.9a.5.5 0 1 1 0 1h-1.4v.9h1.4Z"
+      />
+    </svg>
+  );
+}
+
 export function PinterestGlyph({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>

@@ -15,6 +15,13 @@ import {
   sendTelegramText,
   TelegramApiError,
 } from "@/lib/conversations/providers/telegram-client";
+import {
+  fetchLineMedia,
+  LineApiError,
+  lineImageMessage,
+  lineTextMessage,
+  pushLineMessages,
+} from "@/lib/conversations/providers/line-client";
 
 /**
  * What every channel provider must supply.
@@ -239,6 +246,41 @@ const telegramAdapter: MessagingProviderAdapter = {
   },
 };
 
+const lineAdapter: MessagingProviderAdapter = {
+  async send({ connection, message, recipientId }) {
+    // An Official Account may push to any friend at any time: no window and
+    // no templates to gate on. The retry key is the message's own id, so the
+    // outbox retrying a push LINE already accepted cannot send it twice.
+    const attachment = message.attachments?.[0];
+    const messages = [
+      ...(attachment?.url && attachment.type === "image" ? [lineImageMessage(attachment.url)] : []),
+      ...(message.body?.trim() ? [lineTextMessage(message.body)] : []),
+    ];
+    if (!messages.length) {
+      throw new MessagingDeliveryError({
+        message: "LINE can only send text and images",
+        code: "line_unsupported_message",
+        permanent: true,
+      });
+    }
+    return pushLineMessages({
+      connection,
+      to: recipientId,
+      messages,
+      retrySeed: String(message._id),
+    });
+  },
+  classify(error) {
+    if (!(error instanceof LineApiError)) return undefined;
+    return {
+      permanent: error.isPermanent,
+      authFailure: error.isAuthFailure,
+      retryAfterSeconds: error.isThrottled ? error.retryAfterSeconds || 60 : undefined,
+      errorCode: String(error.status),
+    };
+  },
+};
+
 const ADAPTERS: Record<MessageProvider, MessagingProviderAdapter> = {
   whatsapp: {
     ...metaAdapter,
@@ -258,6 +300,12 @@ const ADAPTERS: Record<MessageProvider, MessagingProviderAdapter> = {
     ...telegramAdapter,
     fetchMedia: ({ connection, providerMediaId }) =>
       fetchTelegramMedia({ connection, fileId: providerMediaId }),
+  },
+  line: {
+    ...lineAdapter,
+    connectionFilter: (lookupId) => ({ lineBotUserId: lookupId }),
+    fetchMedia: ({ connection, providerMediaId }) =>
+      fetchLineMedia({ connection, messageId: providerMediaId }),
   },
 };
 

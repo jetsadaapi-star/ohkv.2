@@ -255,6 +255,7 @@ export interface Settings {
     taxRate: number;
     freeShippingThreshold?: number;
     loyaltySpendPerPoint?: number;
+    giftWrap?: { enabled?: boolean; fee?: number; allowMessage?: boolean };
     defaultShippingCost: number;
     commission: {
       vendorRate: number;

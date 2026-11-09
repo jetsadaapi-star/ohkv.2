@@ -30,6 +30,11 @@ import {
   setTelegramWebhook,
 } from "@/lib/conversations/providers/telegram-client";
 import {
+  getLineBotInfo,
+  normalizeLineId,
+  setLineWebhook,
+} from "@/lib/conversations/providers/line-client";
+import {
   providerLabel,
   supportsHumanAgentWindow,
 } from "@/lib/conversations/channels";
@@ -82,6 +87,10 @@ function serializeChannelConnection(connection: IChannelConnection) {
     publicPageUsername: connection.publicPageUsername,
     publicInstagramUsername: connection.publicInstagramUsername,
     publicTelegramUsername: connection.publicTelegramUsername,
+    lineBotUserId: connection.lineBotUserId,
+    publicLineId: connection.publicLineId,
+    lineNotifyCustomers:
+      connection.provider === "line" ? connection.lineNotifyCustomers !== false : undefined,
     // Gated on the capability, not on `provider === "messenger"`: Meta grants
     // the extended manual-support window on Instagram too, and `connectMetaChannel`
     // already persists it there. Naming one provider made the Instagram value
@@ -387,6 +396,137 @@ export async function connectTelegramChannel(params: {
 }
 
 /**
+ * Connects a LINE Official Account through the Messaging API.
+ *
+ * The channel access token (long-lived) and the channel secret come from the
+ * LINE Developers console. The token is checked against /v2/bot/info, which
+ * also names the OA — its bot user id is what every webhook's `destination`
+ * carries, so it is the routing key — and then the OA's webhook is pointed
+ * here. LINE's "Use webhook" switch has to be turned on in the console; the
+ * API cannot do that part.
+ */
+export async function connectLineChannel(params: {
+  viewer: ConversationViewer;
+  channelAccessToken: string;
+  channelSecret: string;
+  webhookUrl: string;
+  publicLineId?: string;
+  displayName?: string;
+  lineNotifyCustomers?: boolean;
+  auditContext?: AuditContext;
+}) {
+  const token = params.channelAccessToken.trim();
+  const secret = params.channelSecret.trim();
+  if (!/^[A-Za-z0-9+/=._-]{100,}$/.test(token)) {
+    throw new ValidationError("Enter the long-lived channel access token from the Messaging API tab");
+  }
+  if (!/^[0-9a-f]{32}$/i.test(secret)) {
+    throw new ValidationError("Enter the 32-character channel secret from the Basic settings tab");
+  }
+  if (!/^https:\/\//i.test(params.webhookUrl)) {
+    throw new ValidationError("LINE only delivers webhooks to a public HTTPS URL");
+  }
+  const bot = await getLineBotInfo(token);
+  const target = owner(params.viewer);
+
+  // One Official Account feeds one inbox: claimed before touching its webhook,
+  // which would otherwise move another store's messages here.
+  const claimedElsewhere = await ChannelConnection.findOne({
+    provider: "line",
+    lineBotUserId: bot.userId,
+    ownerKey: { $ne: target.ownerKey },
+    status: { $ne: CHANNEL_CONNECTION_STATUSES.REVOKED },
+  })
+    .select("_id")
+    .lean();
+  if (claimedElsewhere) {
+    throw new ValidationError("This LINE Official Account is already connected to another store.");
+  }
+
+  const previous = await findRevivableChannel(target.ownerKey, "line");
+  const connection = await ChannelConnection.findOneAndUpdate(
+    { ownerKey: target.ownerKey, provider: "line" },
+    {
+      $set: {
+        ownerType: target.ownerType,
+        ownerKey: target.ownerKey,
+        ownerVendorId: "ownerVendorId" in target ? target.ownerVendorId : undefined,
+        provider: "line",
+        status: CHANNEL_CONNECTION_STATUSES.ACTIVE,
+        displayName: params.displayName?.trim().slice(0, 160) || bot.displayName || "LINE Official Account",
+        externalAccountId: bot.userId,
+        lineBotUserId: bot.userId,
+        publicLineId:
+          normalizeLineId(params.publicLineId || bot.premiumId || bot.basicId) || undefined,
+        accessTokenEncrypted: encryptMessagingSecret(token),
+        lineChannelSecretEncrypted: encryptMessagingSecret(secret),
+        lineNotifyCustomers: params.lineNotifyCustomers !== false,
+        scopes: [],
+        lastVerifiedAt: new Date(),
+      },
+      $unset: { lastError: "", tokenExpiresAt: "" },
+      $setOnInsert: { createdByUserId: new Types.ObjectId(target.actorUserId) },
+    },
+    { upsert: true, returnDocument: "after", setDefaultsOnInsert: true },
+  );
+
+  try {
+    await setLineWebhook({ token, url: params.webhookUrl });
+  } catch (error) {
+    await ChannelConnection.updateOne(
+      { _id: connection!._id },
+      {
+        $set: {
+          status: CHANNEL_CONNECTION_STATUSES.ERROR,
+          lastError:
+            error instanceof Error
+              ? `LINE rejected the webhook URL: ${error.message.slice(0, 900)}`
+              : "LINE rejected the webhook URL",
+        },
+      },
+    );
+    await auditChannelConnected({
+      viewer: params.viewer,
+      auditContext: params.auditContext,
+      previous,
+      current: connection!,
+      failure: "LINE rejected the webhook URL",
+    });
+    throw error;
+  }
+  await auditChannelConnected({
+    viewer: params.viewer,
+    auditContext: params.auditContext,
+    previous,
+    current: connection!,
+  });
+  return serializeChannelConnection(connection!);
+}
+
+/** Turns LINE order and return updates to customers on or off. */
+export async function updateLineNotifySetting(params: {
+  viewer: ConversationViewer;
+  connectionId: string;
+  lineNotifyCustomers: boolean;
+  auditContext?: AuditContext;
+}) {
+  if (!Types.ObjectId.isValid(params.connectionId)) {
+    throw new ValidationError("Channel connection is invalid");
+  }
+  const target = owner(params.viewer);
+  const connection = await ChannelConnection.findOne({
+    _id: new Types.ObjectId(params.connectionId),
+    ownerKey: target.ownerKey,
+    provider: "line",
+    status: { $ne: CHANNEL_CONNECTION_STATUSES.REVOKED },
+  });
+  if (!connection) throw new AuthorizationError("Channel connection not found");
+  connection.lineNotifyCustomers = params.lineNotifyCustomers;
+  await connection.save();
+  return serializeChannelConnection(connection);
+}
+
+/**
  * Disconnects a channel WITHOUT destroying the row.
  *
  * Every conversation on the channel references this document's `_id`, and
@@ -450,6 +590,8 @@ export async function disconnectChannel(params: {
         instagramUserId: "",
         telegramBotId: "",
         telegramWebhookSecretHash: "",
+        lineBotUserId: "",
+        lineChannelSecretEncrypted: "",
       },
     },
   );
@@ -532,6 +674,8 @@ export async function verifyConnectedChannel(params: {
   try {
     if (connection.provider === "telegram") {
       await getTelegramBot(decryptMessagingSecret(connection.accessTokenEncrypted));
+    } else if (connection.provider === "line") {
+      await getLineBotInfo(decryptMessagingSecret(connection.accessTokenEncrypted));
     } else {
       await verifyStoredMetaConnection(connection);
     }

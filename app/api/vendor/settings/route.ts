@@ -62,6 +62,7 @@ import {
   normalizeInstagramUsername,
   normalizeMessengerUsername,
   normalizeTelegramUsername,
+  normalizeLineContactId,
   normalizeWhatsAppNumber,
   resolveVendorMessaging,
 } from "@/lib/notifications/vendor-messaging";
@@ -161,6 +162,12 @@ const ChannelSettingsSchema = z.object({
       enabled: z.boolean(),
       username: z.string().max(160),
     }),
+    line: z
+      .object({
+        enabled: z.boolean(),
+        lineId: z.string().max(160),
+      })
+      .optional(),
   }),
 });
 
@@ -907,6 +914,14 @@ export const PUT = withApi(
       ) {
         throw new ValidationError({
           username: ["Enter a valid Telegram bot username or t.me link"],
+        });
+      }
+      if (
+        body.data.messaging.line?.enabled &&
+        !normalizeLineContactId(body.data.messaging.line.lineId)
+      ) {
+        throw new ValidationError({
+          lineId: ["Enter a valid LINE ID (for example @yourshop) or line.me link"],
         });
       }
       await Vendor.findByIdAndUpdate(vendor._id, {

@@ -11,6 +11,7 @@ export const CONVERSATION_CHANNELS = {
   MESSENGER: "messenger",
   INSTAGRAM: "instagram",
   TELEGRAM: "telegram",
+  LINE: "line",
 } as const;
 
 export const CONVERSATION_OWNER_TYPES = {

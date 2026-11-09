@@ -50,6 +50,7 @@ import { isCurrentSmtpConfigurationVerified } from "@/lib/email/smtp-verificatio
 import { normalizeCountryAvailability } from "@/lib/intl/country-availability";
 import { liveKeyColors } from "@/lib/storefront/themes/key-colors";
 import { loyaltyEnabledIn } from "@/lib/customers/loyalty";
+import { giftWrapConfigOf } from "@/lib/orders/gift-wrap";
 
 const getPublicSettingsPayload = unstable_cache(
   async () => {
@@ -226,6 +227,7 @@ const getPublicSettingsPayload = unstable_cache(
           freeShippingThreshold: cartOrder.freeShippingThreshold,
           defaultShippingCost:
             settings.orders?.defaultShippingCost ?? DEFAULT_ORDER_SHIPPING_COST,
+          giftWrap: giftWrapConfigOf(settings),
         },
 
         shipping: {

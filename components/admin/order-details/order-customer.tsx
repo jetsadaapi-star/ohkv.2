@@ -265,7 +265,7 @@ export function OrderCustomer({ order }: OrderCustomerProps) {
         ) : null}
       </SectionCard>
 
-      <OrderCheckoutAnswers customerNote={order.customerNote} checkoutFields={order.checkoutFields} />
+      <OrderCheckoutAnswers customerNote={order.customerNote} checkoutFields={order.checkoutFields} giftWrap={(order as { giftWrap?: { enabled?: boolean; message?: string } }).giftWrap} />
 
       {/* Internal notes were captured on the order but had nowhere to
           surface. */}

@@ -170,6 +170,24 @@ export const CHANNEL_CAPABILITIES: Record<ConversationChannel, ChannelCapability
         "application/pdf": MAX_CHAT_ATTACHMENT_BYTES,
       },
     },
+    line: {
+      label: "LINE",
+      external: true,
+      // A LINE Official Account may push to anyone who has added it as a
+      // friend, at any time — no template, no reply window. Each push counts
+      // against the OA's monthly message quota.
+      templates: false,
+      // An image and its text go out together, as two messages in one push.
+      captionsWithMedia: true,
+      maxAttachments: 1,
+      // LINE fetches images itself from a public HTTPS URL: JPEG or PNG, up
+      // to 10MB. Documents and video need extra preview assets, so they are
+      // not offered.
+      media: {
+        "image/jpeg": 10 * MB,
+        "image/png": 10 * MB,
+      },
+    },
   };
 
 /** True when the provider enforces a window for free-form replies at all. */

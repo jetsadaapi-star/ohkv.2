@@ -1,3 +1,5 @@
+import { THAI_CARRIERS } from "@/lib/shipping/thai-carriers";
+
 /**
  * Where to send someone who wants to watch a hand-entered parcel move.
  *
@@ -33,7 +35,14 @@ const PLACEHOLDER = "{tracking}";
  * configure. Order matters: the first match wins, so a more specific name is
  * listed above the family it belongs to.
  */
-const BUILT_IN: Array<{ match: RegExp; template: string }> = [
+const BUILT_IN: Array<{ match: RegExp; template: string; deepLink?: boolean }> = [
+  // Thai couriers first (lib/shipping/thai-carriers.ts): "DHL eCommerce"
+  // must be met before the generic DHL below.
+  ...THAI_CARRIERS.map((carrier) => ({
+    match: carrier.match,
+    template: carrier.template,
+    deepLink: carrier.deepLink,
+  })),
   // Ours already, from the Shiprocket adapter — same URL it stamps on a label.
   { match: /shiprocket/i, template: `https://shiprocket.co/tracking/${PLACEHOLDER}` },
   {
@@ -134,6 +143,9 @@ export function trackingPageUrl(params: {
 
   for (const entry of BUILT_IN) {
     if (entry.match.test(carrier)) {
+      // A courier whose site takes no number in its address: its tracking
+      // page itself, where the number is pasted.
+      if (entry.deepLink === false) return safeUrl(entry.template);
       return safeUrl(fillTemplate(entry.template, trackingNumber));
     }
   }
@@ -143,6 +155,7 @@ export function trackingPageUrl(params: {
 
 /** The couriers this build links without any configuration, for the settings copy. */
 export const BUILT_IN_TRACKING_COURIERS = [
+  ...THAI_CARRIERS.map((carrier) => carrier.name),
   "Shiprocket",
   "Blue Dart",
   "Delhivery",

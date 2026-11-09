@@ -29,6 +29,7 @@ import {
   Gift,
   Megaphone,
   Percent,
+  Zap,
   FileText,
   Globe,
   PlusCircle,
@@ -132,6 +133,7 @@ const iconMap: Record<string, LucideIcon> = {
   Gift,
   Megaphone,
   Percent,
+  Zap,
   FileText,
   Globe,
   PlusCircle,
@@ -517,6 +519,11 @@ const adminNavGroups: {
         label: "admin.sidebar.discounts",
         href: "/admin/discounts",
         icon: "Percent",
+      },
+      {
+        label: "admin.sidebar.flashSales",
+        href: "/admin/flash-sales",
+        icon: "Zap",
       },
       {
         label: "admin.sidebar.boosts",

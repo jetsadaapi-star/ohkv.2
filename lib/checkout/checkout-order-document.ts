@@ -259,6 +259,8 @@ export async function buildOrderDocument(params: {
   fulfillment?: PickupFulfillmentSnapshot;
   /** The shopper's order note, when the store asks for one. */
   customerNote?: string;
+  /** Wrapped as a gift (lib/orders/gift-wrap.ts). */
+  giftWrap?: { enabled: boolean; message?: string; fee?: number };
   /** Answers to the store's own checkout fields. */
   checkoutFields?: OrderCheckoutField[];
   /** The phone the shopper asked to be reached on. */
@@ -308,6 +310,7 @@ export async function buildOrderDocument(params: {
     vendorShippingCosts,
     fulfillment,
     customerNote,
+    giftWrap,
     checkoutFields,
     contactPhone,
   } = params;
@@ -654,6 +657,7 @@ export async function buildOrderDocument(params: {
     // stranded a paid-for order permanently.
     status: initialOrderStatus,
     customerNote,
+    ...(giftWrap?.enabled ? { giftWrap } : {}),
     contactPhone,
     checkoutFields: checkoutFields?.length ? checkoutFields : undefined,
     // The return rules of the moment the shopper paid, which an order made

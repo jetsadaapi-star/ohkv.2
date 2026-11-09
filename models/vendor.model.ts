@@ -220,6 +220,10 @@ const VendorMessagingSchema = new Schema<VendorMessagingSettings>(
       enabled: { type: Boolean, default: false },
       username: { type: String, trim: true, maxlength: 100 },
     },
+    line: {
+      enabled: { type: Boolean, default: false },
+      lineId: { type: String, trim: true, maxlength: 60 },
+    },
   },
   { _id: false },
 );

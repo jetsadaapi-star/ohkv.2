@@ -1570,6 +1570,7 @@ export const UpdateCustomerProfileSchema = z.object({
   marketingOptIn: z.boolean().optional(),
   emailNotifications: EmailNotificationsSchema.optional(),
   smsNotifications: z.object({ orderUpdates: z.boolean().optional() }).optional(),
+  lineNotifications: z.object({ orderUpdates: z.boolean().optional() }).optional(),
 });
 
 export const AdminUpdateCustomerProfileSchema = z.object({

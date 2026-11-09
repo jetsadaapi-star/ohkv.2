@@ -133,13 +133,47 @@ export async function resolveCheckoutShipping(
   params: Parameters<typeof resolveCheckoutShippingUnrounded>[0] & {
     /** The currency the order is charged in; 2 decimals when absent. */
     currency?: string;
+    /**
+     * Gift wrapping, per parcel (lib/orders/gift-wrap.ts `cartGiftWrapFee`):
+     * added to each seller's delivery charge, since the seller who packs the
+     * parcel wraps it. 0 or absent adds nothing.
+     */
+    giftWrapFee?: number;
   },
 ): Promise<ResolvedCheckoutShipping> {
-  const { currency, ...rest } = params;
-  return quantizeResolution(
-    await resolveCheckoutShippingUnrounded(rest),
-    currency || "USD",
-  );
+  const { currency, giftWrapFee, ...rest } = params;
+  const resolution = await resolveCheckoutShippingUnrounded(rest);
+  return quantizeResolution(withGiftWrapFee(resolution, giftWrapFee ?? 0), currency || "USD");
+}
+
+/** The resolution with the gift-wrapping fee on every parcel it delivers. */
+function withGiftWrapFee(resolution: ResolvedCheckoutShipping, fee: number): ResolvedCheckoutShipping {
+  if (!(fee > 0) || !resolution.available) return resolution;
+  if (resolution.mode === "vendor" && resolution.vendorShippingCosts.size > 0) {
+    const vendorShippingCosts = new Map(
+      Array.from(resolution.vendorShippingCosts, ([vendorId, entry]) => [
+        vendorId,
+        { ...entry, cost: entry.cost + fee },
+      ]),
+    );
+    return {
+      ...resolution,
+      vendorShippingCosts,
+      vendorGroups: resolution.vendorGroups.map((group) => ({
+        ...group,
+        cost: group.cost + fee,
+        // Every option the shopper can pick is shown with the wrapping in it,
+        // so the page's sum is the sum the server charges.
+        options: group.options.map((option) => ({ ...option, cost: option.cost + fee })),
+      })),
+      shippingCost: resolution.shippingCost + fee * vendorShippingCosts.size,
+    };
+  }
+  return {
+    ...resolution,
+    singleOptions: resolution.singleOptions.map((option) => ({ ...option, cost: option.cost + fee })),
+    shippingCost: resolution.shippingCost + fee,
+  };
 }
 
 async function resolveCheckoutShippingUnrounded(params: {

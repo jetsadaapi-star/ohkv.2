@@ -21,6 +21,7 @@ import {
   InstagramGlyph,
   MessengerGlyph,
   TelegramGlyph,
+  LineGlyph,
   WhatsAppGlyph,
 } from "@/components/ui/brand-glyphs";
 import { Badge } from "@/components/ui/badge";
@@ -63,6 +64,9 @@ interface ChannelConnectionDTO {
   publicPageUsername?: string;
   publicInstagramUsername?: string;
   publicTelegramUsername?: string;
+  lineBotUserId?: string;
+  publicLineId?: string;
+  lineNotifyCustomers?: boolean;
   messengerHumanAgentEnabled?: boolean;
   lastVerifiedAt?: string;
   lastError?: string;
@@ -78,7 +82,8 @@ function accountIdentifier(connection: ChannelConnectionDTO) {
     connection.phoneNumberId ||
     connection.pageId ||
     connection.instagramUserId ||
-    connection.telegramBotId
+    connection.telegramBotId ||
+    connection.lineBotUserId
   );
 }
 
@@ -93,6 +98,9 @@ function publicContact(connection: ChannelConnectionDTO) {
   }
   if (connection.publicTelegramUsername) {
     return `t.me/${connection.publicTelegramUsername}`;
+  }
+  if (connection.publicLineId) {
+    return `line.me/R/ti/p/${connection.publicLineId}`;
   }
   return undefined;
 }
@@ -145,6 +153,17 @@ const CHANNEL_TABS = [
     webhook: false,
     accent:
       "data-[state=active]:border-sky-500/40 data-[state=active]:bg-sky-500/10",
+  },
+  {
+    value: "line",
+    label: "LINE",
+    icon: LineGlyph,
+    brand: "text-[#06C755]",
+    // The URL is registered through the API, but LINE's console still wants
+    // "Use webhook" switched on, so the panel shows its own LINE URL below.
+    webhook: false,
+    accent:
+      "data-[state=active]:border-green-500/40 data-[state=active]:bg-green-500/10",
   },
 ] as const;
 
@@ -280,6 +299,35 @@ const CHANNEL_SETUP: Record<
         "META_INSTAGRAM_CONFIGURATION_ID must be a Facebook Login for Business configuration. The ID under Instagram → API setup with Instagram login belongs to a different product, and its codes fail the exchange with a redirect_uri error.",
     },
   },
+  line: {
+    steps: [
+      {
+        key: "setup.line.oa",
+        fallback:
+          "Create a LINE Official Account (LINE OA Manager), then turn on the Messaging API in its settings.",
+      },
+      {
+        key: "setup.line.provider",
+        fallback:
+          "Choose the same provider as your LINE Login channel, so customers who sign in with LINE can get order updates there.",
+      },
+      {
+        key: "setup.line.credentials",
+        fallback:
+          "In the LINE Developers console, copy the channel secret (Basic settings) and issue a long-lived channel access token (Messaging API).",
+      },
+      {
+        key: "setup.line.connect",
+        fallback:
+          "Connect. {storeName} registers the webhook URL itself — then switch on Use webhook in the console and turn off Auto-reply messages.",
+      },
+    ],
+    caution: {
+      key: "setup.line.caution",
+      fallback:
+        "Every message the store pushes counts against your LINE OA plan's monthly quota. Replies to chats and order updates both count.",
+    },
+  },
   telegram: {
     steps: [
       {
@@ -359,6 +407,11 @@ export function ChannelConnectionsPanel({
     botToken: "",
     publicTelegramUsername: "",
   });
+  const [line, setLine] = useState({
+    channelAccessToken: "",
+    channelSecret: "",
+    publicLineId: "",
+  });
   const [instagram, setInstagram] = useState({
     instagramUserId: "",
     publicInstagramUsername: "",
@@ -422,7 +475,9 @@ export function ChannelConnectionsPanel({
             ? instagram
             : provider === "telegram"
               ? telegram
-              : messenger;
+              : provider === "line"
+                ? line
+                : messenger;
       const response = await fetch("/api/chat/channels", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -436,6 +491,7 @@ export function ChannelConnectionsPanel({
       setMessenger((current) => ({ ...current, accessToken: "" }));
       setInstagram((current) => ({ ...current, accessToken: "" }));
       setTelegram((current) => ({ ...current, botToken: "" }));
+      setLine((current) => ({ ...current, channelAccessToken: "", channelSecret: "" }));
       toast.success(
         tr("channelConnections.connectedProvider", "{provider} connected", {
           provider: channelLabel(provider),
@@ -503,6 +559,28 @@ export function ChannelConnectionsPanel({
           : tr("channelConnections.verifyFailed", "Unable to verify channel"),
       );
       await reload();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggleLineNotify = async (connectionId: string, enabled: boolean) => {
+    setSaving(true);
+    try {
+      const response = await fetch("/api/chat/channels", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ connectionId, lineNotifyCustomers: enabled }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.success) {
+        throw new Error(payload?.message || tr("channelConnections.lineNotifyFailed", "Unable to update LINE order updates"));
+      }
+      await reload();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : tr("channelConnections.lineNotifyFailed", "Unable to update LINE order updates"),
+      );
     } finally {
       setSaving(false);
     }
@@ -636,7 +714,7 @@ export function ChannelConnectionsPanel({
             carries its own connection state. Which channels are live used to be
             discoverable only by clicking through all four tabs.
           */}
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 sm:grid-cols-4">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 sm:grid-cols-5">
             {CHANNEL_TABS.map((tab) => {
               const connection = connections.find(
                 (item) => item.provider === tab.value,
@@ -1024,6 +1102,95 @@ export function ChannelConnectionsPanel({
             )}
           </TabsContent>
 
+          <TabsContent value="line" className="space-y-4">
+            {connected("line") ? (
+              <>
+                <ConnectedChannel
+                  connection={connected("line")!}
+                  disabled={!canManage || saving}
+                  onDisconnect={disconnect}
+                  onVerify={verify}
+                />
+                <div className="flex items-start justify-between gap-3 rounded-md border bg-muted/30 p-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="line-notify-customers">
+                      {tr("channelConnections.lineNotify", "Send order updates on LINE")}
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      {tr(
+                        "channelConnections.lineNotifyHint",
+                        "Customers who signed in with LINE and added this account as a friend get their order and return updates here. Each update counts against the monthly message quota.",
+                      )}
+                    </p>
+                  </div>
+                  <Switch
+                    id="line-notify-customers"
+                    checked={connected("line")!.lineNotifyCustomers !== false}
+                    disabled={!canManage || saving}
+                    onCheckedChange={(enabled) => void toggleLineNotify(connected("line")!._id, enabled)}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="line-access-token">
+                      {tr("channelConnections.lineAccessToken", "Channel access token (long-lived)")}
+                    </Label>
+                    <Input
+                      id="line-access-token"
+                      type="password"
+                      autoComplete="new-password"
+                      value={line.channelAccessToken}
+                      onChange={(event) => setLine((current) => ({ ...current, channelAccessToken: event.target.value }))}
+                      disabled={!canManage}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="line-channel-secret">
+                      {tr("channelConnections.lineChannelSecret", "Channel secret")}
+                    </Label>
+                    <Input
+                      id="line-channel-secret"
+                      type="password"
+                      autoComplete="new-password"
+                      value={line.channelSecret}
+                      placeholder="32 characters"
+                      onChange={(event) => setLine((current) => ({ ...current, channelSecret: event.target.value }))}
+                      disabled={!canManage}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="line-public-id">
+                      {tr("channelConnections.publicLineId", "LINE ID (optional)")}
+                    </Label>
+                    <Input
+                      id="line-public-id"
+                      value={line.publicLineId}
+                      placeholder="@yourshop"
+                      onChange={(event) => setLine((current) => ({ ...current, publicLineId: event.target.value }))}
+                      disabled={!canManage}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {tr(
+                        "channelConnections.publicLineHint",
+                        "For the storefront's add-friend link; taken from the account itself when blank.",
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  disabled={!canManage || saving || !line.channelAccessToken.trim() || !line.channelSecret.trim()}
+                  onClick={() => void connect("line")}
+                >
+                  {saving ? <Loader2 className="animate-spin" /> : <Plug />}
+                  {tr("channelConnections.connectProvider", "Connect LINE", { provider: "LINE" })}
+                </Button>
+              </>
+            )}
+          </TabsContent>
+
           {/*
             Reference material, so it sits AFTER the form rather than pushing it
             below the fold. Both are outside the four TabsContent blocks because
@@ -1080,7 +1247,7 @@ export function ChannelConnectionsPanelSkeleton() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-5">
           {CHANNEL_TABS.map((tab) => {
             const Icon = tab.icon;
             return (

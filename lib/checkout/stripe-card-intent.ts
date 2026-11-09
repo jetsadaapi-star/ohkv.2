@@ -1,4 +1,5 @@
 import "server-only";
+import { cartGiftWrapFee, orderGiftWrapOf, type CartGiftWrap } from "@/lib/orders/gift-wrap";
 import { VENDOR_PICKUP_ONLY_MESSAGE } from "@/lib/vendors/vendor-fulfillment";
 
 import { assertWholeQuantities } from "@/lib/cart/cart-item-quantity";
@@ -818,6 +819,7 @@ export async function createStripeCardIntent(
         selectedShippingOptionId,
         vendorShippingSelections,
         currency: settings.general?.defaultCurrency,
+        giftWrapFee: cartGiftWrapFee(settings, cart as { giftWrap?: CartGiftWrap | null } | null),
       });
   if (shippingResolution && !shippingResolution.available) {
     throw new ValidationError(shippingResolution.unavailableReason === "pickup_only"
@@ -1467,6 +1469,7 @@ export async function createStripeCardIntent(
       customerNote: submission.customerNote,
       checkoutFields: submission.checkoutFields,
       contactPhone: submission.contactPhone,
+      giftWrap: orderGiftWrapOf(settings, cart as { giftWrap?: CartGiftWrap | null }),
     };
     await updateCheckoutSnapshot(cartDoc, {
       trackAbandoned: submission.checkout.abandonedCheckouts.enabled,

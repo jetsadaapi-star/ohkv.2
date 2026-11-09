@@ -1,5 +1,6 @@
 "use client";
 
+import { CarrierQuickPick } from "@/components/shipping/carrier-quick-pick";
 import { statusBadgeClass } from "@/lib/ui/status-palette";
 import { useRouter } from "@/hooks/use-locale-navigation";
 import { useTranslations } from "next-intl";
@@ -1956,6 +1957,7 @@ export function OrderHeader({
                 onChange={(event) => setCarrier(event.target.value)}
                 placeholder={t("orderDetails.carrierPlaceholder")}
               />
+              <CarrierQuickPick value={carrier} onChange={setCarrier} trackingNumber={trackingNumber} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="detail-order-tracking-number">

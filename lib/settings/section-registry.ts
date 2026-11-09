@@ -95,6 +95,7 @@ export const SETTINGS_SECTION_SCHEMAS = {
     "freeShippingThreshold",
     "defaultShippingCost",
     "loyaltySpendPerPoint",
+    "giftWrap",
     "commission",
     "returns",
   ] as const),

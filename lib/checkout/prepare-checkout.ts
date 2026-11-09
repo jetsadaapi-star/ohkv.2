@@ -1,4 +1,5 @@
 import "server-only";
+import { cartGiftWrapFee, orderGiftWrapOf, type CartGiftWrap } from "@/lib/orders/gift-wrap";
 import type * as z from "zod";
 import { buildLocalePath } from "@/lib/i18n/locale-prefix";
 import { getLocaleRouting } from "@/lib/i18n/locale-routing";
@@ -774,6 +775,8 @@ async function runCheckout(
     customerNote: submission.customerNote,
     checkoutFields: submission.checkoutFields,
     contactPhone: submission.contactPhone,
+    // Rides to every order this checkout makes, as the note does.
+    giftWrap: orderGiftWrapOf(settings, cart as { giftWrap?: CartGiftWrap | null }),
   };
 
   // Persist any re-priced values back to the cart so consumers that re-read
@@ -903,6 +906,7 @@ async function runCheckout(
         selectedShippingOptionId,
         vendorShippingSelections,
         currency: settings.general?.defaultCurrency,
+        giftWrapFee: cartGiftWrapFee(settings, cart as { giftWrap?: CartGiftWrap | null } | null),
       });
   // A quote reports a delivery that is not possible; placing refuses it.
   const shippingUnavailable = Boolean(

@@ -398,10 +398,15 @@ type LiveDoc = Awaited<ReturnType<typeof findScoped>>;
  */
 async function applyLivePrices(live: LiveDoc) {
   if ((live.priceSnapshot ?? []).length > 0) await restoreLivePrices(live);
+  // A product on a running Flash Sale keeps the sale's price: two discounts
+  // writing the same field would each put back the other's price.
+  const { productsOnFlashSale } = await import("@/lib/catalog/flash-sales");
+  const onFlashSale = await productsOnFlashSale();
   const snapshots: PriceSnapshot[] = [];
   for (const row of live.products ?? []) {
     const discount = row.discountPercent ?? 0;
     if (discount <= 0) continue;
+    if (onFlashSale.has(String(row.productId))) continue;
     const factor = 1 - discount / 100;
     const product = await Product.findById(row.productId)
       .select("price comparePrice variants")

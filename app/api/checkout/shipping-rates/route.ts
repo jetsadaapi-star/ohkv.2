@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { cartGiftWrapFee, type CartGiftWrap } from "@/lib/orders/gift-wrap";
 import { connectDB } from "@/lib/db";
 import { Cart } from "@/models";
 import { getSettingsLean } from "@/models/settings.model";
@@ -178,6 +179,7 @@ export const POST = withApi(
       selectedShippingOptionId,
       vendorShippingSelections,
       currency: settings.general?.defaultCurrency,
+      giftWrapFee: cartGiftWrapFee(settings, cart as { giftWrap?: CartGiftWrap | null } | null),
     });
 
     return successResponse({

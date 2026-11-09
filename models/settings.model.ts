@@ -435,6 +435,8 @@ interface IOrderSettings {
   defaultShippingCost: number;
   /** Store-currency spend per loyalty point — see lib/customers/loyalty.ts. */
   loyaltySpendPerPoint?: number;
+  /** Gift wrapping at checkout — lib/orders/gift-wrap.ts. */
+  giftWrap?: { enabled: boolean; fee: number; allowMessage: boolean };
   commission: ICommissionSettings;
   returns: IReturnPolicySettings;
 }
@@ -2042,6 +2044,17 @@ const SettingsSchema = new Schema<ISettings>(
             type: Number,
             default: DEFAULT_LOYALTY_SPEND_PER_POINT,
             min: MIN_LOYALTY_SPEND_PER_POINT,
+          },
+          giftWrap: {
+            type: new Schema(
+              {
+                enabled: { type: Boolean, default: false },
+                fee: { type: Number, default: 0, min: 0, max: 100_000 },
+                allowMessage: { type: Boolean, default: true },
+              },
+              { _id: false },
+            ),
+            default: () => ({}),
           },
           commission: {
             type: new Schema(

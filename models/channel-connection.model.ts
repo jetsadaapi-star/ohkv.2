@@ -11,6 +11,7 @@ export const MESSAGE_PROVIDERS = {
   MESSENGER: "messenger",
   INSTAGRAM: "instagram",
   TELEGRAM: "telegram",
+  LINE: "line",
 } as const;
 
 export const CHANNEL_CONNECTION_STATUSES = {
@@ -76,6 +77,21 @@ export interface IChannelConnection extends Document {
   publicInstagramUsername?: string;
   /** Bot username used for the public t.me click-to-chat link. */
   publicTelegramUsername?: string;
+  /**
+   * The LINE Official Account's bot user id ("U…"), from /v2/bot/info. Every
+   * webhook names it as `destination`, so it is the routing key.
+   */
+  lineBotUserId?: string;
+  /** The OA's basic id ("@abc1234"), for the public line.me add-friend link. */
+  publicLineId?: string;
+  /**
+   * The channel secret: LINE signs every webhook body with it
+   * (X-Line-Signature), so it is the webhook's only proof. Encrypted like the
+   * access token, and dropped with it on disconnect.
+   */
+  lineChannelSecretEncrypted?: EncryptedSecret;
+  /** Order and return updates go to customers who signed in with LINE. */
+  lineNotifyCustomers?: boolean;
   messengerHumanAgentEnabled?: boolean;
   /**
    * Absent only on a `revoked` row. Disconnecting keeps the document so its
@@ -136,6 +152,10 @@ const ChannelConnectionSchema = new Schema<IChannelConnection>(
     publicPageUsername: { type: String, trim: true, maxlength: 120 },
     publicInstagramUsername: { type: String, trim: true, maxlength: 120 },
     publicTelegramUsername: { type: String, trim: true, maxlength: 120 },
+    lineBotUserId: { type: String, trim: true, maxlength: 64 },
+    publicLineId: { type: String, trim: true, maxlength: 64 },
+    lineChannelSecretEncrypted: { type: EncryptedSecretSchema },
+    lineNotifyCustomers: { type: Boolean, default: true },
     messengerHumanAgentEnabled: { type: Boolean, default: false },
     // Not `required`: a revoked row deliberately carries no credential.
     accessTokenEncrypted: { type: EncryptedSecretSchema },
@@ -178,6 +198,14 @@ ChannelConnectionSchema.index(
   {
     unique: true,
     partialFilterExpression: { telegramBotId: { $type: "string" } },
+  },
+);
+// LINE's routing key: every webhook names its OA as `destination`.
+ChannelConnectionSchema.index(
+  { provider: 1, lineBotUserId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { lineBotUserId: { $type: "string" } },
   },
 );
 // The webhook's only routing key: an update names the chat, never the bot.

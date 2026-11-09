@@ -50,7 +50,7 @@ type WebhookReceiptClaim =
   | { duplicate: false; receipt: IMessagingWebhookReceipt };
 
 export async function claimWebhookReceipt(params: {
-  provider: "meta" | "telegram";
+  provider: "meta" | "telegram" | "line";
   eventKey: string;
   payloadHash: string;
 }): Promise<WebhookReceiptClaim> {

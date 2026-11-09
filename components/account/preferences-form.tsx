@@ -9,6 +9,7 @@ import { StickySaveFooter } from "@/components/admin/settings/sections/sticky-sa
 import { useSuspenseResource } from "@/hooks/use-suspense-resource";
 import { cn } from "@/lib/utils";
 import { Heart, Megaphone, Package } from "lucide-react";
+import { LineGlyph } from "@/components/ui/brand-glyphs";
 import { AccountSection, type AccountTone } from "./account-ui";
 
 interface CustomerProfile {
@@ -22,6 +23,9 @@ interface CustomerProfile {
   smsNotifications?: {
     orderUpdates?: boolean;
   };
+  lineNotifications?: {
+    orderUpdates?: boolean;
+  };
   marketingOptIn?: boolean;
   preferredPaymentMethod?: string;
   preferredCurrency?: string;
@@ -31,12 +35,15 @@ interface CustomerProfile {
 interface CustomerProfileResponse {
   profile?: CustomerProfile;
   smsUpdatesAvailable?: boolean;
+  /** The store's LINE OA sends order updates; `linked` = signed in with LINE. */
+  line?: { available: boolean; linked?: boolean; addFriendUrl?: string };
 }
 
 /** Every switch on the page, with the default a never-saved profile shows. */
 interface Draft {
   orderUpdates: boolean;
   smsOrderUpdates: boolean;
+  lineOrderUpdates: boolean;
   priceDrops: boolean;
   backInStock: boolean;
   marketingOptIn: boolean;
@@ -48,6 +55,7 @@ function toDraft(profile: CustomerProfile | undefined): Draft {
   return {
     orderUpdates: profile?.emailNotifications?.orderUpdates ?? true,
     smsOrderUpdates: profile?.smsNotifications?.orderUpdates ?? true,
+    lineOrderUpdates: profile?.lineNotifications?.orderUpdates ?? true,
     priceDrops: profile?.emailNotifications?.priceDrops ?? false,
     backInStock: profile?.emailNotifications?.backInStock ?? false,
     marketingOptIn: profile?.marketingOptIn ?? false,
@@ -75,6 +83,8 @@ export function PreferencesForm() {
   const [saved, setSaved] = useState<Draft>(() => toDraft(data?.profile));
   const [draft, setDraft] = useState<Draft>(saved);
   const smsUpdatesAvailable = data?.smsUpdatesAvailable === true;
+  const line = data?.line;
+  const lineUpdatesAvailable = Boolean(line?.available && line.linked);
   const isDirty = (Object.keys(draft) as (keyof Draft)[]).some(
     (key) => draft[key] !== saved[key],
   );
@@ -105,6 +115,9 @@ export function PreferencesForm() {
           ...(smsUpdatesAvailable
             ? { smsNotifications: { orderUpdates: draft.smsOrderUpdates } }
             : {}),
+          ...(lineUpdatesAvailable
+            ? { lineNotifications: { orderUpdates: draft.lineOrderUpdates } }
+            : {}),
           preferredPaymentMethod: data?.profile?.preferredPaymentMethod,
           preferredCurrency: data?.profile?.preferredCurrency,
           preferredLanguage: data?.profile?.preferredLanguage,
@@ -131,6 +144,9 @@ export function PreferencesForm() {
             },
             ...(smsUpdatesAvailable
               ? { smsNotifications: { orderUpdates: draft.smsOrderUpdates } }
+              : {}),
+            ...(lineUpdatesAvailable
+              ? { lineNotifications: { orderUpdates: draft.lineOrderUpdates } }
               : {}),
           },
         }));
@@ -167,6 +183,32 @@ export function PreferencesForm() {
               onChange={set("smsOrderUpdates")}
             />
           )}
+          {lineUpdatesAvailable ? (
+            <Row
+              title={t("account.lineUpdates.title")}
+              description={t("account.lineUpdates.description")}
+              checked={draft.lineOrderUpdates}
+              onChange={set("lineOrderUpdates")}
+            />
+          ) : null}
+          {line?.available && line.addFriendUrl ? (
+            <a
+              href={line.addFriendUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 px-5 py-4 transition-colors hover:bg-muted/30 sm:px-6"
+            >
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#06C755] text-white">
+                <LineGlyph className="size-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold">{t("account.lineUpdates.addFriend")}</span>
+                <span className="block text-sm text-muted-foreground">
+                  {line.linked ? t("account.lineUpdates.addFriendHint") : t("account.lineUpdates.signInHint")}
+                </span>
+              </span>
+            </a>
+          ) : null}
         </Group>
 
         <Group icon={<Heart />} tone="madder" title={t("customerProfile.groupWishlist")}>

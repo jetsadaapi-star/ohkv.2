@@ -1,7 +1,7 @@
 import mongoose, { Schema, type Document, type Model } from "mongoose";
 export interface IMessagingWebhookReceipt extends Document {
   /** Which webhook surface delivered this; each has its own event keyspace. */
-  provider: "meta" | "telegram";
+  provider: "meta" | "telegram" | "line";
   eventKey: string;
   payloadHash: string;
   status: "processing" | "processed" | "failed";
@@ -15,7 +15,7 @@ export interface IMessagingWebhookReceipt extends Document {
 const MessagingWebhookReceiptSchema =
   new Schema<IMessagingWebhookReceipt>(
     {
-      provider: { type: String, enum: ["meta", "telegram"], required: true },
+      provider: { type: String, enum: ["meta", "telegram", "line"], required: true },
       eventKey: { type: String, required: true, maxlength: 200 },
       payloadHash: { type: String, required: true, minlength: 64, maxlength: 64 },
       status: {

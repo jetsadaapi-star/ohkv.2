@@ -5,9 +5,11 @@ import {
   SendHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LineGlyph } from "@/components/ui/brand-glyphs";
 import { cn } from "@/lib/utils";
 import {
   vendorInstagramUrl,
+  vendorLineUrl,
   vendorMessengerUrl,
   vendorTelegramUrl,
   vendorWhatsAppUrl,
@@ -51,6 +53,12 @@ export function VendorExternalChannels({
   // One row per public click-to-chat destination, so a channel is added here by
   // adding a link rather than by copying a button block.
   const links = [
+    {
+      key: "line",
+      label: "LINE",
+      href: vendorLineUrl(settings),
+      icon: <LineGlyph className="text-[#06C755]" />,
+    },
     {
       key: "whatsapp",
       label: "WhatsApp",

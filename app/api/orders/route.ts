@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { cartGiftWrapFee, orderGiftWrapOf, type CartGiftWrap } from "@/lib/orders/gift-wrap";
 import { Types } from "mongoose";
 import { connectDB } from "@/lib/db";
 import { Order, Cart } from "@/models";
@@ -510,6 +511,7 @@ export async function POST(request: NextRequest) {
           selectedShippingOptionId,
           vendorShippingSelections,
           currency: settings.general?.defaultCurrency,
+          giftWrapFee: cartGiftWrapFee(settings, cart as { giftWrap?: CartGiftWrap | null } | null),
         })
       : null;
     if (shippingResolution && !shippingResolution.available) {
@@ -610,6 +612,9 @@ export async function POST(request: NextRequest) {
 
     // Create order with retry for order number uniqueness
     const orderData = {
+      ...(orderGiftWrapOf(settings, cart as { giftWrap?: CartGiftWrap | null })
+        ? { giftWrap: orderGiftWrapOf(settings, cart as { giftWrap?: CartGiftWrap | null }) }
+        : {}),
       inventoryReservationSourceId: new Types.ObjectId().toString(),
       customerId: session.user.id,
       currency: settings.general?.defaultCurrency || "USD",

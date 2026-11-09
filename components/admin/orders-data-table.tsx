@@ -1,5 +1,6 @@
 "use client";
 
+import { CarrierQuickPick } from "@/components/shipping/carrier-quick-pick";
 import { cn } from "@/lib/utils";
 import { statusRowClass, statusRowHue } from "@/components/vendor/status-tone";
 import { statusBadgeClass } from "@/lib/ui/status-palette";
@@ -1039,6 +1040,7 @@ export function OrdersDataTable({
                 onChange={(event) => setCarrier(event.target.value)}
                 placeholder={th("carrierPlaceholder")}
               />
+              <CarrierQuickPick value={carrier} onChange={setCarrier} trackingNumber={trackingNumber} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="order-tracking-number">{th("trackingNumber")}</Label>

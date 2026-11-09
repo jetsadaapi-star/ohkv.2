@@ -233,7 +233,7 @@ export function DashboardOrdersChart({
         <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight text-foreground">
-          <span aria-hidden className="h-5 w-1 shrink-0 rounded-full bg-gradient-to-b from-blue-500 to-violet-500" />
+          <span aria-hidden className="size-2.5 shrink-0 rotate-45 rounded-[3px] bg-primary ring-[3px] ring-highlight/40" />
               {view === "orders"
                 ? t("admin.dashboardPage.ordersTitle")
                 : t("admin.dashboardPage.sales")}
@@ -331,25 +331,21 @@ export function DashboardOrdersChart({
                   />
                   <Bar
                     dataKey="online"
-                    fill="var(--muted-foreground)"
-                    fillOpacity={0.45}
+                    fill="var(--highlight)"
                     radius={[4, 4, 0, 0]}
                     maxBarSize={22}
-                    activeBar={{
-                      fill: "var(--muted-foreground)",
-                      fillOpacity: 0.45,
-                    }}
+                    activeBar={{ fill: "var(--highlight)" }}
                   />
                 </BarChart>
               </ResponsiveContainer>
             </div>
             <div className="mt-3 flex flex-wrap items-center justify-center gap-5 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-2">
-                <span className="size-2.5 rounded-[2px] bg-blue-600" />
+                <span className="size-2.5 rounded-[2px] bg-primary" />
                 {t("admin.dashboardPage.stats.inStore")}
               </span>
               <span className="inline-flex items-center gap-2">
-                <span className="size-2.5 rounded-[2px] bg-muted-foreground/50" />
+                <span className="size-2.5 rounded-[2px] bg-highlight" />
                 {t("admin.dashboardPage.stats.online")}
               </span>
             </div>
@@ -363,7 +359,7 @@ export function DashboardOrdersChart({
                 className={cn(
                   "-mb-px border-b-2 pb-3 transition-colors",
                   view === "orders"
-                    ? "border-foreground font-semibold text-foreground"
+                    ? "border-primary font-semibold text-primary"
                     : "border-transparent text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -375,7 +371,7 @@ export function DashboardOrdersChart({
                 className={cn(
                   "-mb-px border-b-2 pb-3 transition-colors",
                   view === "sales"
-                    ? "border-foreground font-semibold text-foreground"
+                    ? "border-primary font-semibold text-primary"
                     : "border-transparent text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -390,26 +386,26 @@ export function DashboardOrdersChart({
             </div>
 
             <div className="space-y-2">
-              <div className="flex h-1.5 overflow-hidden rounded-full bg-muted">
+              <div className="flex h-2 overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full bg-blue-600"
+                  className="h-full bg-primary"
                   style={{ width: `${inStoreShare}%` }}
                 />
                 <div
-                  className="h-full bg-muted-foreground/50"
+                  className="h-full bg-highlight"
                   style={{ width: `${onlineShare}%` }}
                 />
               </div>
               <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
-                  <span className="size-2 rounded-[2px] bg-blue-600" />
+                  <span className="size-2 rounded-[2px] bg-primary" />
                   {t("admin.dashboardPage.stats.inStore")}
                   <span className="font-medium text-foreground tabular-nums">
                     {formatValue(inStoreTotal)}
                   </span>
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <span className="size-2 rounded-[2px] bg-muted-foreground/50" />
+                  <span className="size-2 rounded-[2px] bg-highlight" />
                   {t("admin.dashboardPage.stats.online")}
                   <span className="font-medium text-foreground tabular-nums">
                     {formatValue(onlineTotal)}
@@ -581,7 +577,7 @@ function ActionRow({
       className="flex w-full items-center justify-between rounded-lg border bg-muted/30 px-3 py-2.5 text-left transition-colors hover:bg-muted/60"
     >
       <span className="inline-flex items-center gap-2.5 text-sm font-medium text-foreground">
-        <span className="inline-flex size-7 items-center justify-center rounded-md bg-blue-600/10 text-blue-600">
+        <span className="inline-flex size-7 items-center justify-center rounded-md bg-primary/10 text-primary">
           {icon}
         </span>
         {label}

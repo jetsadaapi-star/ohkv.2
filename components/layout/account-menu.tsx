@@ -202,7 +202,7 @@ export function SidebarAccountMenu({
                     "text-xs font-semibold",
                     isApparent
                       ? "bg-white/20 text-white"
-                      : "bg-linear-to-br from-primary to-violet-600 text-white",
+                      : "bg-linear-to-br from-primary to-[color-mix(in_oklab,var(--primary)_68%,var(--highlight))] text-white",
                   )}
                 >
                   {initialsOf(displayName)}

@@ -61,7 +61,7 @@ type Show = { id: string; name: string; gift: LiveGiftDef; count: number };
  * take the whole screen for a moment, one at a time. Gifts already in the
  * chat when the room opened are not replayed.
  */
-export function useGiftShow(messages: LiveChatItem[]) {
+export function useGiftShow(messages: LiveChatItem[], onGift?: (gift: LiveGiftDef) => void) {
   const t = useTranslations("live.gifts");
   const giftName = useGiftName();
   const seen = useRef(new Set<string>());
@@ -70,6 +70,10 @@ export function useGiftShow(messages: LiveChatItem[]) {
   const [mega, setMega] = useState<Show | null>(null);
   const megaQueue = useRef<Show[]>([]);
   const megaBusy = useRef(false);
+  const onGiftRef = useRef(onGift);
+  useEffect(() => {
+    onGiftRef.current = onGift;
+  }, [onGift]);
 
   const nextMega = useCallback(function playNext() {
     const next = megaQueue.current.shift() ?? null;
@@ -87,6 +91,7 @@ export function useGiftShow(messages: LiveChatItem[]) {
       const at = message.at ? new Date(message.at).getTime() : now;
       if (!gift || now - at > 30_000) continue;
       const show: Show = { id: message.id, name: message.name, gift, count: message.gift?.count ?? 1 };
+      onGiftRef.current?.(gift);
       setBanners((list) => [...list, show].slice(-3));
       setTimeout(() => setBanners((list) => list.filter((b) => b.id !== show.id)), 4200);
       if (gift.tier === 2) {

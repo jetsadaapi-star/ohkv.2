@@ -101,7 +101,7 @@ export function DashboardStatsSection({
   const definitions: StatCardDefinition[] = [
     {
       id: "in-store-sales",
-      tone: "violet",
+      tone: "silk",
       icon: <Store />,
       visible: posEnabled,
       label: t("admin.dashboardPage.stats.inStoreSales"),
@@ -112,7 +112,7 @@ export function DashboardStatsSection({
     },
     {
       id: "website-sales",
-      tone: "blue",
+      tone: "gold",
       icon: <Globe />,
       label: t("admin.dashboardPage.stats.websiteSales"),
       getMetric: (s) => s.websiteSales,
@@ -122,7 +122,7 @@ export function DashboardStatsSection({
     },
     {
       id: "total-orders",
-      tone: "emerald",
+      tone: "terracotta",
       icon: <ShoppingBag />,
       label: t("admin.dashboardPage.stats.totalOrders"),
       getMetric: (s) => s.totalOrders,
@@ -132,7 +132,7 @@ export function DashboardStatsSection({
     },
     {
       id: "discount",
-      tone: "amber",
+      tone: "khram",
       icon: <BadgeDollarSign />,
       label: t("admin.dashboardPage.stats.discount"),
       getMetric: (s) => s.discount,
@@ -142,7 +142,7 @@ export function DashboardStatsSection({
     },
     {
       id: "customers",
-      tone: "cyan",
+      tone: "jade",
       icon: <Users />,
       label: t("admin.dashboardPage.stats.customers"),
       getMetric: (s) => s.customers,
@@ -158,7 +158,7 @@ export function DashboardStatsSection({
     },
     {
       id: "refunds",
-      tone: "rose",
+      tone: "madder",
       icon: <RefreshCcw />,
       label: t("admin.dashboardPage.stats.refunds"),
       getMetric: (s) => s.refunds,
@@ -172,7 +172,7 @@ export function DashboardStatsSection({
   const fallbackDefinitions: StatCardDefinition[] = [
     {
       id: "total-sales",
-      tone: "violet",
+      tone: "silk",
       icon: <BadgeDollarSign />,
       label: t.has("admin.dashboardPage.stats.totalSales")
         ? t("admin.dashboardPage.stats.totalSales")
@@ -189,7 +189,7 @@ export function DashboardStatsSection({
     },
     {
       id: "average-order-value",
-      tone: "indigo",
+      tone: "gold",
       icon: <ShoppingBag />,
       label: t.has("admin.dashboardPage.stats.averageOrderValue")
         ? t("admin.dashboardPage.stats.averageOrderValue")

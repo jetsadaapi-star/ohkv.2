@@ -23,7 +23,7 @@ const ROW_BASE =
   "group-data-[collapsible=icon]:gap-1 group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:px-1 group-data-[collapsible=icon]:py-2";
 
 const LEAF_ACTIVE =
-  "bg-linear-to-r from-primary to-violet-600 text-white font-semibold shadow-md shadow-primary/25 " +
+  "bg-linear-to-r from-primary to-[color-mix(in_oklab,var(--primary)_68%,var(--highlight))] text-white font-semibold shadow-md shadow-primary/25 " +
   "hover:text-white hover:brightness-110 active:text-white " +
   "data-[active=true]:bg-transparent data-[active=true]:text-white data-[active=true]:font-semibold " +
   "data-[state=open]:hover:text-white";

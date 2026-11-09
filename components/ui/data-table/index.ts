@@ -3,6 +3,7 @@ export { DataTablePagination } from "./data-table-pagination";
 
 // Cell renderers
 export {
+  ImageCell,
   ProductCell,
   StatusCell,
   TextCell,

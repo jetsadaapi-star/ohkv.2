@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
   ArrowLeft,
   Camera,
   CameraOff,
+  CheckCircle2,
   Copy,
   ExternalLink,
   Eye,
@@ -22,6 +23,7 @@ import {
   SwitchCamera,
   Square,
   Timer,
+  XCircle,
 } from "lucide-react";
 import Link from "@/components/language/link";
 import { Button } from "@/components/ui/button";
@@ -34,12 +36,26 @@ import {
   type LiveDashboardItem,
   type LiveStudioCredentials,
 } from "@/lib/live/live-types";
+import {
+  DEFAULT_STUDIO_PREFS,
+  LIVE_QUALITY_SPEC,
+  applySendQuality,
+  createStatsReader,
+  loadStudioPrefs,
+  saveStudioPrefs,
+  type LiveSendStats,
+  type LiveStudioPrefs,
+} from "@/lib/live/studio-prefs";
 import { useLiveRoom } from "./use-live-room";
 import { LiveChatList, LiveProductRow, useFloatingHearts } from "./live-ui";
 import { LiveEditorDialog } from "./live-editor-dialog";
-import { LiveEffectsPanel } from "./live-effects-panel";
 import { LiveSupporters, useGiftShow } from "./live-gifts-ui";
+import { LiveSourceOverlay } from "./live-source-overlay";
+import { LiveStudioPanel, type StudioTab } from "./live-studio-panel";
+import { canPickSpeaker, useLiveAudio } from "./use-live-audio";
 import { useLiveEffects } from "./use-live-effects";
+import { useLiveSources } from "./use-live-sources";
+import { useMediaDevices } from "./use-media-devices";
 import { cn } from "@/lib/utils";
 
 type Detail = LiveDashboardItem & { credentials: LiveStudioCredentials };
@@ -58,30 +74,65 @@ function useElapsed(since: string | null) {
   return s >= 3600 ? `${Math.floor(s / 3600)}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}` : `${pad(Math.floor(s / 60))}:${pad(s % 60)}`;
 }
 
+function stopAll(stream: MediaStream | null) {
+  stream?.getTracks().forEach((track) => track.stop());
+}
+
 /** The store's control room for one live. */
 export function LiveStudio({ liveId }: { liveId: string }) {
   const t = useTranslations("live");
+  const ts = useTranslations("live.studio");
   const locale = useLocale();
   const { confirm } = useConfirmation();
   const [detail, setDetail] = useState<Detail | null>(null);
   const [loadError, setLoadError] = useState(false);
-  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [prefs, setPrefs] = useState<LiveStudioPrefs>(() =>
+    typeof window === "undefined" ? { ...DEFAULT_STUDIO_PREFS } : loadStudioPrefs(),
+  );
+  const [camStream, setCamStream] = useState<MediaStream | null>(null);
+  const [micStream, setMicStream] = useState<MediaStream | null>(null);
+  const [activeCameraId, setActiveCameraId] = useState("");
   const [cameraError, setCameraError] = useState<string | null>(null);
-  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
-  const [cameraId, setCameraId] = useState<string>("");
   const [facing, setFacing] = useState<"user" | "environment">("user");
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
+  const [monitor, setMonitor] = useState(false);
   const [publish, setPublish] = useState<Publish>("idle");
   const [busy, setBusy] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [stats, setStats] = useState<LiveSendStats | null>(null);
+  const [micHeard, setMicHeard] = useState(false);
+  const [studioTab, setStudioTab] = useState<StudioTab>("look");
   const [text, setText] = useState("");
   const [editorOpen, setEditorOpen] = useState(false);
   const previewRef = useRef<HTMLVideoElement>(null);
   const sessionRef = useRef<WebRtcSession | null>(null);
+  const streamsRef = useRef<{ cam: MediaStream | null; mic: MediaStream | null }>({ cam: null, mic: null });
   const hearts = useFloatingHearts();
-  // The picture viewers get: the camera with beauty, filter and effects.
-  const effects = useLiveEffects(stream);
-  const media = effects.media;
+
+  const updatePrefs = useCallback((patch: Partial<LiveStudioPrefs>) => setPrefs((p) => ({ ...p, ...patch })), []);
+  useEffect(() => saveStudioPrefs(prefs), [prefs]);
+
+  // The picture viewers get: the camera with beauty, effects and sources…
+  const quality = LIVE_QUALITY_SPEC[prefs.quality];
+  const effects = useLiveEffects(camStream, {
+    width: quality.width,
+    height: quality.height,
+    fps: prefs.fps,
+    zoom: prefs.zoom,
+  });
+  const sources = useLiveSources(effects.processor);
+  // …and the sound, through its level control.
+  const audio = useLiveAudio(micStream, { gain: prefs.micGain, monitor, outputId: prefs.outputId });
+  const devices = useMediaDevices();
+  const media = useMemo(
+    () => (effects.video ? new MediaStream([effects.video, ...(audio.track ? [audio.track] : [])]) : null),
+    [effects.video, audio.track],
+  );
+
+  useEffect(() => {
+    streamsRef.current = { cam: camStream, mic: micStream };
+  }, [camStream, micStream]);
 
   const load = useCallback(async () => {
     try {
@@ -103,7 +154,14 @@ export function LiveStudio({ liveId }: { liveId: string }) {
     countViewer: false,
   });
 
-  const gifts = useGiftShow(room.messages);
+  const { chime } = audio;
+  const giftSound = prefs.giftSound;
+  const gifts = useGiftShow(
+    room.messages,
+    useCallback(() => {
+      if (giftSound) chime();
+    }, [giftSound, chime]),
+  );
   const { remoteHearts, consumeRemoteHearts } = room;
   useEffect(() => {
     if (remoteHearts > 0) {
@@ -113,66 +171,141 @@ export function LiveStudio({ liveId }: { liveId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [remoteHearts]);
 
-  /* Camera ------------------------------------------------------------ */
+  const status = room.status === "scheduled" && detail?.status ? detail.status : room.status;
+  const isLive = status === "live";
 
-  const openCamera = useCallback(
-    async (opts: { deviceId?: string; facingMode?: "user" | "environment" } = {}) => {
-      setCameraError(null);
-      if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
-        setCameraError(t("secureContext"));
-        return null;
-      }
-      try {
-        const next = await navigator.mediaDevices.getUserMedia({
-          video: {
-            ...(opts.deviceId ? { deviceId: { exact: opts.deviceId } } : { facingMode: opts.facingMode ?? "user" }),
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            frameRate: { ideal: 30 },
-          },
-          audio: { echoCancellation: true, noiseSuppression: true },
-        });
-        const list = await navigator.mediaDevices.enumerateDevices();
-        setDevices(list.filter((d) => d.kind === "videoinput"));
-        const track = next.getVideoTracks()[0];
-        setCameraId(track?.getSettings().deviceId ?? "");
-        return next;
-      } catch {
-        setCameraError(t("cameraError"));
-        return null;
-      }
-    },
-    [t],
+  /* Camera & microphone ------------------------------------------------ */
+
+  const videoConstraints = useCallback(
+    (opts: { deviceId?: string; facingMode?: "user" | "environment" }): MediaTrackConstraints => ({
+      ...(opts.deviceId ? { deviceId: { exact: opts.deviceId } } : { facingMode: opts.facingMode ?? "user" }),
+      width: { ideal: quality.camera.width },
+      height: { ideal: quality.camera.height },
+      frameRate: { ideal: prefs.fps },
+    }),
+    [quality.camera.width, quality.camera.height, prefs.fps],
   );
 
-  const replaceStream = useCallback(
-    async (next: MediaStream) => {
-      setStream((old) => {
-        old?.getTracks().forEach((tr) => {
-          if (!next.getTracks().includes(tr)) tr.stop();
-        });
-        return next;
-      });
-      next.getAudioTracks().forEach((tr) => (tr.enabled = micOn));
-      next.getVideoTracks().forEach((tr) => (tr.enabled = camOn));
-    },
-    [micOn, camOn],
+  const audioConstraints = useCallback(
+    (): MediaTrackConstraints => ({
+      ...(prefs.micId ? { deviceId: { ideal: prefs.micId } } : {}),
+      echoCancellation: prefs.echoCancellation,
+      noiseSuppression: prefs.noiseSuppression,
+      autoGainControl: prefs.autoGain,
+    }),
+    [prefs.micId, prefs.echoCancellation, prefs.noiseSuppression, prefs.autoGain],
   );
 
-  const enableCamera = async () => {
-    const next = await openCamera({ facingMode: facing });
-    if (next) await replaceStream(next);
+  const supported = () => {
+    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+      setCameraError(t("secureContext"));
+      return false;
+    }
+    return true;
   };
+
+  const takeCamera = useCallback((next: MediaStream) => {
+    const track = next.getVideoTracks()[0];
+    setActiveCameraId(track?.getSettings().deviceId ?? "");
+    setCamStream((old) => {
+      if (old !== next) stopAll(old);
+      return next;
+    });
+  }, []);
+
+  const takeMic = useCallback((next: MediaStream | null) => {
+    setMicStream((old) => {
+      if (old !== next) stopAll(old);
+      return next;
+    });
+  }, []);
+
+  /** First start: one prompt for both, then each is handled on its own. */
+  const enableCamera = async () => {
+    setCameraError(null);
+    if (!supported()) return;
+    const video = videoConstraints(prefs.cameraId ? { deviceId: prefs.cameraId } : { facingMode: facing });
+    // A remembered camera that is gone falls back to any camera.
+    if (prefs.cameraId) video.deviceId = { ideal: prefs.cameraId };
+    try {
+      let both: MediaStream;
+      try {
+        both = await navigator.mediaDevices.getUserMedia({ video, audio: audioConstraints() });
+      } catch {
+        both = await navigator.mediaDevices.getUserMedia({ video });
+        toast.error(ts("noMic"));
+      }
+      takeCamera(new MediaStream(both.getVideoTracks()));
+      takeMic(both.getAudioTracks().length ? new MediaStream(both.getAudioTracks()) : null);
+      audio.wake();
+      void devices.refresh();
+    } catch {
+      setCameraError(t("cameraError"));
+    }
+  };
+
+  const openVideo = useCallback(
+    async (opts: { deviceId?: string; facingMode?: "user" | "environment" }) => {
+      try {
+        const next = await navigator.mediaDevices.getUserMedia({ video: videoConstraints(opts) });
+        takeCamera(next);
+        return true;
+      } catch {
+        toast.error(t("cameraError"));
+        return false;
+      }
+    },
+    [videoConstraints, takeCamera, t],
+  );
+
+  const pickCamera = async (deviceId: string) => {
+    if (await openVideo({ deviceId })) updatePrefs({ cameraId: deviceId });
+  };
+  const flip = async () => {
+    const nextFacing = facing === "user" ? "environment" : "user";
+    setFacing(nextFacing);
+    if (await openVideo({ facingMode: nextFacing })) updatePrefs({ cameraId: "" });
+  };
+
+  // A different microphone or clean-up setting: reopen the microphone.
+  const micKey = `${prefs.micId}|${prefs.echoCancellation}|${prefs.noiseSuppression}|${prefs.autoGain}`;
+  const appliedMicKey = useRef(micKey);
+  useEffect(() => {
+    if (!streamsRef.current.cam || appliedMicKey.current === micKey) return;
+    appliedMicKey.current = micKey;
+    let cancelled = false;
+    void navigator.mediaDevices
+      .getUserMedia({ audio: audioConstraints() })
+      .then((next) => {
+        if (cancelled) stopAll(next);
+        else takeMic(next);
+      })
+      .catch(() => toast.error(ts("noMic")));
+    return () => {
+      cancelled = true;
+    };
+  }, [micKey, audioConstraints, takeMic, ts]);
+
+  // A different quality before going live: ask the camera for the matching size.
+  const camKey = `${prefs.quality}|${prefs.fps}`;
+  const appliedCamKey = useRef(camKey);
+  useEffect(() => {
+    if (!streamsRef.current.cam || appliedCamKey.current === camKey || isLive) return;
+    appliedCamKey.current = camKey;
+    void openVideo(activeCameraId ? { deviceId: activeCameraId } : { facingMode: facing });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [camKey]);
 
   useEffect(() => {
     if (previewRef.current && media) previewRef.current.srcObject = media;
   }, [media]);
 
   // Live: send the current picture and sound without renegotiating (a new
-  // camera, or the effects starting up).
+  // camera or microphone, or the effects starting up).
   useEffect(() => {
     if (!media) return;
     media.getVideoTracks().forEach((tr) => (tr.enabled = camOn));
+    media.getAudioTracks().forEach((tr) => (tr.enabled = micOn));
     const pc = sessionRef.current?.pc;
     if (!pc) return;
     for (const sender of pc.getSenders()) {
@@ -183,37 +316,30 @@ export function LiveStudio({ liveId }: { liveId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [media]);
 
-  // Stop the camera when leaving the page.
+  // Has the microphone picked anything up yet (for the readiness check)?
+  useEffect(() => {
+    if (audio.level > 0.04 && !micHeard) setMicHeard(true);
+  }, [audio.level, micHeard]);
+
+  // Stop the camera and microphone when leaving the page.
   useEffect(
     () => () => {
       void sessionRef.current?.close();
-      setStream((old) => {
-        old?.getTracks().forEach((tr) => tr.stop());
-        return null;
-      });
+      stopAll(streamsRef.current.cam);
+      stopAll(streamsRef.current.mic);
     },
     [],
   );
 
-  const chooseCamera = async (deviceId: string) => {
-    const next = await openCamera({ deviceId });
-    if (next) await replaceStream(next);
-  };
-  const flip = async () => {
-    const nextFacing = facing === "user" ? "environment" : "user";
-    setFacing(nextFacing);
-    const next = await openCamera({ facingMode: nextFacing });
-    if (next) await replaceStream(next);
-  };
   const toggleMic = () => {
     const on = !micOn;
     setMicOn(on);
-    stream?.getAudioTracks().forEach((tr) => (tr.enabled = on));
+    media?.getAudioTracks().forEach((tr) => (tr.enabled = on));
   };
   const toggleCam = () => {
     const on = !camOn;
     setCamOn(on);
-    stream?.getVideoTracks().forEach((tr) => (tr.enabled = on));
+    camStream?.getVideoTracks().forEach((tr) => (tr.enabled = on));
     media?.getVideoTracks().forEach((tr) => (tr.enabled = on));
   };
 
@@ -241,6 +367,29 @@ export function LiveStudio({ liveId }: { liveId: string }) {
     [t],
   );
 
+  // Bitrate, frame rate and what to give up on a slow connection.
+  useEffect(() => {
+    const pc = sessionRef.current?.pc;
+    if (publish !== "publishing" || !pc) return;
+    void applySendQuality(pc, prefs);
+  }, [publish, prefs.quality, prefs.fps, prefs.priority, media]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // How the stream is getting out, every two seconds while on air.
+  useEffect(() => {
+    const pc = sessionRef.current?.pc;
+    if (publish !== "publishing" || !pc) return;
+    const read = createStatsReader(pc);
+    const id = setInterval(() => {
+      void read()
+        .then(setStats)
+        .catch(() => {});
+    }, 2000);
+    return () => {
+      clearInterval(id);
+      setStats(null);
+    };
+  }, [publish]);
+
   const goLive = async () => {
     if (!detail) return;
     setBusy(true);
@@ -257,6 +406,25 @@ export function LiveStudio({ liveId }: { liveId: string }) {
       setBusy(false);
     }
   };
+
+  const startClicked = () => {
+    audio.wake();
+    if (prefs.countdown) setCountdown(3);
+    else void goLive();
+  };
+
+  // 3-2-1, then on air. Tapping the number cancels.
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown <= 0) {
+      setCountdown(null);
+      void goLive();
+      return;
+    }
+    const id = setTimeout(() => setCountdown((n) => (n === null ? null : n - 1)), 1000);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [countdown]);
 
   // Back on the page of a live that is already on air: resume sending.
   useEffect(() => {
@@ -336,7 +504,6 @@ export function LiveStudio({ liveId }: { liveId: string }) {
     }
   };
 
-  const status = room.status === "scheduled" && detail?.status ? detail.status : room.status;
   const elapsed = useElapsed(status === "live" ? detail?.startedAt ?? null : null);
 
   if (loadError) {
@@ -397,9 +564,10 @@ export function LiveStudio({ liveId }: { liveId: string }) {
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] 2xl:grid-cols-[400px_minmax(0,1fr)_380px]">
         {/* Camera */}
-        <section className="space-y-3 lg:row-span-2 2xl:row-span-1">
+        {/* The preview stays in view while the settings beside it scroll. */}
+        <section className="space-y-3 lg:sticky lg:top-20 lg:row-span-2 lg:self-start 2xl:row-span-1">
           <div className="relative mx-auto aspect-9/16 max-h-[72vh] w-full overflow-hidden rounded-3xl bg-slate-950 shadow-xl">
-            {stream ? (
+            {camStream ? (
               <video
                 ref={previewRef}
                 autoPlay
@@ -435,13 +603,34 @@ export function LiveStudio({ liveId }: { liveId: string }) {
             </div>
             {hearts.layer}
             {gifts.layer}
-            {stream && !media ? (
+            {sources.sources.length && studioTab === "sources" && effects.active && status !== "ended" ? (
+              <LiveSourceOverlay
+                sources={sources.sources}
+                selectedId={sources.selectedId}
+                onSelect={sources.select}
+                onChange={sources.update}
+              />
+            ) : null}
+            {countdown !== null ? (
+              <button
+                type="button"
+                onClick={() => setCountdown(null)}
+                aria-label={ts("cancelCountdown")}
+                className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/45 text-white backdrop-blur-[2px]"
+              >
+                <span key={countdown} className="live-countdown text-[7rem] font-black leading-none drop-shadow-xl">
+                  {countdown}
+                </span>
+                <span className="mt-3 text-xs text-white/80">{ts("cancelCountdown")}</span>
+              </button>
+            ) : null}
+            {camStream && !media ? (
               <div className="absolute inset-0 flex items-center justify-center">
                 <Loader2 className="size-6 animate-spin text-white/70" />
               </div>
             ) : null}
-            {stream ? (
-              <div className="absolute inset-x-0 bottom-3 flex justify-center gap-2">
+            {camStream && !(studioTab === "sources" && sources.sources.length) ? (
+              <div className="absolute inset-x-0 bottom-3 z-10 flex justify-center gap-2">
                 <CircleButton label={micOn ? t("micOn") : t("micOff")} onClick={toggleMic} off={!micOn}>
                   {micOn ? <Mic className="size-5" /> : <MicOff className="size-5" />}
                 </CircleButton>
@@ -455,21 +644,13 @@ export function LiveStudio({ liveId }: { liveId: string }) {
             ) : null}
           </div>
 
-          {devices.length > 1 ? (
-            <label className="flex items-center gap-2 text-sm">
-              <Camera className="size-4 text-muted-foreground" />
-              <select
-                value={cameraId}
-                onChange={(e) => void chooseCamera(e.target.value)}
-                className="h-9 min-w-0 flex-1 rounded-lg border bg-background px-2 text-sm"
-              >
-                {devices.map((d, i) => (
-                  <option key={d.deviceId} value={d.deviceId}>
-                    {d.label || `${t("camera")} ${i + 1}`}
-                  </option>
-                ))}
-              </select>
-            </label>
+          {camStream && status === "scheduled" ? (
+            <div className="flex flex-wrap gap-1.5 text-[11px]" aria-label={ts("readiness")}>
+              <Ready ok={camOn} label={camOn ? ts("readyCamera") : ts("cameraOff")} />
+              <Ready ok={Boolean(micStream) && micOn && micHeard} label={!micStream ? ts("noMicShort") : !micOn ? ts("micMuted") : micHeard ? ts("readyMic") : ts("micSilent")} />
+              <Ready ok label={`${prefs.quality}p · ${prefs.fps} fps`} />
+              {sources.sources.length ? <Ready ok label={ts("readySources", { count: sources.sources.filter((x) => x.visible).length })} /> : null}
+            </div>
           ) : null}
 
           {status === "live" ? (
@@ -484,8 +665,8 @@ export function LiveStudio({ liveId }: { liveId: string }) {
             </Button>
           ) : status === "scheduled" ? (
             <Button
-              onClick={() => void goLive()}
-              disabled={busy}
+              onClick={startClicked}
+              disabled={busy || countdown !== null}
               className="h-12 w-full rounded-2xl bg-linear-to-r from-red-500 to-pink-600 text-base font-bold text-white shadow-lg shadow-rose-500/30"
             >
               {busy ? <Loader2 className="size-4 animate-spin" /> : <Radio className="size-5" />}
@@ -495,14 +676,7 @@ export function LiveStudio({ liveId }: { liveId: string }) {
             <p className="rounded-2xl bg-muted p-3 text-center text-sm font-medium">{t("endedTitle")}</p>
           )}
 
-          {stream && status !== "ended" ? (
-            <LiveEffectsPanel
-              settings={effects.settings}
-              onChange={effects.update}
-              onReset={effects.reset}
-              supported={effects.supported}
-            />
-          ) : null}
+
 
           {publish === "failed" && media && status === "live" ? (
             <Button variant="outline" className="w-full" onClick={() => void startPublishing(media, detail.credentials)}>
@@ -533,7 +707,31 @@ export function LiveStudio({ liveId }: { liveId: string }) {
           ) : null}
         </section>
 
-        {/* Products */}
+        {/* Studio settings, then products */}
+        <div className="min-w-0 space-y-4">
+          {camStream && status !== "ended" ? (
+            <LiveStudioPanel
+              tab={studioTab}
+              onTab={setStudioTab}
+              effects={effects}
+              sources={sources}
+              effectsSupported={effects.supported}
+              devices={devices}
+              prefs={prefs}
+              onPrefs={updatePrefs}
+              camera={{ activeId: activeCameraId, onPick: (id) => void pickCamera(id), onFlip: () => void flip() }}
+              micLevel={audio.level}
+              speakerSupported={canPickSpeaker()}
+              monitor={monitor}
+              onMonitor={setMonitor}
+              onTestSpeaker={() => {
+                audio.wake();
+                audio.testSpeaker();
+              }}
+              live={isLive}
+              stats={stats}
+            />
+          ) : null}
         <section className="rounded-3xl border bg-card p-4 shadow-sm">
           <div className="mb-3 flex flex-wrap items-center gap-3">
             <h2 className="font-semibold">{t("productsInLive")}</h2>
@@ -585,6 +783,7 @@ export function LiveStudio({ liveId }: { liveId: string }) {
             </div>
           )}
         </section>
+        </div>
 
         {/* Chat */}
         <section className="flex h-[60vh] flex-col rounded-3xl border bg-card p-4 shadow-sm lg:col-start-2 lg:h-[420px] 2xl:col-start-auto 2xl:row-start-1 2xl:col-start-3 2xl:h-auto 2xl:max-h-[80vh]">
@@ -623,6 +822,20 @@ export function LiveStudio({ liveId }: { liveId: string }) {
         }}
       />
     </div>
+  );
+}
+
+function Ready({ ok, label }: { ok: boolean; label: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full px-2 py-1 font-medium",
+        ok ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300" : "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300",
+      )}
+    >
+      {ok ? <CheckCircle2 className="size-3.5" /> : <XCircle className="size-3.5" />}
+      {label}
+    </span>
   );
 }
 

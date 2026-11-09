@@ -36,7 +36,7 @@ const roundedMap = {
   full: "rounded-full",
 };
 
-function ImageCell({
+export function ImageCell({
   src,
   alt,
   size = "md",

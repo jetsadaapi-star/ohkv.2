@@ -2,6 +2,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { Minus, TrendingDown, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { KHIT_TILE } from "@/components/auth/silk-pattern";
 
 type DashboardStatTrendDirection = "up" | "down" | "neutral";
 
@@ -17,7 +18,28 @@ export type DashboardStatTone =
   | "amber"
   | "rose"
   | "cyan"
-  | "indigo";
+  | "indigo"
+  | DashboardThreadTone;
+
+/**
+ * Thread colours of a hand-woven Phrae Wa cloth, for the dashboard: the
+ * store's own primary and gold accent (so they follow the theme), and the
+ * natural dyes woven beside them — terracotta, indigo (khram), jade and madder.
+ */
+export type DashboardThreadTone = "silk" | "gold" | "terracotta" | "khram" | "jade" | "madder";
+
+const threadColours: Record<DashboardThreadTone, string> = {
+  silk: "var(--primary)",
+  gold: "color-mix(in oklab, var(--highlight) 82%, black)",
+  terracotta: "#b5562a",
+  khram: "#2f4f86",
+  jade: "#23775c",
+  madder: "#b42335",
+};
+
+function isThreadTone(tone: DashboardStatTone): tone is DashboardThreadTone {
+  return tone in threadColours;
+}
 
 interface ToneClasses {
   card: string;
@@ -27,7 +49,7 @@ interface ToneClasses {
 }
 
 /* Class names are spelled out in full so Tailwind can find them. */
-const toneClassNames: Record<DashboardStatTone, ToneClasses> = {
+const toneClassNames: Record<Exclude<DashboardStatTone, DashboardThreadTone>, ToneClasses> = {
   blue: {
     card: "border-blue-200/70 bg-gradient-to-br from-blue-50 via-white to-blue-100/80 dark:border-blue-900/60 dark:from-blue-950/70 dark:via-blue-950/40 dark:to-blue-900/30",
     glow: "bg-blue-400/25 dark:bg-blue-500/20",
@@ -166,6 +188,72 @@ export function DashboardStatCard({
     typeof value === "string" || typeof value === "number"
       ? String(value)
       : undefined;
+
+  if (tone && isThreadTone(tone)) {
+    return (
+      <article
+        className={cn(
+          "group relative isolate overflow-hidden rounded-2xl border border-[color-mix(in_oklab,var(--tone)_18%,var(--border))] bg-card p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md sm:p-5",
+          className,
+        )}
+        style={{ "--tone": threadColours[tone] } as React.CSSProperties}
+        {...props}
+      >
+        {/* A woven hem along the top, and the khit lattice fading in the corner. */}
+        <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[var(--tone)]" />
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -bottom-6 -right-6 -z-10 size-36 bg-[var(--tone)] opacity-[0.07] transition-opacity duration-300 group-hover:opacity-[0.12]"
+          style={{
+            maskImage: `${KHIT_TILE}, radial-gradient(circle at 100% 100%, black, transparent 70%)`,
+            WebkitMaskImage: `${KHIT_TILE}, radial-gradient(circle at 100% 100%, black, transparent 70%)`,
+            maskComposite: "intersect",
+            WebkitMaskComposite: "source-in",
+            maskSize: "22px 22px, 100% 100%",
+            WebkitMaskSize: "22px 22px, 100% 100%",
+            maskRepeat: "repeat, no-repeat",
+            WebkitMaskRepeat: "repeat, no-repeat",
+          }}
+        />
+        <div className="flex items-start justify-between gap-3">
+          <p className="min-w-0 truncate pt-1 text-sm font-medium leading-tight text-muted-foreground">{label}</p>
+          {icon ? (
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[color-mix(in_oklab,var(--tone)_12%,transparent)] text-[var(--tone)] ring-1 ring-inset ring-[color-mix(in_oklab,var(--tone)_22%,transparent)] dark:bg-[color-mix(in_oklab,var(--tone)_28%,transparent)] dark:text-[color-mix(in_oklab,var(--tone)_55%,white)] [&_svg]:size-5">
+              {icon}
+            </span>
+          ) : null}
+        </div>
+
+        {loading ? (
+          <Skeleton className="mt-3 h-8 w-28" />
+        ) : (
+          <p className="mt-3 truncate text-[1.65rem] font-bold leading-tight tracking-tight text-foreground tabular-nums" title={valueTitle}>
+            {value}
+          </p>
+        )}
+
+        {loading ? (
+          <div className="mt-3 flex items-center gap-2">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-4 w-12 rounded-full" />
+          </div>
+        ) : subLabel || trend ? (
+          <div className="mt-3 flex min-w-0 flex-wrap items-center justify-between gap-2 border-t border-dashed border-[color-mix(in_oklab,var(--tone)_20%,var(--border))] pt-2.5 text-xs text-muted-foreground">
+            {subLabel ? <span className="min-w-0 truncate">{subLabel}</span> : <span />}
+            {trend ? (
+              <DashboardStatTrend
+                {...trend}
+                className={cn(
+                  "rounded-full px-2 py-0.5 font-semibold ring-1 ring-inset",
+                  trendPillClassNames[trend.direction ?? "neutral"],
+                )}
+              />
+            ) : null}
+          </div>
+        ) : null}
+      </article>
+    );
+  }
 
   if (tone) {
     const palette = toneClassNames[tone];

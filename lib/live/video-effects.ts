@@ -1,16 +1,20 @@
 "use client";
 
+import { STAGE_H, STAGE_W, drawSources, type LiveSource } from "./studio-sources";
+
 /**
  * The studio's camera effects: face smoothing, colour filters, on-screen
  * effects (hearts, petals…), frames and a banner line — drawn into the
  * picture itself, so every viewer sees them with no work on their side.
  *
- *   camera ─▶ <video> ─▶ WebGL (crop to 9:16, smoothing, colour grade)
- *                       ─▶ 2D canvas (effects, frame, banner) ─▶ captureStream
+ *   camera ─▶ <video> ─▶ WebGL (crop to 9:16, zoom, smoothing, colour grade)
+ *                       ─▶ 2D canvas (sources, frame, effects, banner) ─▶ captureStream
  *
- * The output is always portrait 720×1280, the shape every player shows; a
- * landscape webcam is cropped to its middle the way the player would crop it
- * anyway, so nothing drawn near an edge is cut off for viewers.
+ * The output is always portrait 9:16 (540×960 to 1080×1920, by the chosen
+ * quality), the shape every player shows; a landscape webcam is cropped to its
+ * middle the way the player would crop it anyway, so nothing drawn near an
+ * edge is cut off for viewers. Everything on top is laid out on a 720×1280
+ * stage and scaled to the real size.
  *
  * Frames are timed by a worker, not requestAnimationFrame, so the stream
  * keeps moving while the host has another tab in front.
@@ -81,12 +85,13 @@ export const LIVE_FRAME_ICON: Record<LiveFrame, string> = {
   neon: "💡",
 };
 
-const OUT_W = 720;
-const OUT_H = 1280;
+// The stage everything on top of the camera is laid out on.
+const OUT_W = STAGE_W;
+const OUT_H = STAGE_H;
 // Phones are taller than 9:16, so players crop about 9% off each side; keep
 // anything that must be read inside this margin.
 const SAFE_X = 70;
-const FPS = 30;
+const DEFAULT_FPS = 30;
 
 /* ------------------------------------------------------------------ */
 /* Colour grades                                                       */
@@ -324,6 +329,11 @@ export class LiveVideoProcessor {
   private spawnDebt = 0;
   private last = 0;
   private fontFamily = "sans-serif";
+  private size = { width: OUT_W, height: OUT_H };
+  private fps = DEFAULT_FPS;
+  private zoom = 1;
+  private sources: readonly LiveSource[] = [];
+  private bitmaps: ReadonlyMap<string, ImageBitmap> = new Map();
   readonly track: MediaStreamTrack;
 
   constructor() {
@@ -399,7 +409,9 @@ export class LiveVideoProcessor {
     this.ctx.fillRect(0, 0, OUT_W, OUT_H);
 
     this.fontFamily = getComputedStyle(document.body).fontFamily || "sans-serif";
-    const [track] = this.out.captureStream(FPS).getVideoTracks();
+    // No fixed rate: a frame goes out each time the ticker draws one, so the
+    // frame rate can change without a new track.
+    const [track] = this.out.captureStream().getVideoTracks();
     this.track = track;
     this.startTicker();
   }
@@ -409,6 +421,37 @@ export class LiveVideoProcessor {
     const video = stream?.getVideoTracks()[0];
     this.video.srcObject = video ? new MediaStream([video]) : null;
     if (video) void this.video.play().catch(() => {});
+  }
+
+  /** Output size (9:16) and frame rate. */
+  setOutput(output: { width: number; height: number; fps: number }) {
+    const width = Math.round(output.width);
+    const height = Math.round(output.height);
+    if (width !== this.size.width || height !== this.size.height) {
+      this.size = { width, height };
+      this.glCanvas.width = this.out.width = width;
+      this.glCanvas.height = this.out.height = height;
+      this.gl.viewport(0, 0, width, height);
+    }
+    if (output.fps !== this.fps) {
+      this.fps = output.fps;
+      this.ticker?.postMessage(Math.round(1000 / this.fps));
+      if (this.fallbackTimer) {
+        clearInterval(this.fallbackTimer);
+        this.fallbackTimer = setInterval(() => this.frame(), Math.round(1000 / this.fps));
+      }
+    }
+  }
+
+  /** Digital zoom into the middle of the camera, 1–2. */
+  setZoom(zoom: number) {
+    this.zoom = Math.min(2, Math.max(1, zoom));
+  }
+
+  /** Pictures and stickers over the camera, back to front. */
+  setSources(sources: readonly LiveSource[], bitmaps: ReadonlyMap<string, ImageBitmap>) {
+    this.sources = sources;
+    this.bitmaps = bitmaps;
   }
 
   setSettings(settings: LiveEffectSettings) {
@@ -429,24 +472,28 @@ export class LiveVideoProcessor {
 
   private startTicker() {
     try {
-      const source = `let t=setInterval(()=>postMessage(0),${Math.round(1000 / FPS)});onmessage=()=>clearInterval(t);`;
+      const source = `let t=setInterval(()=>postMessage(0),${Math.round(1000 / this.fps)});onmessage=(e)=>{clearInterval(t);t=setInterval(()=>postMessage(0),e.data)};`;
       this.tickerUrl = URL.createObjectURL(new Blob([source], { type: "text/javascript" }));
       this.ticker = new Worker(this.tickerUrl);
       this.ticker.onmessage = () => this.frame();
     } catch {
-      this.fallbackTimer = setInterval(() => this.frame(), Math.round(1000 / FPS));
+      this.fallbackTimer = setInterval(() => this.frame(), Math.round(1000 / this.fps));
     }
   }
 
   private frame() {
     const now = performance.now();
-    const dt = this.last ? Math.min(0.1, (now - this.last) / 1000) : 1 / FPS;
+    const dt = this.last ? Math.min(0.1, (now - this.last) / 1000) : 1 / this.fps;
     this.last = now;
     const video = this.video;
     const ready = video.readyState >= 2 && video.videoWidth > 0;
     if (ready) this.drawCamera(video);
     const ctx = this.ctx;
-    if (ready) ctx.drawImage(this.glCanvas, 0, 0);
+    // Draw on the 720×1280 stage, scaled to the real output size.
+    const k = this.size.width / OUT_W;
+    ctx.setTransform(k, 0, 0, k, 0, 0);
+    if (ready) ctx.drawImage(this.glCanvas, 0, 0, OUT_W, OUT_H);
+    if (this.sources.length) drawSources(ctx, this.sources, this.bitmaps, this.fontFamily);
     this.drawParticles(dt);
     this.drawFrame(now / 1000);
     this.drawBanner(now / 1000);
@@ -460,7 +507,8 @@ export class LiveVideoProcessor {
     // Cover-crop the camera into 9:16.
     const target = OUT_W / OUT_H;
     const source = vw / vh;
-    const scale: [number, number] = source > target ? [target / source, 1] : [1, source / target];
+    const cover: [number, number] = source > target ? [target / source, 1] : [1, source / target];
+    const scale: [number, number] = [cover[0] / this.zoom, cover[1] / this.zoom];
     const offset: [number, number] = [(1 - scale[0]) / 2, (1 - scale[1]) / 2];
     const grade = { ...GRADE_BASE, ...GRADES[s.filter] };
 

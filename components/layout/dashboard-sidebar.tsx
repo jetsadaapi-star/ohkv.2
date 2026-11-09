@@ -1510,7 +1510,7 @@ export function DashboardSidebar({
             : "bg-white ring-1 ring-slate-200 shadow-sm"
           : isApparent
             ? "bg-white/20 text-white ring-1 ring-white/30"
-            : "bg-linear-to-br from-primary to-violet-600 text-white shadow-md shadow-primary/30",
+            : "bg-linear-to-br from-primary to-[color-mix(in_oklab,var(--primary)_68%,var(--highlight))] text-white shadow-md shadow-primary/30",
       )}
     >
       {currentFaviconUrl ? (

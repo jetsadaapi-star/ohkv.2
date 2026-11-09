@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   DEFAULT_LIVE_EFFECTS,
   LiveVideoProcessor,
@@ -11,12 +11,15 @@ import {
 } from "@/lib/live/video-effects";
 
 /**
- * The studio's camera with effects applied. Returns the stream to preview and
- * publish: the processed picture plus the camera's own sound. Its video track
- * stays the same when the camera is switched, so a live keeps going; when the
- * browser can't do WebGL the camera is passed through untouched.
+ * The studio's camera with effects applied. Gives the video track to preview
+ * and publish; it stays the same when the camera is switched, so a live keeps
+ * going. When the browser can't do WebGL the camera's own track is passed
+ * through untouched.
  */
-export function useLiveEffects(camera: MediaStream | null) {
+export function useLiveEffects(
+  camera: MediaStream | null,
+  output: { width: number; height: number; fps: number; zoom: number },
+) {
   const [settings, setSettings] = useState<LiveEffectSettings>(() =>
     typeof window === "undefined" ? { ...DEFAULT_LIVE_EFFECTS } : loadLiveEffectSettings(),
   );
@@ -28,15 +31,14 @@ export function useLiveEffects(camera: MediaStream | null) {
   useEffect(() => {
     if (!camera || created.current) return;
     created.current = true;
-    if (!liveEffectsSupported()) {
-      setSupported(false);
-      return;
-    }
+    let next: LiveVideoProcessor | null = null;
     try {
-      setProcessor(new LiveVideoProcessor());
+      next = liveEffectsSupported() ? new LiveVideoProcessor() : null;
     } catch {
-      setSupported(false);
+      next = null;
     }
+    if (next) setProcessor(next);
+    else setSupported(false);
   }, [camera]);
 
   useEffect(() => () => processor?.destroy(), [processor]);
@@ -50,15 +52,27 @@ export function useLiveEffects(camera: MediaStream | null) {
     saveLiveEffectSettings(settings);
   }, [processor, settings]);
 
-  const media = useMemo(() => {
-    if (!camera) return null;
-    if (!processor) return supported ? null : camera;
-    return new MediaStream([processor.track, ...camera.getAudioTracks()]);
-  }, [camera, processor, supported]);
+  const { width, height, fps, zoom } = output;
+  useEffect(() => {
+    processor?.setOutput({ width, height, fps });
+  }, [processor, width, height, fps]);
+
+  useEffect(() => {
+    processor?.setZoom(zoom / 100);
+  }, [processor, zoom]);
+
+  const video = camera
+    ? processor
+      ? processor.track
+      : supported
+        ? null
+        : (camera.getVideoTracks()[0] ?? null)
+    : null;
 
   return {
+    processor,
     /** What to preview and publish; null while the effects are starting. */
-    media,
+    video,
     /** False when this browser can't draw effects (the camera goes out as is). */
     supported,
     active: Boolean(processor),
@@ -68,4 +82,3 @@ export function useLiveEffects(camera: MediaStream | null) {
       setSettings((s) => ({ ...s, smooth: 0, brighten: 0, filter: "natural", effect: "none", frame: "none", banner: "" })),
   };
 }
-

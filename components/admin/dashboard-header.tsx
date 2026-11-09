@@ -1,5 +1,6 @@
 "use client";
 
+import { SILK_GRADIENT, SilkBackdrop } from "@/components/auth/silk-pattern";
 import * as React from "react";
 import Link from "@/components/language/link";
 import { useLocale, useTranslations } from "next-intl";
@@ -114,20 +115,13 @@ export function DashboardHeader({
         : Moon;
 
   return (
-    <section className="relative isolate overflow-hidden rounded-3xl bg-gradient-to-br from-[#386cef] via-[#4f46e5] to-[#7c3aed] p-5 text-white shadow-lg shadow-indigo-500/20 sm:p-7">
-      {/* Decorative light, purely visual. */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute -right-16 -top-24 -z-10 size-72 rounded-full bg-white/15 blur-3xl"
-      />
-      <span
-        aria-hidden
-        className="pointer-events-none absolute -bottom-28 left-1/3 -z-10 size-72 rounded-full bg-fuchsia-400/25 blur-3xl"
-      />
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.14)_1px,transparent_0)] [background-size:22px_22px] [mask-image:linear-gradient(to_left,black,transparent_70%)]"
-      />
+    // Woven silk in the store's own colours: the khit lattice, a gold
+    // "fan pla" hem and a temple lotus (as on the sign-in pages).
+    <section
+      className="relative isolate overflow-hidden rounded-3xl p-5 pt-7 text-white shadow-lg shadow-primary/25 sm:p-7 sm:pt-9"
+      style={{ backgroundImage: SILK_GRADIENT }}
+    >
+      <SilkBackdrop lotusClassName="-bottom-24 -right-10 size-80 opacity-20" />
 
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
@@ -142,7 +136,7 @@ export function DashboardHeader({
             suppressHydrationWarning
             className="mt-3 flex items-center gap-2.5 text-2xl font-bold tracking-tight sm:text-3xl"
           >
-            <GreetingIcon className="size-7 shrink-0 text-amber-200" aria-hidden />
+            <GreetingIcon className="size-7 shrink-0 text-highlight" aria-hidden />
             <span className="min-w-0 truncate">
               {t(`admin.dashboardPage.${greetingKey}`, {
                 name: displayName,
@@ -176,7 +170,7 @@ export function DashboardHeader({
           </Link>
           <Link
             href="/admin/orders"
-            className="group inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-[10px] bg-amber-400 px-3.5 text-sm font-semibold text-slate-900 shadow-md shadow-amber-500/30 transition-all hover:bg-amber-300 sm:flex-none"
+            className="group inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-[10px] bg-highlight px-3.5 text-sm font-semibold text-highlight-foreground shadow-md shadow-black/20 transition-all hover:brightness-110 sm:flex-none"
           >
             <ShoppingBag className="size-4" />
             {t("admin.sidebar.orders")}

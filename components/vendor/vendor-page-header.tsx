@@ -11,6 +11,8 @@ const ICON_TONE = {
   teal: "bg-teal-500",
   orange: "bg-orange-500",
   cyan: "bg-cyan-500",
+  /** The store theme's own colour (Phrae Wa red-brown on the OTOP theme). */
+  silk: "bg-linear-to-br from-primary to-[color-mix(in_oklab,var(--primary)_68%,var(--highlight))]",
 } as const;
 
 /** The vendor area's page heading: a coloured icon, the title and one line on what the page is for. */

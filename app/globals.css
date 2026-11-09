@@ -2212,6 +2212,14 @@ body[data-store-theme]
   100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--ray)) translateY(-150px) scale(1.1); }
 }
 .live-gift-ray { opacity: 0; animation: live-gift-ray 1.6s 0.4s ease-out forwards; }
+/* The studio's 3-2-1 before going live. */
+@keyframes live-countdown {
+  0% { opacity: 0; transform: scale(2.2); }
+  25% { opacity: 1; transform: scale(1); }
+  80% { opacity: 1; transform: scale(0.95); }
+  100% { opacity: 0; transform: scale(0.7); }
+}
+.live-countdown { animation: live-countdown 1s ease-out forwards; }
 @media (prefers-reduced-motion: reduce) {
   /* Fade only: no sliding, spinning or bursting. */
   .live-gift-banner, .live-gift-mega { animation-name: live-gift-glow; }

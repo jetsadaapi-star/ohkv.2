@@ -91,7 +91,7 @@ export function DashboardVisitorsChart({
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight text-foreground">
-          <span aria-hidden className="h-5 w-1 shrink-0 rounded-full bg-gradient-to-b from-blue-500 to-violet-500" />
+          <span aria-hidden className="size-2.5 shrink-0 rotate-45 rounded-[3px] bg-primary ring-[3px] ring-highlight/40" />
             {t("admin.dashboardPage.totalVisitors")}
           </h2>
           <div className="mt-1 flex items-center gap-2">
@@ -156,13 +156,14 @@ export function DashboardVisitorsChart({
             <Line
               type="monotone"
               dataKey="previous"
-              stroke="var(--muted-foreground)"
+              stroke="var(--highlight)"
               strokeWidth={3}
+              strokeDasharray="6 4"
               dot={false}
               activeDot={{
                 r: 4,
                 strokeWidth: 0,
-                fill: "var(--muted-foreground)",
+                fill: "var(--highlight)",
               }}
               name={pageviewsLabel}
             />
@@ -172,10 +173,10 @@ export function DashboardVisitorsChart({
 
       <div className="mt-2 flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-2">
-          <span className="size-2.5 rounded-[2px] bg-blue-600" /> {visitorsLabel}
+          <span className="size-2.5 rounded-[2px] bg-primary" /> {visitorsLabel}
         </span>
         <span className="inline-flex items-center gap-2">
-          <span className="size-2.5 rounded-[2px] bg-muted-foreground/60" />{" "}
+          <span className="size-2.5 rounded-[2px] bg-highlight" />{" "}
           {pageviewsLabel}
         </span>
       </div>

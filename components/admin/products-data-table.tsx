@@ -21,11 +21,13 @@ import {
   FileDown,
   ShoppingBag,
   Globe,
+  Star,
+  Tag,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import Link from "@/components/language/link";
 import {
   DataTable,
-  ProductCell,
+  ImageCell,
   StatusCell,
   TextCell,
   type DataTableColumn,
@@ -38,7 +40,8 @@ import { toast } from "@/components/ui/toast-notification";
 import { useCurrency } from "@/providers/currency-provider";
 import { useConfirmation } from "@/components/ui/confirmation-dialog";
 import { buildAdminCommerceTableHeader } from "@/components/admin/admin-commerce-table-header";
-import { MODERN_TABLE_CARD, productRowHue, statusRowClass } from "@/components/vendor/status-tone";
+import { MODERN_TABLE_CARD, productRowHue } from "@/components/vendor/status-tone";
+import { cn } from "@/lib/utils";
 import {
   ProductImportDialog,
   downloadProductImportSample,
@@ -322,83 +325,65 @@ export function ProductsDataTable({
     [formatCurrency],
   );
 
-  const getSourceLabel = useCallback((row: Product) => {
-    return row.productSource === "vendor" ? th("sourceVendor") : th("sourceAdmin");
-  }, [th]);
-
-  // Column definitions
+  // Column definitions. The category rides under the name and the sales
+  // channels are icons, so the columns that matter fit without scrolling.
   const columns = useMemo<DataTableColumn<Product>[]>(
     () => [
       {
         id: "product",
         header: t("admin.productsDataTable.columns.product"),
-        cell: (row) => (
-          <div className="max-w-[240px] text-sm">
-            <ProductCell
-              image={row.images?.[0] || row.media?.[0]?.url}
-              title={row.title || row.name}
-              titleWordLimit={4}
-              href={
-                !canEdit
-                  ? `/${locale}/products/${row.slug}`
-                  : `${basePath}/products/${row._id}/edit`
-              }
-              hoverStyle="blueUnderline"
-            />
-          </div>
-        ),
-        className: "w-[280px]",
-      },
-      {
-        id: "category",
-        header: t("admin.productsDataTable.columns.category"),
-        cell: (row) => (
-          <TextCell
-            value={row.category?.name}
-            fallback={t("admin.productsDataTable.columns.uncategorized")}
-            truncate
-            maxWidth="140px"
-            wordLimit={4}
-            className="text-sm"
-          />
-        ),
-        className: "w-[140px] max-w-[140px]",
+        cell: (row) => {
+          const href = !canEdit ? `/${locale}/products/${row.slug}` : `${basePath}/products/${row._id}/edit`;
+          const title = row.title || row.name;
+          return (
+            <div className="flex w-[min(236px,58vw)] min-w-0 items-center gap-3 whitespace-normal">
+              <span className="shrink-0 overflow-hidden rounded-xl ring-1 ring-border/70 [&>div]:rounded-xl">
+                <ImageCell src={row.images?.[0] || row.media?.[0]?.url} alt={title} size="lg" rounded="lg" />
+              </span>
+              <div className="min-w-0">
+                <Link
+                  href={href}
+                  onClick={(event) => event.stopPropagation()}
+                  title={title}
+                  className="line-clamp-2 text-sm font-semibold leading-snug text-foreground transition-colors hover:text-primary"
+                >
+                  {title}
+                </Link>
+                <div className="mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <span className="inline-flex max-w-[180px] items-center gap-1 truncate rounded-md bg-muted/70 px-1.5 py-0.5">
+                    <Tag className="size-3 shrink-0" />
+                    <span className="truncate">{row.category?.name || t("admin.productsDataTable.columns.uncategorized")}</span>
+                  </span>
+                  {row.featured ? (
+                    <span className="inline-flex items-center gap-0.5 rounded-md bg-highlight-surface px-1.5 py-0.5 font-medium text-highlight-surface-foreground">
+                      <Star className="size-3 fill-current" />
+                      {th("featured")}
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          );
+        },
+        className: "min-w-[236px]",
       },
       ...(isMultiVendor
         ? [
             {
               id: "vendor",
               header: th("colStoreName"),
-              cell: (row: Product) => (
-                <TextCell
-                  value={row.vendorId?.storeName}
-                  fallback={th("defaultStore")}
-                  truncate
-                  maxWidth="150px"
-                  wordLimit={3}
-                  className="text-sm"
-                />
-              ),
-              className: "w-[160px] max-w-[160px]",
-            },
-            {
-              id: "source",
-              header: th("colSource"),
-              cell: (row: Product) => (
-                <Badge
-                  variant={
-                    row.productSource === "vendor" ? "outline" : "secondary"
-                  }
-                  className={
-                    row.productSource === "vendor"
-                      ? "border-teal-200 bg-teal-50 text-teal-700 dark:border-teal-500/30 dark:bg-teal-500/10 dark:text-teal-300"
-                      : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                  }
-                >
-                  {getSourceLabel(row)}
-                </Badge>
-              ),
-              className: "w-[110px]",
+              cell: (row: Product) => {
+                const name = row.vendorId?.storeName || th("defaultStore");
+                return (
+                  <span className="inline-flex max-w-[140px] items-center gap-2 text-sm" title={name}>
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                      {name.trim().charAt(0)}
+                    </span>
+                    <span className="truncate">{name}</span>
+                  </span>
+                );
+              },
+              className: "w-[160px]",
             },
           ]
         : []),
@@ -406,24 +391,51 @@ export function ProductsDataTable({
         id: "status",
         header: t("admin.productsDataTable.columns.status"),
         cell: (row) => <StatusCell status={row.status} />,
-        className: "w-[100px]",
+        className: "w-[110px]",
       },
       {
         id: "inventory",
         header: t("admin.productsDataTable.columns.inventory"),
-        cell: (row) => (
-          <TextCell
-            value={th("inStock", { count: row.stock })}
-            className="text-sm font-medium"
-          />
-        ),
-        className: "w-[120px]",
+        cell: (row) => {
+          const hue = productRowHue(row);
+          const units = row.variants?.length
+            ? row.variants.reduce((sum, variant) => sum + (variant.stock ?? 0), 0)
+            : (row.stock ?? 0);
+          if (hue === "rose") {
+            return (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 ring-1 ring-inset ring-red-200 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/30">
+                <span className="size-1.5 rounded-full bg-red-500" />
+                {th("outOfStock")}
+              </span>
+            );
+          }
+          return (
+            <span className="inline-flex flex-col">
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold tabular-nums">
+                <span
+                  className={cn(
+                    "size-2 rounded-full",
+                    hue === "amber" ? "bg-amber-500" : hue === "slate" ? "bg-slate-300" : "bg-emerald-500",
+                  )}
+                />
+                {th("units", { count: units })}
+              </span>
+              {hue === "amber" ? <span className="ps-3.5 text-[11px] font-medium text-amber-700 dark:text-amber-300">{th("lowStock")}</span> : null}
+            </span>
+          );
+        },
+        className: "w-[104px]",
       },
       {
         id: "price",
         header: t("admin.productsDataTable.columns.price"),
         cell: (row) => (
-          <span className="text-sm font-medium">{formatPrice(row)}</span>
+          <span className="inline-flex flex-col">
+            <span className="text-sm font-bold tabular-nums text-foreground">{formatPrice(row)}</span>
+            {row.comparePrice && row.comparePrice > row.price ? (
+              <span className="text-[11px] tabular-nums text-muted-foreground line-through">{formatCurrency(row.comparePrice)}</span>
+            ) : null}
+          </span>
         ),
         className: "w-[130px]",
       },
@@ -433,27 +445,29 @@ export function ProductsDataTable({
         cell: (row) => {
           const pos = row.publishing?.pointOfSale ?? false;
           const online = row.publishing?.onlineStore ?? true;
+          const channel = (on: boolean, label: string, icon: React.ReactNode) => (
+            <span
+              title={label}
+              aria-label={label}
+              className={cn(
+                "flex size-7 items-center justify-center rounded-lg ring-1 ring-inset [&_svg]:size-3.5",
+                on ? "bg-primary/10 text-primary ring-primary/20" : "bg-muted/50 text-muted-foreground/40 ring-transparent",
+              )}
+            >
+              {icon}
+            </span>
+          );
           return (
             <div className="flex items-center gap-1.5">
-              {pos && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-foreground/80">
-                  <ShoppingBag className="h-3.5 w-3.5 text-pink-500" />
-                  {t("admin.productsDataTable.channels.inStore")}
-                </span>
-              )}
-              {online && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-foreground/80">
-                  <Globe className="h-3.5 w-3.5 text-teal-500" />
-                  {t("admin.productsDataTable.channels.online")}
-                </span>
-              )}
+              {channel(online, t("admin.productsDataTable.channels.online"), <Globe />)}
+              {channel(pos, t("admin.productsDataTable.channels.inStore"), <ShoppingBag />)}
             </div>
           );
         },
-        className: "w-[220px]",
+        className: "w-[90px]",
       },
     ],
-    [basePath, formatPrice, getSourceLabel, isMultiVendor, locale, canEdit, t, th],
+    [basePath, formatPrice, formatCurrency, isMultiVendor, locale, canEdit, t, th],
   );
 
   // Tabs
@@ -718,8 +732,9 @@ export function ProductsDataTable({
         onPageSizeChange={list.handlePageSizeChange}
         // Row actions
         rowActions={rowActions}
-        rowActionsHeader={t("admin.productsDataTable.rowActionsHeader")}
-        rowActionsVariant="inline"
+        // A "⋯" menu needs no heading; the column stays narrow.
+        rowActionsHeader={<span className="sr-only">{t("admin.productsDataTable.rowActionsHeader")}</span>}
+        rowActionsVariant="dropdown"
         onRowClick={(row) =>
           router.push(
             !canEdit
@@ -728,8 +743,8 @@ export function ProductsDataTable({
           )
         }
         className={modern ? MODERN_TABLE_CARD : undefined}
-        // On sale and stocked green, running low amber, sold out red, off sale grey.
-        rowClassName={modern ? (row) => statusRowClass(productRowHue(row)) : undefined}
+        // Plain rows: the stock column carries the colour, so the list stays calm.
+        rowClassName={() => "transition-colors hover:bg-primary/[0.03]"}
         // Empty state
         emptyMessage={t("admin.productsDataTable.empty")}
       />

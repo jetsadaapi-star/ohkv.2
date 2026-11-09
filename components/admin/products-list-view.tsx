@@ -148,7 +148,7 @@ async function ProductsStats({
       value: stats.totalProducts,
       description: t("admin.productsPage.stats.totalProducts.description"),
       icon: <Boxes className="h-5 w-5" />,
-      iconClassName: "text-teal-700 bg-teal-100",
+      iconClassName: "silk",
     },
     {
       title: t("admin.productsPage.stats.activeListings.title"),
@@ -176,7 +176,7 @@ async function ProductsStats({
       value: stats.totalInventoryUnits,
       description: t("admin.productsPage.stats.inventoryUnits.description"),
       icon: <Warehouse className="h-5 w-5" />,
-      iconClassName: "text-violet-700 bg-violet-100",
+      iconClassName: "gold",
     },
   ];
 

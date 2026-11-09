@@ -88,7 +88,7 @@ export function AdminAbandonedHeader() {
   return <AdminHeader page="abandoned" icon={<ShoppingCart />} tone="amber" />;
 }
 export function AdminProductsHeader({ actions }: HeaderProps) {
-  return <AdminHeader page="products" icon={<Package />} tone="violet" actions={actions} />;
+  return <AdminHeader page="products" icon={<Package />} tone="silk" actions={actions} />;
 }
 export function AdminCollectionsHeader({ actions }: HeaderProps) {
   return <AdminHeader page="collections" icon={<Layers />} tone="sky" actions={actions} />;

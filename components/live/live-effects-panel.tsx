@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { FlipHorizontal2, RotateCcw, Sparkles, Wand2 } from "lucide-react";
+import { RotateCcw, Sparkles } from "lucide-react";
 import {
   LIVE_BANNER_MAX,
   LIVE_EFFECTS,
@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 
 type Tab = "beauty" | "filter" | "effect" | "frame";
 
-/** The studio's beauty, filter, effect and frame controls. Changes show live, on air too. */
+/** The studio's beauty, filter, effect and frame controls (inside the studio panel). Changes show live, on air too. */
 export function LiveEffectsPanel({
   settings,
   onChange,
@@ -46,26 +46,20 @@ export function LiveEffectsPanel({
   ];
 
   return (
-    <section className="rounded-3xl border bg-card p-3 shadow-sm">
-      <div className="mb-3 flex items-center gap-2">
-        <span className="flex size-8 items-center justify-center rounded-xl bg-linear-to-br from-rose-500 to-amber-500 text-white">
-          <Wand2 className="size-4" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <h2 className="text-sm font-semibold">{t("title")}</h2>
-          <p className="truncate text-[11px] text-muted-foreground">{t("hint")}</p>
-        </div>
+    <div>
+      <div className="mb-2 flex items-center gap-2">
+        <p className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground">{t("hint")}</p>
         <button
           type="button"
           onClick={onReset}
-          className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-muted"
+          className="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-muted"
         >
           <RotateCcw className="size-3.5" />
           {t("reset")}
         </button>
       </div>
 
-      <div className="mb-3 grid grid-cols-4 gap-1 rounded-2xl bg-muted p-1" role="tablist">
+      <div className="mb-3 grid grid-cols-4 gap-1 rounded-2xl border p-1" role="tablist">
         {tabs.map((item) => (
           <button
             key={item.id}
@@ -75,7 +69,7 @@ export function LiveEffectsPanel({
             onClick={() => setTab(item.id)}
             className={cn(
               "rounded-xl px-1 py-1.5 text-xs font-semibold transition",
-              tab === item.id ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+              tab === item.id ? "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300" : "text-muted-foreground hover:text-foreground",
             )}
           >
             {item.label}
@@ -95,17 +89,6 @@ export function LiveEffectsPanel({
             value={settings.brighten}
             onChange={(brighten) => onChange({ brighten })}
           />
-          <label className="flex cursor-pointer items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={settings.mirror}
-              onChange={(e) => onChange({ mirror: e.target.checked })}
-              className="size-4 accent-rose-600"
-            />
-            <FlipHorizontal2 className="size-4 text-muted-foreground" />
-            <span className="flex-1">{t("mirror")}</span>
-          </label>
-          <p className="-mt-2 ps-6 text-[11px] text-muted-foreground">{t("mirrorHint")}</p>
         </div>
       ) : null}
 
@@ -168,23 +151,42 @@ export function LiveEffectsPanel({
           </label>
         </div>
       ) : null}
-    </section>
+    </div>
   );
 }
 
-function Slider({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) {
+export function Slider({
+  label,
+  value,
+  onChange,
+  min = 0,
+  max = 100,
+  step = 1,
+  format,
+  disabled,
+}: {
+  label: React.ReactNode;
+  value: number;
+  onChange: (value: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  format?: (value: number) => string;
+  disabled?: boolean;
+}) {
   return (
-    <label className="block">
-      <span className="mb-1.5 flex items-center justify-between text-xs font-semibold">
+    <label className={cn("block", disabled && "opacity-50")}>
+      <span className="mb-1.5 flex items-center justify-between gap-2 text-xs font-semibold">
         {label}
-        <span className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[11px]">{value}</span>
+        <span className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[11px]">{format ? format(value) : value}</span>
       </span>
       <input
         type="range"
-        min={0}
-        max={100}
-        step={1}
+        min={min}
+        max={max}
+        step={step}
         value={value}
+        disabled={disabled}
         onChange={(e) => onChange(Number(e.target.value))}
         className="h-2 w-full cursor-pointer accent-rose-600"
       />

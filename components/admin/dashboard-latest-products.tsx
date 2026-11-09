@@ -19,7 +19,7 @@ export function DashboardLatestProducts({
   return (
     <section className="rounded-2xl border border-border bg-card shadow-sm p-4 sm:p-5">
       <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight text-foreground">
-          <span aria-hidden className="h-5 w-1 shrink-0 rounded-full bg-gradient-to-b from-blue-500 to-violet-500" />
+          <span aria-hidden className="size-2.5 shrink-0 rotate-45 rounded-[3px] bg-primary ring-[3px] ring-highlight/40" />
         {t("admin.dashboardPage.latestProducts", {
           defaultMessage: "Latest Products",
         })}

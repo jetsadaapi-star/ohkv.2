@@ -21,9 +21,15 @@ interface AdminStatsStripProps {
   variant?: "strip" | "tiles";
 }
 
-const TILE_HUES = ["violet", "amber", "orange", "blue", "green", "indigo", "cyan", "teal", "rose"] as const;
+const TILE_HUES = ["silk", "gold", "violet", "amber", "orange", "blue", "green", "indigo", "cyan", "teal", "rose"] as const;
 type TileHue = (typeof TILE_HUES)[number] | "slate";
 const TILE_TONE: Record<TileHue, { tile: string; icon: string }> = {
+  // The store theme's colours: primary (Phrae Wa red-brown) and its gold accent.
+  silk: { tile: "from-primary/[0.06] ring-primary/20 text-primary dark:from-primary/15", icon: "bg-primary" },
+  gold: {
+    tile: "from-highlight-surface ring-highlight/40 text-[color-mix(in_oklab,var(--highlight)_60%,black)] dark:from-highlight/10 dark:text-highlight",
+    icon: "bg-[color-mix(in_oklab,var(--highlight)_85%,black)]",
+  },
   violet: { tile: "from-violet-50 ring-violet-200 text-violet-700 dark:from-violet-500/10", icon: "bg-violet-500" },
   amber: { tile: "from-amber-50 ring-amber-200 text-amber-700 dark:from-amber-500/10", icon: "bg-amber-500" },
   orange: { tile: "from-orange-50 ring-orange-200 text-orange-700 dark:from-orange-500/10", icon: "bg-orange-500" },
@@ -71,6 +77,8 @@ function getIconThemeClasses(iconClassName?: string) {
     return "bg-muted text-muted-foreground dark:bg-muted/70 dark:text-foreground";
   }
 
+  if (iconClassName === "silk") return "bg-primary/10 text-primary dark:bg-primary/25";
+  if (iconClassName === "gold") return "bg-highlight-surface text-highlight-surface-foreground dark:bg-highlight/20 dark:text-highlight";
   if (iconClassName.includes("blue")) {
     return `${iconClassName} dark:bg-blue-500/20 dark:text-blue-300`;
   }

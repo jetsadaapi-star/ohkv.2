@@ -644,7 +644,7 @@ export function VendorSettingsForm({
     },
     {
       value: "payment" as const,
-      label: tSafe("vendor.payment", "Payment"),
+      label: tSafe("vendor.payoutTab.tab", "Payout account"),
       icon: CreditCard,
     },
     {
@@ -1591,12 +1591,12 @@ export function VendorSettingsForm({
         <Card className="rounded-2xl shadow-sm">
           <CardHeader>
             <CardTitle>
-              {tSafe("vendor.paymentSettings", "Payment Settings")}
+              {tSafe("vendor.payoutTab.title", "Where we send your earnings")}
             </CardTitle>
             <CardDescription>
               {tSafe(
-                "vendor.paymentSettingsDesc",
-                "Manage your payout details",
+                "vendor.payoutTab.description",
+                "The bank account the marketplace transfers your sales to, after commission, on the schedule you choose. Customers never see this account — they pay the marketplace at checkout.",
               )}
             </CardDescription>
           </CardHeader>

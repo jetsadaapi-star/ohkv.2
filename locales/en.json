@@ -18767,6 +18767,11 @@
       "noMethods": "No payment method is available for this. Contact the marketplace admin to settle it another way.",
       "dialogTitle": "Settle commission",
       "continue": "Continue to payment"
+    },
+    "payoutTab": {
+      "tab": "Payout account",
+      "title": "Where we send your earnings",
+      "description": "The bank account the marketplace transfers your sales to, after commission, on the schedule you choose. Customers never see this account — they pay the marketplace at checkout."
     }
   },
   "footer": {

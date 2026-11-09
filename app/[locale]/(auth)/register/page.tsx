@@ -19,6 +19,7 @@ export default async function RegisterPage(props: GuestPageProps) {
         apple: settings.appleOAuthEnabled,
       }}
       emailVerificationRequired={settings.emailVerificationRequired}
+      phoneSignUp={settings.phoneLogin.available && settings.phoneLogin.allowSignUp}
     />
   );
 }

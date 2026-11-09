@@ -9,6 +9,8 @@ import {
   ArrowRight,
   Heart,
   Loader2,
+  Mail,
+  Smartphone,
   PackageSearch,
   Shield,
   Sparkles,
@@ -39,15 +41,18 @@ import {
   type DemoCredential,
   type OAuthEnabled,
 } from "@/components/auth/login-form";
+import { PhoneLoginForm, type PhoneLoginConfig } from "@/components/auth/phone-login-form";
 
 interface LoginPageProps {
   /** Resolved on the server so the buttons render in the initial HTML. */
   oauthEnabled: OAuthEnabled;
   /** Empty unless the deployment runs with DEMO_MODE — see `demoLoginCredentials`. */
   demoCredentials: DemoCredential[];
+  /** Settings → SMS: sign in with a texted code. */
+  phoneLogin?: PhoneLoginConfig;
 }
 
-function LoginContent({ oauthEnabled, demoCredentials }: LoginPageProps) {
+function LoginContent({ oauthEnabled, demoCredentials, phoneLogin }: LoginPageProps) {
   const t = useTranslations();
   const ts = useTranslations("storeText.loginContent");
   const ls = useTranslations("auth.loginShowcase");
@@ -55,6 +60,11 @@ function LoginContent({ oauthEnabled, demoCredentials }: LoginPageProps) {
   const params = useParams();
   const locale = params.locale as string;
   const searchParams = useSearchParams();
+
+  const phoneAvailable = Boolean(phoneLogin?.available);
+  const [method, setMethod] = useState<"email" | "phone">(
+    phoneAvailable && searchParams.get("method") === "phone" ? "phone" : "email",
+  );
 
   const [dismissedSearchErrorKey, setDismissedSearchErrorKey] = useState<
     string | null
@@ -147,7 +157,39 @@ function LoginContent({ oauthEnabled, demoCredentials }: LoginPageProps) {
           </div>
 
           <LoginOAuthButtons state={state} oauthEnabled={oauthEnabled} />
-          <LoginFields state={state} error={visibleError} />
+
+          {phoneAvailable && phoneLogin ? (
+            <div className="grid grid-cols-2 gap-1 rounded-2xl bg-muted p-1" role="tablist" aria-label={t("auth.phoneLogin.methodLabel")}>
+              {(
+                [
+                  { id: "email", label: t("auth.phoneLogin.withEmail"), icon: <Mail className="size-4" /> },
+                  { id: "phone", label: t("auth.phoneLogin.withPhone"), icon: <Smartphone className="size-4" /> },
+                ] as const
+              ).map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={method === item.id}
+                  onClick={() => setMethod(item.id)}
+                  className={
+                    method === item.id
+                      ? "flex items-center justify-center gap-1.5 rounded-xl bg-background py-2 text-sm font-semibold text-primary shadow-sm"
+                      : "flex items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+                  }
+                >
+                  {item.icon}
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
+
+          {method === "phone" && phoneLogin ? (
+            <PhoneLoginForm config={phoneLogin} onSignedIn={(role) => state.redirectAfterLogin(role)} />
+          ) : (
+            <LoginFields state={state} error={visibleError} />
+          )}
 
           {/* Not a member yet — a soft invitation, not a second button race */}
           <Link

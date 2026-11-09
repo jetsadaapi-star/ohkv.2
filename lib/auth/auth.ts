@@ -3,7 +3,8 @@ import { expo } from "@better-auth/expo";
 import { betterAuth, type BetterAuthPlugin } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { APIError, createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
-import { twoFactor } from "better-auth/plugins";
+import { phoneNumber, twoFactor } from "better-auth/plugins";
+import { phonePlaceholderEmail } from "@/lib/auth/phone-identity";
 import { connectDB, mongoose } from "@/lib/db";
 import {
   appConfig,
@@ -257,6 +258,86 @@ function passwordlessCustomerAccess(): BetterAuthPlugin {
   };
 }
 
+/**
+ * Sign in with a phone number and a texted code (lib/auth/phone-login.ts).
+ * The plugin's own rules are only "whoever holds the number"; the store's —
+ * switched on in Settings → SMS, customers and vendors only, no two-factor
+ * account, sign-up only when allowed, a few texts per number — run first.
+ * Its password and password-reset-by-phone endpoints are closed: a number is
+ * a way in by code only.
+ */
+function phoneLogin(): BetterAuthPlugin[] {
+  const otpPaths = new Set(["/phone-number/send-otp", "/phone-number/verify"]);
+  const closedPaths = new Set([
+    "/sign-in/phone-number",
+    "/phone-number/request-password-reset",
+    "/phone-number/reset-password",
+  ]);
+  const guard: BetterAuthPlugin = {
+    id: "phone-login-guard",
+    hooks: {
+      before: [
+        {
+          matcher: (ctx) => closedPaths.has(ctx.path ?? ""),
+          handler: createAuthMiddleware(async () => {
+            throw new APIError("NOT_FOUND", { message: "Not found" });
+          }),
+        },
+        {
+          matcher: (ctx) => otpPaths.has(ctx.path ?? ""),
+          handler: createAuthMiddleware(async (ctx) => {
+            const rules = await import("@/lib/auth/phone-login");
+            const body = (ctx.body ?? {}) as { phoneNumber?: unknown; updatePhoneNumber?: unknown };
+            const session = await getSessionFromCtx(ctx).catch(() => null);
+            // Signed in: adding a number to the account. Otherwise: signing in.
+            const linking =
+              Boolean(session) && (ctx.path === "/phone-number/send-otp" || body.updatePhoneNumber === true);
+            if (linking && session) {
+              await rules.assertPhoneLinkAllowed(body.phoneNumber, {
+                id: session.user.id,
+                role: (session.user as { role?: string }).role,
+              });
+            } else {
+              if (body.updatePhoneNumber === true) {
+                throw new APIError("UNAUTHORIZED", { message: "Sign in first." });
+              }
+              await rules.assertPhoneSignInAllowed(body.phoneNumber);
+            }
+            if (ctx.path === "/phone-number/send-otp") {
+              await rules.assertOtpBudget(String(body.phoneNumber));
+            }
+          }),
+        },
+      ],
+    },
+  };
+  return [
+    guard,
+    phoneNumber({
+      otpLength: 6,
+      expiresIn: 300,
+      allowedAttempts: 5,
+      phoneNumberValidator: async (value) => {
+        const { isValidLoginPhoneNumber } = await import("@/lib/auth/phone-login");
+        return isValidLoginPhoneNumber(value);
+      },
+      sendOTP: async ({ phoneNumber: to, code }) => {
+        const { sendPhoneOtp } = await import("@/lib/auth/phone-login");
+        await sendPhoneOtp(to, code);
+      },
+      // A number no account has yet: a customer account, named after the
+      // number until they change it, with an address that takes no mail.
+      signUpOnVerification: {
+        getTempEmail: (value) => phonePlaceholderEmail(value),
+        getTempName: (value) => {
+          const digits = value.replace(/\D/g, "");
+          return value.startsWith("+66") ? `0${digits.slice(2)}` : value;
+        },
+      },
+    }),
+  ];
+}
+
 function createAuth(
   db: Db,
   client?: MongoClient,
@@ -387,6 +468,9 @@ function createAuth(
         "/two-factor/verify-backup-code": { window: 900, max: 5 },
         "/two-factor/send-otp": { window: 900, max: 5 },
         "/two-factor/verify-otp": { window: 300, max: 6 },
+        // Each code is a paid text; each number also has its own hourly cap.
+        "/phone-number/send-otp": { window: 600, max: 5 },
+        "/phone-number/verify": { window: 300, max: 10 },
       },
     },
 
@@ -568,7 +652,13 @@ function createAuth(
     account: {
       storeStateStrategy: "cookie",
     },
-    plugins: [twoFactor(), shopAppTransport(), activityLog(), passwordlessCustomerAccess()],
+    plugins: [
+      twoFactor(),
+      shopAppTransport(),
+      activityLog(),
+      passwordlessCustomerAccess(),
+      ...phoneLogin(),
+    ],
     databaseHooks: {
       user: {
         create: {
@@ -662,7 +752,14 @@ function createAuth(
             const isEmailSignUp = Boolean(
               ctx?.path && ctx.path.endsWith("/sign-up/email"),
             );
-            if (verificationStatus === "blocked_pending" && !isEmailSignUp) {
+            // A texted code proves the person holds the number: an account
+            // made by phone has no real email to verify, and one that added
+            // its number has proven it the same way.
+            const isPhoneSignIn = Boolean(
+              ctx?.path?.endsWith("/phone-number/verify") &&
+                (userDoc as { phoneNumberVerified?: boolean }).phoneNumberVerified,
+            );
+            if (verificationStatus === "blocked_pending" && !isEmailSignUp && !isPhoneSignIn) {
               throw new APIError("FORBIDDEN", {
                 code: "EMAIL_NOT_VERIFIED",
                 message: "Please verify your email address before signing in.",

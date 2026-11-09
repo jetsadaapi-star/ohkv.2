@@ -5,6 +5,7 @@ import { getSettingsLean } from "@/models/settings.model";
 import { resolveOAuthCredentials } from "@/lib/settings/credentials";
 import { newOAuthProviderFlags } from "@/lib/auth/oauth-availability";
 import { isCurrentSmtpConfigurationVerified } from "@/lib/email/smtp-verification";
+import { phoneLoginConfigOf } from "@/lib/auth/phone-login";
 
 /**
  * Server-side flags for the login/register pages and the storefront's account
@@ -43,6 +44,8 @@ const loadAuthPageFlags = unstable_cache(
       emailVerificationRequired:
         Boolean(settings.security?.emailVerificationRequired) &&
         isCurrentSmtpConfigurationVerified(settings),
+      // Settings → SMS: on, and the provider can send.
+      phoneLogin: phoneLoginConfigOf(settings),
     };
   },
   ["auth-page-settings"],

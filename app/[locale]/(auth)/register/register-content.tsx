@@ -9,6 +9,7 @@ import {
   Loader2,
   LogIn,
   PackageSearch,
+  Smartphone,
   Sparkles,
   Store,
   TicketPercent,
@@ -30,11 +31,14 @@ interface RegisterPageProps {
   /** Resolved on the server so the buttons render in the initial HTML. */
   oauthEnabled: OAuthEnabled;
   emailVerificationRequired: boolean;
+  /** Settings → SMS allows a new account by a texted code. */
+  phoneSignUp?: boolean;
 }
 
 function RegisterContent({
   oauthEnabled,
   emailVerificationRequired,
+  phoneSignUp,
 }: RegisterPageProps) {
   const t = useTranslations();
   const params = useParams();
@@ -85,6 +89,21 @@ function RegisterContent({
 
         <div>
           <RegisterOAuthButtons state={state} oauthEnabled={oauthEnabled} />
+          {phoneSignUp ? (
+            <Link
+              href={`/${locale}/login?method=phone${redirectParam ? `&redirect=${encodeURIComponent(redirectParam)}` : ""}`}
+              className="mb-4 flex items-center gap-3 rounded-2xl border bg-background p-3 transition-colors hover:border-primary/40 hover:bg-primary/[0.03]"
+            >
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Smartphone className="size-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold">{t("auth.phoneLogin.signUpWithPhone")}</span>
+                <span className="block text-xs text-muted-foreground">{t("auth.phoneLogin.signUpWithPhoneHint")}</span>
+              </span>
+              <ArrowRight className="size-4 text-primary rtl:-scale-x-100" />
+            </Link>
+          ) : null}
           <RegisterFields state={state} />
         </div>
 

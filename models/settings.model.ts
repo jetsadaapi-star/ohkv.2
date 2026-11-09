@@ -364,6 +364,15 @@ export interface ISmsSettings {
   /** Append the relevant page link — useful, but often a second segment. */
   includeLinks: boolean;
   logRetentionDays?: 7 | 30 | 90;
+  /**
+   * Sign in with a phone number and a one-time code texted through the
+   * provider above (lib/auth/phone-login.ts). Only offered while SMS can send.
+   */
+  phoneLogin?: {
+    enabled: boolean;
+    /** A number no account has yet makes a new customer account. */
+    allowSignUp: boolean;
+  };
 }
 
 // ============================================
@@ -1963,6 +1972,16 @@ const SettingsSchema = new Schema<ISettings>(
             type: Number,
             enum: [7, 30, 90],
             default: 30,
+          },
+          phoneLogin: {
+            type: new Schema(
+              {
+                enabled: { type: Boolean, default: false },
+                allowSignUp: { type: Boolean, default: true },
+              },
+              { _id: false },
+            ),
+            default: () => ({}),
           },
         },
         { _id: false },

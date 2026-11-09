@@ -339,6 +339,8 @@ export function useLoginForm({
   return {
     locale,
     redirectTo,
+    /** Where a finished sign-in goes (the phone sign-in uses it too). */
+    redirectAfterLogin,
     form,
     error,
     setError,

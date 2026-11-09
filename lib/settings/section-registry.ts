@@ -87,6 +87,7 @@ export const SETTINGS_SECTION_SCHEMAS = {
     "defaultCountry",
     "includeLinks",
     "logRetentionDays",
+    "phoneLogin",
   ] as const),
   // `taxRate` is not here: Settings → Tax writes it (lib/tax/tax-settings.ts).
   orders: section([

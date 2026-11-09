@@ -736,6 +736,47 @@
       "footnote": "Your details are kept safe and never shared.",
       "loginHint": "Sign in to the account you already have",
       "sellHint": "Open your own shop and reach more buyers"
+    },
+    "phoneLogin": {
+      "methodLabel": "Sign in with",
+      "withEmail": "Email",
+      "withPhone": "Phone number",
+      "phoneLabel": "Mobile number",
+      "phonePlaceholder": "081 234 5678",
+      "hint": "We'll text you a 6-digit code. Use the number on your account.",
+      "hintWithSignUp": "We'll text you a 6-digit code. New here? Your account is created when you confirm it.",
+      "linkHint": "We'll text a code to confirm the number is yours.",
+      "sendCode": "Send code",
+      "codeSent": "We sent a 6-digit code to",
+      "codeLabel": "Enter the code",
+      "confirm": "Sign in",
+      "confirmLink": "Confirm number",
+      "changeNumber": "Change number",
+      "resend": "Resend code",
+      "resendIn": "Resend in {seconds}s",
+      "signUpWithPhone": "Sign up with your phone number",
+      "signUpWithPhoneHint": "No email needed — confirm with a texted code",
+      "cardTitle": "Sign in with phone",
+      "cardDescription": "Sign in with a code texted to your mobile number — no password needed.",
+      "linked": "Signs in to this account",
+      "changeLinked": "Change number",
+      "cancel": "Cancel",
+      "errors": {
+        "INVALID_PHONE_NUMBER": "Enter a valid mobile number.",
+        "PHONE_NUMBER_EXIST": "Another account already uses this number.",
+        "PHONE_LOGIN_DISABLED": "Signing in with a phone number is turned off.",
+        "PHONE_NOT_REGISTERED": "No account uses this number yet. Sign in with your email, then add your number under Account → Security.",
+        "PHONE_LOGIN_EMAIL_ONLY": "This account signs in with its email address.",
+        "ACCOUNT_INACTIVE_OR_BANNED": "This account can't sign in. Please contact the store.",
+        "OTP_TOO_MANY": "Too many codes were sent to this number. Try again in an hour.",
+        "OTP_SEND_FAILED": "We couldn't send the code. Try again in a moment.",
+        "INVALID_OTP": "That code isn't right. Check the text and try again.",
+        "OTP_EXPIRED": "That code has expired. Send a new one.",
+        "OTP_NOT_FOUND": "That code has expired. Send a new one.",
+        "TOO_MANY_ATTEMPTS": "Too many wrong codes. Send a new one.",
+        "RATE_LIMITED": "Too many tries. Wait a few minutes and try again.",
+        "generic": "Something went wrong. Please try again."
+      }
     }
   },
   "home": {
@@ -4987,7 +5028,19 @@
         "creditButton": "Check credit",
         "creditEmpty": "ThaiBulkSMS answered without a credit figure.",
         "creditFailed": "Could not read the credit. Try again.",
-        "creditRemaining": "Remaining"
+        "creditRemaining": "Remaining",
+        "phoneLogin": {
+          "title": "Sign in with phone number (OTP)",
+          "description": "Customers sign in, or sign up, with a 6-digit code texted through the provider above.",
+          "needsSms": "Set up and save the SMS provider above first — phone sign-in only shows while SMS can send.",
+          "enabled": "Allow signing in with a phone number",
+          "enabledHint": "Adds a \"Phone number\" option on the sign-in page and a phone card under Account → Security.",
+          "allowSignUp": "New customers can sign up with just a phone number",
+          "allowSignUpHint": "A number no account uses creates a customer account (they can add an email later). Off: only numbers already added to an account can sign in.",
+          "noteCost": "Every code is one paid text. Each number gets at most 5 codes an hour, and each address 5 every 10 minutes.",
+          "noteStaff": "Admin and staff accounts, and any account with two-factor on, keep signing in by email.",
+          "noteExisting": "Existing customers add their number under Account → Security (confirmed by a code) before they can sign in with it."
+        }
       },
       "notifications": {
         "title": "Notifications",

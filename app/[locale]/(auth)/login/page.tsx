@@ -27,6 +27,7 @@ export default async function LoginPage(props: GuestPageProps) {
         apple: settings.appleOAuthEnabled,
       }}
       demoCredentials={demoLoginCredentials(themeId)}
+      phoneLogin={settings.phoneLogin}
     />
   );
 }

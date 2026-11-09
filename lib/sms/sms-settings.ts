@@ -44,6 +44,22 @@ export function validateSmsSettings(data: Record<string, unknown>) {
     data.defaultCountry = code;
   }
 
+  if (data.phoneLogin !== undefined) {
+    if (!isPlainObject(data.phoneLogin)) {
+      throw new ValidationError("Phone sign-in settings are invalid");
+    }
+    const phoneLogin = data.phoneLogin;
+    for (const field of ["enabled", "allowSignUp"] as const) {
+      if (phoneLogin[field] !== undefined && typeof phoneLogin[field] !== "boolean") {
+        throw new ValidationError("Phone sign-in switches must be true or false");
+      }
+    }
+    data.phoneLogin = {
+      enabled: phoneLogin.enabled === true,
+      allowSignUp: phoneLogin.allowSignUp !== false,
+    };
+  }
+
   if (data.provider !== undefined && data.provider !== null) {
     if (data.provider !== "twilio" && data.provider !== "thaibulksms") {
       throw new ValidationError("The SMS provider must be Twilio or ThaiBulkSMS");

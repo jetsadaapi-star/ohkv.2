@@ -12,6 +12,7 @@ import {
   MessageSquareText,
   RadioTower,
   Send,
+  Smartphone,
   Wallet,
   type LucideIcon,
 } from "lucide-react";
@@ -331,6 +332,46 @@ export function SmsSettingsTab(props: {
                   />
                 </div>
               </SettingList>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <SectionTitle icon={<Smartphone />} tone="emerald">{t("phoneLogin.title")}</SectionTitle>
+              <CardDescription>{t("phoneLogin.description")}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {!ready ? <WarningBanner>{t("phoneLogin.needsSms")}</WarningBanner> : null}
+              <SettingList>
+                <SettingSwitchItem
+                  title={t("phoneLogin.enabled")}
+                  description={t("phoneLogin.enabledHint")}
+                  checked={Boolean(sms.phoneLogin?.enabled)}
+                  onCheckedChange={(on) =>
+                    updateNestedField("sms.phoneLogin", {
+                      enabled: on,
+                      allowSignUp: sms.phoneLogin?.allowSignUp !== false,
+                    })
+                  }
+                />
+                <SettingSwitchItem
+                  title={t("phoneLogin.allowSignUp")}
+                  description={t("phoneLogin.allowSignUpHint")}
+                  checked={sms.phoneLogin?.allowSignUp !== false}
+                  disabled={!sms.phoneLogin?.enabled}
+                  onCheckedChange={(on) =>
+                    updateNestedField("sms.phoneLogin", {
+                      enabled: Boolean(sms.phoneLogin?.enabled),
+                      allowSignUp: on,
+                    })
+                  }
+                />
+              </SettingList>
+              <ul className="list-disc space-y-1 ps-5 text-xs text-muted-foreground">
+                <li>{t("phoneLogin.noteCost")}</li>
+                <li>{t("phoneLogin.noteStaff")}</li>
+                <li>{t("phoneLogin.noteExisting")}</li>
+              </ul>
             </CardContent>
           </Card>
         </>

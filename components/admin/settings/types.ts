@@ -245,6 +245,7 @@ export interface Settings {
     defaultCountry?: string;
     includeLinks?: boolean;
     logRetentionDays?: 7 | 30 | 90;
+    phoneLogin?: { enabled?: boolean; allowSignUp?: boolean };
   };
   notifications: NotificationSettings;
   /** Settings → Tax; read through `normalizeTaxSettings()`. */

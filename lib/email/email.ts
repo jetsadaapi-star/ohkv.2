@@ -3,6 +3,7 @@
  * Using Nodemailer with SMTP (Gmail compatible)
  */
 
+import { isPhonePlaceholderEmail } from "@/lib/auth/phone-identity";
 import { createHash } from "node:crypto";
 import nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
@@ -391,6 +392,8 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
 export async function sendEmailWithOutcome(
   options: SendEmailOptions,
 ): Promise<{ sent: boolean; error?: string }> {
+  // An account made by phone sign-in has no real address to write to.
+  if (isPhonePlaceholderEmail(options.to)) return { sent: false };
   try {
     await connectDB();
     const settings = options.settings;
@@ -487,6 +490,8 @@ export async function readEmailDelivery(jobId: string): Promise<EmailDeliveryOut
 export async function queueEmailWithEvidence(
   options: SendEmailOptions & { dedupeKey: string },
 ): Promise<EmailDeliveryOutcome> {
+  // A phone sign-in account's placeholder address takes no mail.
+  if (isPhonePlaceholderEmail(options.to)) return { status: "unconfigured" };
   await connectDB();
   const settings = options.settings;
   if (!isEmailDeliveryConfigured(settings ?? (await getSettings()))) {

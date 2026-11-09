@@ -33,6 +33,8 @@ export const STORE_CREDIT_SOURCES = [
   "order_refund",
   /** Given by the store with no refund behind it. */
   "goodwill",
+  /** Loyalty points the shopper turned into credit (lib/customers/loyalty-service.ts). */
+  "loyalty",
   /** Credit that paid for an order, given back when the order was refunded. */
   "order_refund_restore",
   /** Spent on an order. */

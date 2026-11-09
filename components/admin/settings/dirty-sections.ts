@@ -82,6 +82,7 @@ export function getComparableSection(section: string, settings: Settings): unkno
       "twoFactorRequiredForAdmin",
       "twoFactorRequiredForVendors",
       "twoFactorRequiredForStaff",
+      "passkeyEnabled",
     ]);
   }
 

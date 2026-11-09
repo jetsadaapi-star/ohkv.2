@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "@/components/language/link";
+import { useLoyaltyEnabled } from "@/providers/app-settings-provider";
 import { usePathname } from "@/hooks/use-locale-navigation";
 import { useTranslations } from "next-intl";
 import { LogOut } from "lucide-react";
@@ -216,12 +217,15 @@ export function CustomerSidebar({ locale, stats = {} }: CustomerSidebarProps) {
 
   // The first group goes unlabelled, as the admin's does: it sits right under
   // the brand, where a heading would only repeat what the page already is.
+  const loyaltyEnabled = useLoyaltyEnabled();
   const navGroups = [
     { key: "dashboard", label: "", links: dashboardLinks },
     { key: "settings", label: t("admin.settings.title"), links: settingsLinks },
   ].map((group) => ({
     ...group,
-    links: group.links.filter((link) => !link.hideInSidebar),
+    links: group.links.filter(
+      (link) => !link.hideInSidebar && (link.requires !== "loyalty" || loyaltyEnabled),
+    ),
   }));
 
   return (

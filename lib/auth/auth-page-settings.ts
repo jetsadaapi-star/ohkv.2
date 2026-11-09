@@ -46,6 +46,8 @@ const loadAuthPageFlags = unstable_cache(
         isCurrentSmtpConfigurationVerified(settings),
       // Settings → SMS: on, and the provider can send.
       phoneLogin: phoneLoginConfigOf(settings),
+      // Settings → Two-Factor → Passkeys: on unless turned off.
+      passkeyEnabled: settings.security?.passkeyEnabled !== false,
     };
   },
   ["auth-page-settings"],

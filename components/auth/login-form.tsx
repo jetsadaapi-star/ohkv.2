@@ -493,7 +493,8 @@ export function LoginFields({
                     {...field}
                     type="text"
                     inputMode="email"
-                    autoComplete="email"
+                    // "webauthn": the browser may offer a passkey here too.
+                    autoComplete="email webauthn"
                     autoCapitalize="none"
                     autoCorrect="off"
                     spellCheck={false}

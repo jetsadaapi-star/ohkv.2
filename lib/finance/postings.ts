@@ -3807,7 +3807,8 @@ export function adjustmentPostings(adjustment: {
  * the shoppers hold.
  */
 export function storeCreditPostings(event: {
-  kind: "goodwill" | "expiry";
+  /** `loyalty`: points a shopper turned into credit, a promotion like goodwill. */
+  kind: "goodwill" | "loyalty" | "expiry";
   /** The lot given, or the expiry row. */
   id: unknown;
   amount: number;
@@ -3819,7 +3820,7 @@ export function storeCreditPostings(event: {
   const currency = String(event.currency || "").toUpperCase();
   const amount = quantizeToCurrency(money(event.amount), currency);
   if (!currency || !(amount > 0)) return [];
-  const goodwill = event.kind === "goodwill";
+  const goodwill = event.kind !== "expiry";
   return [
     {
       date: event.date,
@@ -3833,7 +3834,12 @@ export function storeCreditPostings(event: {
         id: event.id as Types.ObjectId,
         ref: event.ref ?? null,
       },
-      note: goodwill ? "Store credit given" : "Store credit expired unspent",
+      note:
+        event.kind === "loyalty"
+          ? "Loyalty points redeemed for store credit"
+          : goodwill
+            ? "Store credit given"
+            : "Store credit expired unspent",
       key: postingKey(LEDGER_SOURCE_KIND.STORE_CREDIT, event.id, event.kind),
     },
   ];

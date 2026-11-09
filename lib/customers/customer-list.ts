@@ -10,7 +10,8 @@ import {
   type StaffAccessScope,
 } from "@/lib/access/staff-scope";
 import { NON_CUSTOMER_ACCOUNT_FILTER } from "@/lib/access/customer-account";
-import { isLoyaltyEnabled } from "@/lib/customers/loyalty";
+import { loyaltyEnabledIn } from "@/lib/customers/loyalty";
+import { getSettingsLean } from "@/models/settings.model";
 import { emailConsentStateFilter } from "@/lib/customers/marketing-consent";
 import { placedOrderMatch } from "@/lib/orders/order-payment-status";
 import { POS_WALK_IN_EXPR } from "@/lib/orders/pos-walk-in";
@@ -328,7 +329,9 @@ export async function buildAdminCustomerListConditions(
 
   // A hidden filter must not narrow the list: while loyalty is off an old
   // `?tier=gold` link shows every customer, as the page without it would.
-  if (loyaltyTier && isLoyaltyEnabled()) profileConditions.push({ loyaltyTier });
+  if (loyaltyTier && loyaltyEnabledIn(await getSettingsLean())) {
+    profileConditions.push({ loyaltyTier });
+  }
   // Rows written before the consent record carry only the old boolean, so the
   // filter has to speak both — see `emailConsentStateFilter`.
   if (subscription) {

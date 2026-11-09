@@ -53,18 +53,20 @@ export async function listActiveSessions(
 /** Signs the user out everywhere. Returns how many sessions were revoked. */
 /**
  * Everything Better Auth keeps for a user who is being deleted: their
- * sessions, their sign-in accounts (the password hash among them) and their
- * two-factor secret. A user deleted through the app's own model left all
- * three behind.
+ * sessions, their sign-in accounts (the password hash among them), their
+ * two-factor secret and their passkeys. A user deleted through the app's own
+ * model left them behind.
  */
 export async function deleteUserAuthRecords(userId: string): Promise<void> {
   const ctx = await getAuthContext();
   await revokeAllSessions(userId);
   await ctx.internalAdapter.deleteAccounts(userId);
-  await ctx.adapter.deleteMany({
-    model: "twoFactor",
-    where: [{ field: "userId", value: userId }],
-  });
+  for (const model of ["twoFactor", "passkey"]) {
+    await ctx.adapter.deleteMany({
+      model,
+      where: [{ field: "userId", value: userId }],
+    });
+  }
 }
 
 export async function revokeAllSessions(userId: string): Promise<number> {

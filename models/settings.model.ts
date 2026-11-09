@@ -815,6 +815,8 @@ export interface ISecuritySettings {
   twoFactorRequiredForAdmin: boolean;
   twoFactorRequiredForVendors: boolean;
   twoFactorRequiredForStaff: boolean;
+  /** Passkeys (lib/auth/passkey-login.ts): on unless turned off. */
+  passkeyEnabled?: boolean;
 
   // OAuth Providers
   googleOAuthEnabled: boolean;
@@ -1134,6 +1136,26 @@ export interface ICatalogSettings {
  * the home section's title/limit live in the home-page builder. This section is
  * the feature gate, the two storefront depths it owns, and the booking rules.
  */
+/**
+ * Settings → Loyalty points (lib/customers/loyalty.ts): paid orders earn
+ * points, a higher tier earns more of them, and a customer turns points into
+ * store credit they spend at checkout.
+ */
+export interface ILoyaltySettings {
+  enabled: boolean;
+  /** Store-currency spend for one point. */
+  spendPerPoint?: number;
+  /** `redeemPoints` points become `redeemValue` of store credit. */
+  redeemPoints?: number;
+  redeemValue?: number;
+  /** The fewest points one redemption takes. */
+  minRedeemPoints?: number;
+  /** Days the credit a redemption gives lasts; 0, it never expires. */
+  creditExpiryDays?: number;
+  /** Extra points, in percent, each tier earns on top of the base rate. */
+  tierBonus?: { silver?: number; gold?: number; platinum?: number };
+}
+
 interface IBoostingSettings {
   /** Master switch. Off = no storefront output, no vendor nav, no purchases. */
   enabled: boolean;
@@ -1434,6 +1456,7 @@ export interface ISettings extends Document {
   vendorConfig: IVendorConfigSettings;
   catalog: ICatalogSettings;
   boosting: IBoostingSettings;
+  loyalty: ILoyaltySettings;
   notifications: INotificationSettings;
   storage: IStorageSettings;
   aiSalesAgent: IAISalesAgentSettings;
@@ -2661,6 +2684,7 @@ const SettingsSchema = new Schema<ISettings>(
           twoFactorRequiredForAdmin: { type: Boolean, default: false },
           twoFactorRequiredForVendors: { type: Boolean, default: false },
           twoFactorRequiredForStaff: { type: Boolean, default: false },
+          passkeyEnabled: { type: Boolean, default: true },
           googleOAuthEnabled: { type: Boolean, default: false },
           googleClientId: String,
           googleClientSecret: String,
@@ -2978,6 +3002,33 @@ const SettingsSchema = new Schema<ISettings>(
               { _id: false },
             ),
             default: undefined,
+          },
+        },
+        { _id: false },
+      ),
+      default: () => ({}),
+    },
+
+    // Loyalty points — see ILoyaltySettings.
+    loyalty: {
+      type: new Schema(
+        {
+          enabled: { type: Boolean, default: false },
+          spendPerPoint: { type: Number, min: 0.01, max: 1_000_000, default: 25 },
+          redeemPoints: { type: Number, min: 1, max: 1_000_000, default: 100 },
+          redeemValue: { type: Number, min: 0.01, max: 1_000_000, default: 25 },
+          minRedeemPoints: { type: Number, min: 1, max: 1_000_000, default: 100 },
+          creditExpiryDays: { type: Number, min: 0, max: 3650, default: 365 },
+          tierBonus: {
+            type: new Schema(
+              {
+                silver: { type: Number, min: 0, max: 1000, default: 10 },
+                gold: { type: Number, min: 0, max: 1000, default: 25 },
+                platinum: { type: Number, min: 0, max: 1000, default: 50 },
+              },
+              { _id: false },
+            ),
+            default: () => ({}),
           },
         },
         { _id: false },

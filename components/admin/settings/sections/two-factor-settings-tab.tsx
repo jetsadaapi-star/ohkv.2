@@ -1,6 +1,6 @@
 "use client";
 
-import { ShieldCheck, Store, UserCog, Users } from "lucide-react";
+import { Fingerprint, ShieldCheck, Store, UserCog, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -116,6 +116,33 @@ export function TwoFactorSettingsTab(props: {
               />
             ))}
           </SettingList>
+        </CardContent>
+      </Card>
+
+      {/* Passkeys stand apart from the codes above: their own switch, on
+          unless turned off (lib/auth/passkey-login.ts). */}
+      <Card>
+        <CardHeader>
+          <SectionTitle icon={<Fingerprint />} tone="emerald">
+            {t("admin.settings.twoFactor.passkey.title")}
+          </SectionTitle>
+          <CardDescription>{t("admin.settings.twoFactor.passkey.description")}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <SettingList>
+            <FeatureRow
+              icon={Fingerprint}
+              title={t("admin.settings.twoFactor.passkey.enable")}
+              description={t("admin.settings.twoFactor.passkey.enableHint")}
+              checked={security.passkeyEnabled !== false}
+              onCheckedChange={(v) => props.updateField("security.passkeyEnabled", v)}
+            />
+          </SettingList>
+          <ul className="space-y-1.5 text-sm text-muted-foreground">
+            <li>• {t("admin.settings.twoFactor.passkey.noteWho")}</li>
+            <li>• {t("admin.settings.twoFactor.passkey.noteSecurity")}</li>
+            <li>• {t("admin.settings.twoFactor.passkey.noteDomain")}</li>
+          </ul>
         </CardContent>
       </Card>
 

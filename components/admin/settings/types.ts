@@ -507,6 +507,7 @@ export interface Settings {
     twoFactorRequiredForAdmin: boolean;
     twoFactorRequiredForVendors: boolean;
     twoFactorRequiredForStaff: boolean;
+    passkeyEnabled?: boolean;
     googleOAuthEnabled: boolean;
     googleClientId?: string;
     googleClientSecret?: string;
@@ -622,6 +623,16 @@ export interface Settings {
       maxPerVendorPerDay?: number;
       maxValidDays?: number;
     };
+  };
+  /** Settings → Loyalty points (lib/customers/loyalty.ts). */
+  loyalty?: {
+    enabled: boolean;
+    spendPerPoint?: number;
+    redeemPoints?: number;
+    redeemValue?: number;
+    minRedeemPoints?: number;
+    creditExpiryDays?: number;
+    tierBonus?: { silver?: number; gold?: number; platinum?: number };
   };
   boosting: {
     enabled: boolean;

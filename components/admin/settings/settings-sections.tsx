@@ -10,6 +10,7 @@ import {
   History,
   KeyRound,
   Link2,
+  Gift,
   Lock,
   Mail,
   MessageSquareText,
@@ -65,6 +66,7 @@ export type AdminSettingsSectionId =
   | "notifications"
   | "messaging"
   | "orders"
+  | "loyalty"
   | "invoices"
   | "tax"
   | "shipping"
@@ -201,6 +203,15 @@ export const ADMIN_SETTINGS_SECTIONS: AdminSettingsSection[] = [
     labelKey: "admin.settings.orders.title",
     defaultLabel: "Order Settings",
     icon: Package,
+  },
+  // Points on paid orders, tier bonuses, and points into store credit.
+  {
+    id: "loyalty",
+    path: "loyalty",
+    group: "commerce",
+    labelKey: "admin.settings.loyalty.title",
+    defaultLabel: "Loyalty Points",
+    icon: Gift,
   },
   // A manager, not a form: it lists the invoice, receipt and sticker designs
   // and saves each action as it is made. It sits directly after Order
@@ -483,6 +494,7 @@ type SettingsForStatus = {
   maintenance?: { enabled?: boolean };
   mobileApp?: { shop?: { enabled?: boolean; scheme?: string } };
   boosting?: { enabled?: boolean };
+  loyalty?: { enabled?: boolean };
   payment?: {
     stripe?: { enabled?: boolean };
     paypal?: { enabled?: boolean };
@@ -653,6 +665,9 @@ export function getSectionStatus(
 
   if (sectionId === "boosting") {
     return settings.boosting?.enabled ? "ok" : "disabled";
+  }
+  if (sectionId === "loyalty") {
+    return settings.loyalty?.enabled ? "ok" : "disabled";
   }
   if (sectionId === "mobileApp") {
     // An app signs in and returns from payments through its scheme; an API

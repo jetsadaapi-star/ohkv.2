@@ -46,6 +46,7 @@ import { toast } from "@/components/ui/toast-notification";
 import { WarningBanner } from "@/components/ui/warning-banner";
 import { authClient } from "@/lib/auth/auth-client";
 import { TwoFactorManagementCard } from "@/components/account/two-factor-management-card";
+import { PasskeyManagementCard } from "@/components/account/passkey-management-card";
 import {
   VendorShippingEditor,
   EMPTY_VENDOR_SHIPPING,
@@ -2084,6 +2085,8 @@ export function VendorSettingsForm({
           disabled={demoMode.enabled}
           disabledMessage={demoMode.enabled ? demoMode.message : undefined}
         />
+
+        {demoMode.enabled ? null : <PasskeyManagementCard />}
         </TabsContent>
       </Tabs>
     </div>

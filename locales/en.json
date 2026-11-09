@@ -386,6 +386,85 @@
       "whatGoes": "Your profile, saved addresses, sign-in details (password and two-step verification), cart, wishlist, reviews, notifications, registered devices, followed stores, pre-order waiting lists, unfinished checkouts and chats with the shopping assistant. Your name and contact details are removed from your support conversations, and your email address and connection details from your blog comments, which stay under the name you posted them with. You are signed out on every device. This happens at once and cannot be undone.",
       "whatStaysTitle": "What the store keeps",
       "whatStays": "Your orders, with the details on them, and your returns, quote requests and store credit stay with the store as its financial records, which it has to keep."
+    },
+    "storeCreditFromLoyalty": "Loyalty points redeemed",
+    "loyalty": {
+      "title": "My points",
+      "description": "Points from your orders, and store credit to spend with them.",
+      "unavailable": "Points can't be shown right now.",
+      "balance": "Your points",
+      "pointsUnit": "points",
+      "worth": "Worth {credit} in store credit",
+      "tiers": {
+        "bronze": "Bronze",
+        "silver": "Silver",
+        "gold": "Gold",
+        "platinum": "Platinum"
+      },
+      "toNext": "{points} more points to {tier}",
+      "topTier": "You're at the top tier. Thank you!",
+      "redeemTitle": "Redeem for store credit",
+      "redeemRate": "{points} points = {credit}",
+      "less": "Fewer points",
+      "more": "More points",
+      "becomes": "becomes {credit}",
+      "redeemButton": "Redeem for {credit}",
+      "redeemed": "{points} points became {credit} in store credit",
+      "redeemFailed": "Your points could not be redeemed. Try again.",
+      "creditExpires": "The credit can be used for {days} days.",
+      "creditNoExpiry": "The credit never expires.",
+      "seeCredit": "See store credit",
+      "notEnough": "Collect {points} more points to redeem. Redemptions start at {minimum} points.",
+      "howTitle": "How points work",
+      "howEarn": "Earn 1 point for every {spend} on a paid order.",
+      "howRedeem": "Redeem {points} points for {credit} of store credit, spent at checkout.",
+      "howRefund": "If an order is refunded, the points it earned are taken back.",
+      "tierStart": "Start",
+      "tierAt": "{points}+",
+      "tierBase": "Base",
+      "historyTitle": "Points history",
+      "historyEmpty": "No points yet. Points arrive once an order is paid.",
+      "history": {
+        "earn": "Order {order}",
+        "earnPlain": "Points earned",
+        "reverse": "Refund on order {order}",
+        "refundUndone": "Refund on order {order} undone",
+        "redeem": "Redeemed for {credit} store credit",
+        "adjust": "Adjusted by the store",
+        "bonus": "+{percent}% tier bonus"
+      }
+    },
+    "passkeys": {
+      "title": "Passkeys",
+      "description": "Sign in with your face, fingerprint or screen lock instead of a password. Your fingerprint never leaves your device.",
+      "signIn": "Sign in with a passkey",
+      "or": "or",
+      "add": "Add a passkey on this device",
+      "added": "Passkey added. Next time, sign in with it from the sign-in page.",
+      "removed": "Passkey removed.",
+      "removeConfirm": "Remove the passkey \"{name}\"? You won't be able to sign in with it any more.",
+      "rename": "Rename",
+      "remove": "Remove",
+      "save": "Save",
+      "cancel": "Cancel",
+      "nameLabel": "Passkey name",
+      "unnamed": "Passkey",
+      "addedOn": "Added {date}",
+      "synced": "Synced across your devices",
+      "empty": "No passkeys yet. Add one to sign in with a touch, without typing your password.",
+      "unsupported": "This browser can't create passkeys. Try the latest Chrome, Safari or Edge.",
+      "turnedOff": "The store has turned passkeys off. You can still remove the ones you have.",
+      "errors": {
+        "generic": "That didn't work. Try again.",
+        "disabled": "Passkeys are turned off for this store.",
+        "verificationRequired": "Unlock your passkey with your PIN, face or fingerprint to sign in to this account.",
+        "notFound": "This passkey isn't linked to an account here any more. Sign in with your email and add it again.",
+        "failed": "The passkey could not be checked. Try again.",
+        "alreadyRegistered": "This device already has a passkey for your account.",
+        "domain": "Passkeys work only on the store's own address (https).",
+        "inactive": "This account can't sign in. Contact support.",
+        "emailNotVerified": "Please verify your email address before signing in."
+      }
     }
   },
   "customerProfile": {
@@ -776,6 +855,21 @@
         "TOO_MANY_ATTEMPTS": "Too many wrong codes. Send a new one.",
         "RATE_LIMITED": "Too many tries. Wait a few minutes and try again.",
         "generic": "Something went wrong. Please try again."
+      }
+    },
+    "passkey": {
+      "signIn": "Sign in with a passkey",
+      "or": "or",
+      "errors": {
+        "generic": "That didn't work. Try again.",
+        "disabled": "Passkeys are turned off for this store.",
+        "verificationRequired": "Unlock your passkey with your PIN, face or fingerprint to sign in to this account.",
+        "notFound": "This passkey isn't linked to an account here any more. Sign in with your email and add it again.",
+        "failed": "The passkey could not be checked. Try again.",
+        "alreadyRegistered": "This device already has a passkey for your account.",
+        "domain": "Passkeys work only on the store's own address (https).",
+        "inactive": "This account can't sign in. Contact support.",
+        "emailNotVerified": "Please verify your email address before signing in."
       }
     }
   },
@@ -5839,7 +5933,16 @@
         "staffHint": "Team members who work in the dashboard or at the till.",
         "requiredCount": "{count, plural, one {Required for # of 3 roles} other {Required for # of 3 roles}}",
         "rolesTitle": "Who must use it",
-        "rolesHint": "Accounts in the roles switched on here must enter a code from an authenticator app when they sign in."
+        "rolesHint": "Accounts in the roles switched on here must enter a code from an authenticator app when they sign in.",
+        "passkey": {
+          "title": "Passkeys",
+          "description": "Let people sign in with their face, fingerprint or screen lock instead of a password.",
+          "enable": "Allow passkeys",
+          "enableHint": "Anyone signed in can add a passkey from their account's security page, then use it on the sign-in page.",
+          "noteWho": "Open to every account. Turned off, nobody can add or use one, but people can still remove theirs.",
+          "noteSecurity": "A passkey replaces both the password and the code: accounts with two-factor on, and team accounts, must unlock it with a PIN or biometrics.",
+          "noteDomain": "Passkeys are tied to the store's domain and need https. Moving to a new domain means adding passkeys again."
+        }
       },
       "oauth": {
         "title": "OAuth / Social Login",
@@ -7056,6 +7159,60 @@
           "sent": "Request sent to the store",
           "sendFailed": "The request could not be sent",
           "bulkAction": "Request tax change"
+        }
+      },
+      "loyalty": {
+        "title": "Loyalty Points",
+        "description": "Paid orders earn points, higher tiers earn more, and customers turn points into store credit for their next order.",
+        "summary": {
+          "earn": "Earn",
+          "earnValue": "1 point per {spend}",
+          "redeem": "Redeem",
+          "redeemValue": "{points} points = {credit}",
+          "back": "Back to the customer",
+          "backValue": "≈ {percent}% of what they spend"
+        },
+        "earn": {
+          "title": "Earning points",
+          "description": "Points are given once an order is fully paid, and taken back when it is refunded.",
+          "spendPerPoint": "Spend for one point",
+          "spendPerPointHint": "Whole points only; the rest of the amount is not carried over.",
+          "perPointUnit": "{currency} per point",
+          "example": "Example: an order of {spend} earns {points} points, worth {credit} in store credit."
+        },
+        "tiers": {
+          "title": "Tiers and bonuses",
+          "description": "A customer moves up a tier by the points they have earned in total. Spending points never lowers a tier.",
+          "bronze": "Bronze",
+          "silver": "Silver",
+          "gold": "Gold",
+          "platinum": "Platinum",
+          "bronzeHint": "Every customer starts here.",
+          "baseRate": "Base rate",
+          "reachAt": "From {points} lifetime points. Extra points on every order:"
+        },
+        "redeem": {
+          "title": "Turning points into store credit",
+          "description": "Customers redeem points from My account → My points. The credit is spent at checkout like any other store credit.",
+          "rate": "Exchange rate",
+          "rateHint": "Points are redeemed in whole steps of this size.",
+          "pointsEquals": "points =",
+          "value": "Store credit per step",
+          "minimum": "Fewest points per redemption",
+          "minimumHint": "Must be at least one step.",
+          "minimumTooLow": "The fewest points per redemption can't be below one step.",
+          "pointsUnit": "points",
+          "expiry": "Credit lasts",
+          "expiryHint": "Days the credit from a redemption can be used. 0 = never expires.",
+          "days": "days"
+        },
+        "notes": {
+          "credit": "The store pays for redeemed credit (booked as a promotion), so sellers' payouts are not affected.",
+          "refunds": "A refunded order takes its points back. Credit a customer already redeemed stays theirs.",
+          "tier": "You can adjust a customer's points on their page in Customers; the change shows in their history."
+        },
+        "links": {
+          "customers": "Open customers"
         }
       }
     },
@@ -13078,7 +13235,8 @@
         "relDays": "{count} days ago",
         "relWeeks": "{count} weeks ago",
         "relMonths": "{count} months ago",
-        "relYears": "{count} years ago"
+        "relYears": "{count} years ago",
+        "creditLoyalty": "Loyalty points redeemed"
       },
       "aboutPageEditor": {
         "iconShield": "Shield",

@@ -94,7 +94,7 @@ function saleRequestSignal(): AbortSignal | undefined {
     : undefined;
 }
 import { productAllowsOversell } from "@/lib/products/stock-policy";
-import { isLoyaltyEnabled } from "@/lib/customers/loyalty";
+import { useLoyaltyEnabled } from "@/providers/app-settings-provider";
 import { POSSaleCompleteModal } from "@/components/pos/sale-complete-modal";
 import { POSSalesDialog } from "@/components/pos/pos-sales-dialog";
 import { POSRegisterDialog } from "@/components/pos/pos-register-dialog";
@@ -184,6 +184,7 @@ export function POSTerminal({
   controlledState,
   offline,
 }: POSTerminalProps) {
+  const loyaltyEnabled = useLoyaltyEnabled();
   const t = useTranslations();
   const th = useTranslations("admin.hc.posTerminal");
   // Stable callbacks from the offline hook, called directly so the callbacks
@@ -2639,8 +2640,8 @@ export function POSTerminal({
                   </p>
                   <p className="text-[11px] text-muted-foreground truncate">
                     {/* No points to promise while loyalty is hidden (see
-                        `isLoyaltyEnabled`). */}
-                    {isLoyaltyEnabled()
+                        `useLoyaltyEnabled`). */}
+                    {loyaltyEnabled
                       ? th("earnLoyaltyAttach")
                       : th("attachToOrder")}
                   </p>

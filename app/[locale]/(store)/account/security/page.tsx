@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ChangePasswordCard } from "@/components/account/change-password-card";
 import { TwoFactorManagementCard } from "@/components/account/two-factor-management-card";
+import { PasskeyManagementCard } from "@/components/account/passkey-management-card";
 import { RevokeSessionsCard } from "@/components/account/revoke-sessions-card";
 import { DeleteAccountCard } from "@/components/account/delete-account-card";
 import { isDemoModeEnabled, PROFILE_DEMO_MODE_MESSAGE } from "@/lib/demo-mode";
@@ -53,6 +54,9 @@ export default async function SecurityPage({ params }: PageProps) {
       {/* Two-Factor Authentication (personal preference; only shown when the
           administrator has enabled the 2FA feature). */}
       <TwoFactorManagementCard />
+
+      {/* Passkeys: sign in with the face, a fingerprint or the screen lock. */}
+      {demoMode.enabled ? null : <PasskeyManagementCard />}
 
       <RevokeSessionsCard />
 

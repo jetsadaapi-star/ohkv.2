@@ -129,6 +129,7 @@ import {
   MIN_LOYALTY_SPEND_PER_POINT,
 } from "@/lib/customers/loyalty";
 import { validateSmsSettings } from "@/lib/sms/sms-settings";
+import { validateLoyaltySettings } from "@/lib/customers/loyalty-settings";
 import { validateMobileAppSettings } from "@/lib/settings/mobile-app";
 import {
   MAX_OFFLINE_SESSION_HOURS,
@@ -471,6 +472,7 @@ function validateSecuritySettings(data: Record<string, unknown>) {
     "twoFactorRequiredForAdmin",
     "twoFactorRequiredForVendors",
     "twoFactorRequiredForStaff",
+    "passkeyEnabled",
     "googleOAuthEnabled",
     "facebookOAuthEnabled",
     "lineOAuthEnabled",
@@ -1577,6 +1579,7 @@ export const PUT = withApi(
       if (section === "security") validateSecuritySettings(sectionData);
       if (section === "email") validateEmailSettings(sectionData);
       if (section === "sms") validateSmsSettings(sectionData);
+      if (section === "loyalty") validateLoyaltySettings(sectionData);
       if (section === "vendorConfig") validateVendorConfigSettings(sectionData);
       if (section === "mobileApp") {
         validateMobileAppSettings(sectionData, beforeSettings.mobileApp);
@@ -1704,6 +1707,9 @@ export const PUT = withApi(
         }
         if (key === "sms" && isPlainObject(value)) {
           validateSmsSettings(value);
+        }
+        if (key === "loyalty" && isPlainObject(value)) {
+          validateLoyaltySettings(value);
         }
         if (key === "vendorConfig" && isPlainObject(value)) {
           validateVendorConfigSettings(value);

@@ -14,8 +14,7 @@ import {
 } from "@/config/app.config";
 import { STAFF_PERMISSIONS } from "@/config/permissions.config";
 import { AdminUpdateCustomerProfileSchema } from "@/lib/validations";
-import { computeLoyaltyTier } from "@/lib/customers/customer";
-import { isLoyaltyEnabled } from "@/lib/customers/loyalty";
+import { balanceEditFields, loyaltyEnabledIn } from "@/lib/customers/loyalty";
 import { setMarketingConsent } from "@/lib/customers/marketing-consent";
 import { rateLimitByUser } from "@/lib/api/rate-limit-middleware";
 import {
@@ -205,20 +204,19 @@ export const PUT = withApi<{ id: string }>(
       );
     }
     if (parsed.notes !== undefined) profileUpdateFields.notes = parsed.notes;
-    // A manual adjustment has to move `lifetimePoints` with the balance and
-    // re-derive the tier, because the order-backed service derives the tier
-    // from `lifetimePoints` on every award and reversal. Setting the two
-    // independently meant an adjusted balance was invisible to the tier, and a
-    // hand-picked tier was silently reverted by the customer's next order.
-    // While loyalty is hidden (`isLoyaltyEnabled`) the balance takes no edits:
-    // the customer page's Save still sends the loaded balance, and rewriting
-    // it would also reset `lifetimePoints` behind a screen nobody can see.
-    if (parsed.loyaltyPoints !== undefined && isLoyaltyEnabled()) {
-      const points = Math.max(0, Math.floor(parsed.loyaltyPoints));
-      profileUpdateFields.loyaltyPoints = points;
-      profileUpdateFields.lifetimePoints = points;
-      profileUpdateFields.loyaltyTier = computeLoyaltyTier(points);
-    }
+    // A manual adjustment moves `lifetimePoints` by the same difference and
+    // re-derives the tier (`balanceEditFields`); a save that sends the loaded
+    // balance back changes nothing. While the programme is off the balance
+    // takes no edits at all.
+    const balanceBefore = {
+      loyaltyPoints: (existingProfile as { loyaltyPoints?: number }).loyaltyPoints,
+      lifetimePoints: (existingProfile as { lifetimePoints?: number }).lifetimePoints,
+    };
+    const balanceEdit =
+      parsed.loyaltyPoints !== undefined && loyaltyEnabledIn(await getSettings())
+        ? balanceEditFields(balanceBefore, parsed.loyaltyPoints)
+        : null;
+    if (balanceEdit) Object.assign(profileUpdateFields, balanceEdit);
     if (parsed.acquisitionSource !== undefined)
       profileUpdateFields.acquisitionSource = parsed.acquisitionSource;
     // Marketing consent is a state with a date and a source behind it, so it
@@ -315,6 +313,16 @@ export const PUT = withApi<{ id: string }>(
 
     if (Object.keys(profileUpdateFields).length > 0) {
       await CustomerProfile.updateOne({ _id: id }, { $set: profileUpdateFields });
+    }
+    if (balanceEdit) {
+      const { recordLoyaltyAdjustment } = await import("@/lib/customers/loyalty-service");
+      await recordLoyaltyAdjustment({
+        userId,
+        guestEmail: isGuestProfile ? (existingProfile as { email?: string }).email : null,
+        before: balanceBefore.loyaltyPoints ?? 0,
+        after: balanceEdit.loyaltyPoints,
+        createdBy: session.user.id,
+      });
     }
     if (consentRequested !== undefined) {
       await setMarketingConsent({

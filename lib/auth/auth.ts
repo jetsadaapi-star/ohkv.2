@@ -4,6 +4,7 @@ import { betterAuth, type BetterAuthPlugin } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { APIError, createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
 import { phoneNumber, twoFactor } from "better-auth/plugins";
+import { passkey } from "@better-auth/passkey";
 import { phonePlaceholderEmail } from "@/lib/auth/phone-identity";
 import { connectDB, mongoose } from "@/lib/db";
 import {
@@ -338,6 +339,72 @@ function phoneLogin(): BetterAuthPlugin[] {
   ];
 }
 
+/**
+ * Sign in with a passkey: Face ID, a fingerprint, Windows Hello or a phone,
+ * no password (lib/auth/passkey-login.ts). Added from the account's Security
+ * page while signed in; turned off and on in Settings → Two-Factor.
+ *
+ * Off, no passkey can be added or used, but people can still see and remove
+ * the ones they have. A passkey stands in for the password AND the second
+ * factor, so an account with two-factor on, and any account that runs the
+ * store, must prove it is the person (a PIN or biometrics), not only that the
+ * device is present.
+ */
+function passkeyLogin(baseURL: string, origins: string[]): BetterAuthPlugin[] {
+  const switchedPaths = new Set([
+    "/passkey/generate-register-options",
+    "/passkey/verify-registration",
+    "/passkey/generate-authenticate-options",
+    "/passkey/verify-authentication",
+  ]);
+  const guard: BetterAuthPlugin = {
+    id: "passkey-login-guard",
+    hooks: {
+      before: [
+        {
+          matcher: (ctx) => switchedPaths.has(ctx.path ?? ""),
+          handler: createAuthMiddleware(async () => {
+            const { isPasskeyLoginEnabled } = await import("@/lib/auth/passkey-login");
+            if (!(await isPasskeyLoginEnabled())) {
+              throw new APIError("NOT_FOUND", {
+                code: "PASSKEY_LOGIN_DISABLED",
+                message: "Passkeys are turned off for this store.",
+              });
+            }
+          }),
+        },
+      ],
+    },
+  };
+  let rpID = "localhost";
+  try {
+    rpID = new URL(baseURL).hostname.replace(/^www\./, "") || "localhost";
+  } catch {
+    // keep localhost
+  }
+  return [
+    guard,
+    passkey({
+      rpID,
+      rpName: appConfig.name,
+      origin: origins.filter((origin) => /^https?:\/\//.test(origin)),
+      authenticatorSelection: {
+        residentKey: "required",
+        userVerification: "preferred",
+      },
+      authentication: {
+        afterVerification: async ({ verification, clientData }) => {
+          const { assertPasskeyVerificationAllowed } = await import("@/lib/auth/passkey-login");
+          await assertPasskeyVerificationAllowed({
+            credentialId: (clientData as { id?: string }).id,
+            userVerified: Boolean(verification.authenticationInfo?.userVerified),
+          });
+        },
+      },
+    }),
+  ];
+}
+
 function createAuth(
   db: Db,
   client?: MongoClient,
@@ -471,6 +538,9 @@ function createAuth(
         // Each code is a paid text; each number also has its own hourly cap.
         "/phone-number/send-otp": { window: 600, max: 5 },
         "/phone-number/verify": { window: 300, max: 10 },
+        "/passkey/generate-authenticate-options": { window: 60, max: 20 },
+        "/passkey/verify-authentication": { window: 60, max: 10 },
+        "/passkey/verify-registration": { window: 300, max: 10 },
       },
     },
 
@@ -658,6 +728,7 @@ function createAuth(
       activityLog(),
       passwordlessCustomerAccess(),
       ...phoneLogin(),
+      ...passkeyLogin(baseURL, configuredOrigins),
     ],
     databaseHooks: {
       user: {

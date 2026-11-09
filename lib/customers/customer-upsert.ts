@@ -6,14 +6,13 @@ import { ApiError, ConflictError } from "@/lib/api/errors";
 import { isCustomerAccount } from "@/lib/access/customer-account";
 import {
   claimGuestCustomerData,
-  computeLoyaltyTier,
   ensureCustomerProfile,
 } from "@/lib/customers/customer";
-import { isLoyaltyEnabled } from "@/lib/customers/loyalty";
+import { balanceEditFields, loyaltyEnabledIn } from "@/lib/customers/loyalty";
 import { auditCreate, type AuditContext } from "@/lib/audit";
 import { notifyAdminsNewCustomer } from "@/lib/notifications/notifications";
 import { MAX_NOTE_LENGTH } from "@/lib/customers/customer-import-format";
-import type { ISettings } from "@/models/settings.model";
+import { getSettingsLean, type ISettings } from "@/models/settings.model";
 
 /**
  * Making a customer, in one place: the admin's "Add customer", a vendor's
@@ -366,20 +365,23 @@ export async function createCustomerFromForm(
     if (input.notes !== undefined) updates.notes = input.notes;
   }
 
-  // A manual adjustment has to move `lifetimePoints` with the balance and
-  // re-derive the tier, because the order-backed service derives the tier
-  // from `lifetimePoints` on every award and reversal. While loyalty is hidden
-  // (`isLoyaltyEnabled`) the balance takes no edits. A guest's own points are
-  // kept unless a balance was actually typed: the form sends 0 by default.
+  // A starting balance: lifetime points move with it and the tier follows
+  // (`balanceEditFields`). While the programme is off the balance takes no
+  // edits. A guest's own points are kept unless a balance was actually typed:
+  // the form sends 0 by default.
+  let balanceEdit: ReturnType<typeof balanceEditFields> = null;
+  let balanceBefore = 0;
   if (
     input.loyaltyPoints !== undefined &&
-    isLoyaltyEnabled() &&
-    (match.kind !== "guest" || input.loyaltyPoints > 0)
+    (match.kind !== "guest" || input.loyaltyPoints > 0) &&
+    loyaltyEnabledIn(options.settings ?? (await getSettingsLean()))
   ) {
-    const points = Math.max(0, Math.floor(input.loyaltyPoints));
-    updates.loyaltyPoints = points;
-    updates.lifetimePoints = points;
-    updates.loyaltyTier = computeLoyaltyTier(points);
+    const before = await CustomerProfile.findById(profileId)
+      .select("loyaltyPoints lifetimePoints")
+      .lean<{ loyaltyPoints?: number; lifetimePoints?: number } | null>();
+    balanceBefore = before?.loyaltyPoints ?? 0;
+    balanceEdit = balanceEditFields(before, input.loyaltyPoints);
+    if (balanceEdit) Object.assign(updates, balanceEdit);
   }
   if (input.acquisitionSource !== undefined) updates.acquisitionSource = input.acquisitionSource;
   if (input.shippingAddress) {
@@ -391,6 +393,15 @@ export async function createCustomerFromForm(
   }
   if (Object.keys(updates).length > 0) {
     await CustomerProfile.updateOne({ _id: profileId }, { $set: updates });
+  }
+  if (balanceEdit) {
+    const { recordLoyaltyAdjustment } = await import("@/lib/customers/loyalty-service");
+    await recordLoyaltyAdjustment({
+      userId,
+      before: balanceBefore,
+      after: balanceEdit.loyaltyPoints,
+      createdBy: options.createdBy,
+    });
   }
 
   const profile = await CustomerProfile.findById(profileId)

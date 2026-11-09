@@ -503,7 +503,7 @@ export async function reconcileRecentLedger(params: {
     ["storeCredit", async () => {
       const { StoreCreditTransaction } = await import("@/models/store-credit.model");
       const rows = await recoveryQuery(StoreCreditTransaction.find({
-        $or: [{ type: "issue", source: "goodwill" }, { type: "expire" }],
+        $or: [{ type: "issue", source: { $in: ["goodwill", "loyalty"] } }, { type: "expire" }],
         ...within("createdAt"),
       }))
         .select("_id type source amount currency createdAt")

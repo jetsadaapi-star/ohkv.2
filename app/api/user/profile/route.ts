@@ -1,4 +1,5 @@
 import { RECENT_SIGN_IN_MESSAGE } from "@/lib/auth/recent-sign-in";
+import { isPasskeyLoginEnabled } from "@/lib/auth/passkey-login";
 import { updateOwnProfile } from "@/lib/customers/own-profile";
 import { createAuditContext } from "@/lib/audit";
 import { ObjectId } from "mongodb";
@@ -54,6 +55,8 @@ export const GET = withApi(
     // whether to surface the 2FA management card.
     const policy = await getTwoFactorPolicy();
     const twoFactorAvailable = isTwoFactorAvailableForUser(session.user, policy);
+    // Passkeys: Settings → Two-Factor → Passkeys, on unless turned off.
+    const passkeyAvailable = await isPasskeyLoginEnabled();
 
     return successResponse({
       demoMode: {
@@ -64,6 +67,7 @@ export const GET = withApi(
         ? {
             ...user,
             twoFactorAvailable,
+            passkeyAvailable,
             emailVerificationStatus: session.user.emailVerificationStatus,
           }
         : user,

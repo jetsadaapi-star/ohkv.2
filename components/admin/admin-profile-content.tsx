@@ -50,6 +50,7 @@ import { authClient } from "@/lib/auth/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AdminFormStickyHeader } from "@/components/admin/admin-form-sticky-header";
 import { TwoFactorManagementCard } from "@/components/account/two-factor-management-card";
+import { PasskeyManagementCard } from "@/components/account/passkey-management-card";
 import {
   DEFAULT_PROFILE_DEMO_MODE,
   normalizeDemoModeState,
@@ -766,6 +767,8 @@ export function AdminProfileContent({
         disabled={isDemoMode}
         disabledMessage={isDemoMode ? demoMode.message : undefined}
       />
+
+      {isDemoMode ? null : <PasskeyManagementCard />}
     </div>
   );
 }

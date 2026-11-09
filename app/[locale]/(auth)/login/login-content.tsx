@@ -42,6 +42,7 @@ import {
   type OAuthEnabled,
 } from "@/components/auth/login-form";
 import { PhoneLoginForm, type PhoneLoginConfig } from "@/components/auth/phone-login-form";
+import { PasskeySignIn } from "@/components/auth/passkey-sign-in";
 
 interface LoginPageProps {
   /** Resolved on the server so the buttons render in the initial HTML. */
@@ -50,9 +51,11 @@ interface LoginPageProps {
   demoCredentials: DemoCredential[];
   /** Settings → SMS: sign in with a texted code. */
   phoneLogin?: PhoneLoginConfig;
+  /** Settings → Two-Factor → Passkeys. */
+  passkeyEnabled?: boolean;
 }
 
-function LoginContent({ oauthEnabled, demoCredentials, phoneLogin }: LoginPageProps) {
+function LoginContent({ oauthEnabled, demoCredentials, phoneLogin, passkeyEnabled }: LoginPageProps) {
   const t = useTranslations();
   const ts = useTranslations("storeText.loginContent");
   const ls = useTranslations("auth.loginShowcase");
@@ -190,6 +193,20 @@ function LoginContent({ oauthEnabled, demoCredentials, phoneLogin }: LoginPagePr
           ) : (
             <LoginFields state={state} error={visibleError} />
           )}
+
+          {passkeyEnabled ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="h-px flex-1 bg-border" />
+                {t("auth.passkey.or")}
+                <span className="h-px flex-1 bg-border" />
+              </div>
+              <PasskeySignIn
+                autofill={method === "email"}
+                onSignedIn={(role) => state.redirectAfterLogin(role)}
+              />
+            </div>
+          ) : null}
 
           {/* Not a member yet — a soft invitation, not a second button race */}
           <Link

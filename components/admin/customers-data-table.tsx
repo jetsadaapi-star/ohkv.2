@@ -54,7 +54,7 @@ import {
 } from "@/components/admin/customers/account-email-messages";
 import { cn } from "@/lib/utils";
 import { useAdminPhrase } from "@/hooks/use-admin-phrase";
-import { isLoyaltyEnabled } from "@/lib/customers/loyalty";
+import { useLoyaltyEnabled } from "@/providers/app-settings-provider";
 import {
   MARKETING_CONSENT_STATE,
   type MarketingConsentState,
@@ -252,8 +252,8 @@ export function CustomersDataTable({
   // The admin and vendor pages carry their own headings and tiles; the staff
   // area keeps the table-titled layout.
   const modern = area !== "staff";
-  // Tier and points hide with the rest of loyalty (see `isLoyaltyEnabled`).
-  const loyaltyEnabled = isLoyaltyEnabled();
+  // Tier and points hide with the rest of loyalty (see `useLoyaltyEnabled`).
+  const loyaltyEnabled = useLoyaltyEnabled();
 
   const list = useListNavigation<CustomerListItem>({
     items: data,

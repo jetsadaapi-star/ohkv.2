@@ -31,6 +31,7 @@ export default function Page() {
                 loadedSettings.security?.twoFactorRequiredForVendors ?? false,
               twoFactorRequiredForStaff:
                 loadedSettings.security?.twoFactorRequiredForStaff ?? false,
+              passkeyEnabled: loadedSettings.security?.passkeyEnabled !== false,
             })
           }
         />

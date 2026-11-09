@@ -144,6 +144,8 @@ export function isAuthAuditPath(path: string | undefined): boolean {
   if (!path) return false;
   return (
     path === "/sign-in/email" ||
+    path === "/passkey/verify-authentication" ||
+    path === "/phone-number/verify" ||
     path === "/sign-out" ||
     path === "/revoke-session" ||
     path === "/revoke-other-sessions" ||
@@ -160,6 +162,8 @@ function signInMethod(ctx: AuthHookContext): string {
     return `a password and ${TWO_FACTOR_VERIFY[path as keyof typeof TWO_FACTOR_VERIFY]}`;
   }
   if (path.startsWith("/callback/")) return ctx.params?.id ? `their ${ctx.params.id} account` : "a social account";
+  if (path === "/passkey/verify-authentication") return "a passkey";
+  if (path === "/phone-number/verify") return "a code texted to their phone";
   return "a password";
 }
 
@@ -313,7 +317,12 @@ async function recordTwoFactorFailure(ctx: AuthHookContext): Promise<void> {
 export async function recordAuthEvent(ctx: AuthHookContext): Promise<void> {
   try {
     const path = ctx.path ?? "";
-    if (path === "/sign-in/email" || path.startsWith("/callback/")) {
+    if (
+      path === "/sign-in/email" ||
+      path === "/passkey/verify-authentication" ||
+      path === "/phone-number/verify" ||
+      path.startsWith("/callback/")
+    ) {
       await recordSignIn(ctx);
     } else if (path in TWO_FACTOR_VERIFY) {
       await recordSignIn(ctx);

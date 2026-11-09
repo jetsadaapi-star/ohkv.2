@@ -51,6 +51,8 @@ interface AppSettingsContextValue {
   isLoading: boolean;
   posEnabled: boolean;
   boostingEnabled: boolean;
+  /** Settings → Loyalty points is on (lib/customers/loyalty.ts `loyaltyEnabledIn`). */
+  loyaltyEnabled: boolean;
   /** Paid vendor plans are on, so the vendor billing screen has something to show. */
   vendorPlansEnabled: boolean;
   storeName: string;
@@ -98,6 +100,7 @@ const defaultAppSettings: AppSettingsContextValue = {
   isLoading: true,
   posEnabled: false,
   boostingEnabled: false,
+  loyaltyEnabled: false,
   vendorPlansEnabled: false,
   storeName: DEFAULT_STORE_NAME,
   storeDescription: undefined,
@@ -165,6 +168,7 @@ export function AppSettingsProvider({
             isLoading: false,
             posEnabled: data.data.pos?.enabled ?? false,
             boostingEnabled: data.data.boosting?.enabled ?? false,
+            loyaltyEnabled: data.data.loyalty?.enabled ?? false,
             vendorPlansEnabled: data.data.vendorPlans?.enabled ?? false,
             storeName: resolveStoreName(data.data.storeName),
             storeDescription: data.data.storeDescription,
@@ -309,3 +313,8 @@ export function useMultiVendorMode(): {
   return { isMultiVendor, isLoading, refreshSettings };
 }
 
+
+/** Settings → Loyalty points is on — every loyalty screen's gate. */
+export function useLoyaltyEnabled(): boolean {
+  return useContext(AppSettingsContext).loyaltyEnabled;
+}

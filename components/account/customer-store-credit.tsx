@@ -65,6 +65,7 @@ export function CustomerStoreCredit() {
     }
     if (row.source === "return_refund") return tr("account.storeCreditFromReturn", "Refund for a return");
     if (row.source === "order_refund") return tr("account.storeCreditFromRefund", "Refund");
+    if (row.source === "loyalty") return tr("account.storeCreditFromLoyalty", "Loyalty points redeemed");
     if (row.source === "order_refund_restore") {
       return tr("account.storeCreditRestored", "Given back from a refunded order");
     }

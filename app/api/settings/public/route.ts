@@ -49,6 +49,7 @@ import {
 import { isCurrentSmtpConfigurationVerified } from "@/lib/email/smtp-verification";
 import { normalizeCountryAvailability } from "@/lib/intl/country-availability";
 import { liveKeyColors } from "@/lib/storefront/themes/key-colors";
+import { loyaltyEnabledIn } from "@/lib/customers/loyalty";
 
 const getPublicSettingsPayload = unstable_cache(
   async () => {
@@ -198,6 +199,9 @@ const getPublicSettingsPayload = unstable_cache(
           allowVendorSales: settings.pos?.allowVendorSales ?? true,
           allowSellerSales: settings.pos?.allowSellerSales ?? true,
         },
+
+        // Loyalty points — the flag only; the rules are read where they apply.
+        loyalty: { enabled: loyaltyEnabledIn(settings) },
 
         // Product boosting (sponsored products) — the flag only; policy and
         // pricing stay admin/vendor-side.

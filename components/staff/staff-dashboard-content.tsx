@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/table";
 import { useCurrency } from "@/providers/currency-provider";
 import { cn } from "@/lib/utils";
-import { isLoyaltyEnabled } from "@/lib/customers/loyalty";
+import { useLoyaltyEnabled } from "@/providers/app-settings-provider";
 
 export interface StaffRecentOrder {
   _id: string;
@@ -237,6 +237,7 @@ export function StaffDashboardContent({
   showLowStock,
   showLatestCustomers,
 }: StaffDashboardContentProps) {
+  const loyaltyEnabled = useLoyaltyEnabled();
   const t = useTranslations();
   const { formatPrice } = useCurrency();
 
@@ -961,8 +962,8 @@ export function StaffDashboardContent({
               <div className="divide-y divide-border/60 border-t border-border/60">
                 {latestCustomers.map((customer) => {
                   // The tier pill hides with the rest of loyalty (see
-                  // `isLoyaltyEnabled`).
-                  const tierKey = isLoyaltyEnabled()
+                  // `useLoyaltyEnabled`).
+                  const tierKey = loyaltyEnabled
                     ? (customer.loyaltyTier || "").toLowerCase()
                     : "";
                   const tierClass =

@@ -20,5 +20,6 @@ export interface UserProfilePayload {
     twoFactorEnabled?: boolean;
     /** Whether the store offers self-service 2FA to this user's role. */
     twoFactorAvailable?: boolean;
+    passkeyAvailable?: boolean;
   } | null;
 }

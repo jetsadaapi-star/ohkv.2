@@ -28,6 +28,7 @@ export default async function LoginPage(props: GuestPageProps) {
       }}
       demoCredentials={demoLoginCredentials(themeId)}
       phoneLogin={settings.phoneLogin}
+      passkeyEnabled={settings.passkeyEnabled}
     />
   );
 }

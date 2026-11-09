@@ -161,6 +161,7 @@ export const SETTINGS_SECTION_SCHEMAS = {
     "twoFactorRequiredForAdmin",
     "twoFactorRequiredForVendors",
     "twoFactorRequiredForStaff",
+    "passkeyEnabled",
     "googleOAuthEnabled",
     "googleClientId",
     "googleClientSecret",
@@ -303,6 +304,16 @@ export const SETTINGS_SECTION_SCHEMAS = {
       })
       .optional(),
   }),
+  // Validated by `validateLoyaltySettings` (lib/customers/loyalty-settings.ts).
+  loyalty: section([
+    "enabled",
+    "spendPerPoint",
+    "redeemPoints",
+    "redeemValue",
+    "minRedeemPoints",
+    "creditExpiryDays",
+    "tierBonus",
+  ] as const),
   boosting: section([
     "enabled",
     "paymentMethods",

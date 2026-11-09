@@ -15,10 +15,12 @@ import {
   LOYALTY_TIER_SWITCH,
   computePointsFromOrder,
   computeRefundPointDelta,
-  isLoyaltyEnabled,
-  normalizeSpendPerPoint,
+  loyaltyRulesOf,
   orderSpendPerPoint,
+  tierEarnMultiplier,
+  tierSpendPerPoint,
 } from "@/lib/customers/loyalty";
+import { LoyaltyTransaction } from "@/models/loyalty-transaction.model";
 import { type ClientSession, Types } from "mongoose";
 
 // The rules themselves live in `lib/loyalty.ts`, which the admin customer form
@@ -244,25 +246,74 @@ async function applyOrderLoyaltyDelta(
 }
 
 /**
+ * The tier of the profile an order's points go to — the guest's email-keyed
+ * row for a guest checkout — for its earn bonus.
+ */
+async function orderProfileTier(
+  order: { customerId?: unknown; guestEmail?: string | null },
+  session: ClientSession | null,
+): Promise<string> {
+  const guestEmail = normalizeGuestEmail(order.guestEmail);
+  const filter = guestEmail
+    ? { isGuest: true, email: guestEmail }
+    : order.customerId && Types.ObjectId.isValid(String(order.customerId))
+      ? { userId: new Types.ObjectId(String(order.customerId)) }
+      : null;
+  if (!filter) return "bronze";
+  const profile = await CustomerProfile.findOne(filter)
+    .select("loyaltyTier")
+    .session(session ?? null)
+    .lean<{ loyaltyTier?: string } | null>();
+  return profile?.loyaltyTier || "bronze";
+}
+
+/**
+ * Who a history row is for: the account, or a guest checkout's email (which
+ * the account inherits when it claims the guest's orders).
+ */
+function loyaltyOwnerOf(order: { customerId?: unknown; guestEmail?: string | null }) {
+  const guestEmail = normalizeGuestEmail(order.guestEmail);
+  if (guestEmail) return { guestEmail };
+  const id = String(order.customerId || "");
+  return Types.ObjectId.isValid(id) ? { userId: new Types.ObjectId(id) } : null;
+}
+
+/** A line in the points history. Never fails the change it records. */
+async function recordLoyaltyMovement(
+  row: Record<string, unknown>,
+  session: ClientSession | null,
+) {
+  try {
+    await LoyaltyTransaction.create([row], { session: session ?? undefined });
+  } catch (error) {
+    // Inside a transaction the write has to fail it, or the history would
+    // silently lose the row the commit was about.
+    if (session) throw error;
+    console.error("Failed to record a loyalty points movement:", error);
+  }
+}
+
+/**
  * Award an order's whole-number points exactly once after its full payment has
  * been committed. The order's loyalty subdocument is the durable retry claim.
  *
- * Earned at the store's current rate, which is stamped on the order with the
- * points so a later change of rate never re-prices them.
+ * Earned at the store's current rate, sped up by the customer's tier bonus
+ * (Settings → Loyalty points). The rate actually used is stamped on the order
+ * with the points, so a later change of rate or tier never re-prices them.
  */
 export async function awardOrderLoyaltyPoints(orderId: string): Promise<number> {
-  // Paused while loyalty is hidden (see `isLoyaltyEnabled`). The order is left
-  // without a `loyalty` record, so a refund has nothing to take back and the
-  // backfill can still award it if the store later wants the gap filled.
-  if (!isLoyaltyEnabled()) return 0;
-  const spendPerPoint = normalizeSpendPerPoint(
-    (await getSettingsLean())?.orders?.loyaltySpendPerPoint,
-  );
+  // Paused while the programme is off. The order is left without a `loyalty`
+  // record, so a refund has nothing to take back and the backfill can still
+  // award it if the store later wants the gap filled.
+  const rules = loyaltyRulesOf(await getSettingsLean());
+  if (!rules.enabled) return 0;
   return withLoyaltyTransaction(async (session) => {
     const order = await Order.findById(orderId).session(session).lean();
     if (!order?.customerId || order.paymentStatus !== "paid") return 0;
     if (order.loyalty?.pointsAwarded !== undefined) return 0;
 
+    const tier = await orderProfileTier(order, session);
+    const spendPerPoint = tierSpendPerPoint(tier, rules);
     const points = computePointsFromOrder(order.total, spendPerPoint);
     const claim = await Order.updateOne(
       {
@@ -284,6 +335,21 @@ export async function awardOrderLoyaltyPoints(orderId: string): Promise<number> 
 
     if (points > 0) {
       await applyOrderLoyaltyDelta(order, points, session);
+      const owner = loyaltyOwnerOf(order);
+      if (owner) {
+        const bonus = Math.round((tierEarnMultiplier(tier, rules) - 1) * 100);
+        await recordLoyaltyMovement(
+          {
+            ...owner,
+            type: "earn",
+            points,
+            orderId: order._id,
+            orderNumber: order.orderNumber,
+            ...(bonus > 0 ? { bonusPercent: bonus } : {}),
+          },
+          session,
+        );
+      }
     }
 
     return points;
@@ -332,6 +398,22 @@ export async function reverseOrderLoyaltyPoints(
     if (claim.matchedCount !== 1) return 0;
 
     await applyOrderLoyaltyDelta(order, -delta, session);
+    const owner = loyaltyOwnerOf(order);
+    if (owner) {
+      await recordLoyaltyMovement(
+        {
+          ...owner,
+          // A refund the gateway later turned down gives points back: the
+          // delta is signed (computeRefundPointDelta).
+          type: delta > 0 ? "reverse" : "earn",
+          points: -delta,
+          orderId: order._id,
+          orderNumber: order.orderNumber,
+          ...(delta < 0 ? { note: "refund_reversed" } : {}),
+        },
+        session,
+      );
+    }
     return delta;
   };
   // Reversing a refund must restore the order and the customer's points in
@@ -693,6 +775,11 @@ export async function claimGuestCustomerData(userId: string, email: string) {
     ),
     QuoteRequest.updateMany(
       { email: guestEmail, userId: { $exists: false } },
+      { $set: { userId: userObjectId } },
+    ),
+    // The guest's points history follows its balance into the account.
+    LoyaltyTransaction.updateMany(
+      { guestEmail, userId: { $exists: false } },
       { $set: { userId: userObjectId } },
     ),
   ]);

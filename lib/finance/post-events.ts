@@ -1512,9 +1512,11 @@ export async function postStoreCreditEvent(row: {
   const kind =
     row.type === "issue" && row.source === "goodwill"
       ? ("goodwill" as const)
-      : row.type === "expire"
-        ? ("expiry" as const)
-        : null;
+      : row.type === "issue" && row.source === "loyalty"
+        ? ("loyalty" as const)
+        : row.type === "expire"
+          ? ("expiry" as const)
+          : null;
   if (!kind) return 0;
   return postLedgerEntries(
     storeCreditPostings({

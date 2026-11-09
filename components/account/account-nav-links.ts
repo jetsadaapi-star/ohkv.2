@@ -1,6 +1,7 @@
 import {
   Bell,
   FileText,
+  Gift,
   Heart,
   Wallet,
   LayoutDashboard,
@@ -33,6 +34,8 @@ export interface AccountNavLink {
    * names the page after it.
    */
   hideInSidebar?: boolean;
+  /** Shown only while that feature is on. */
+  requires?: "loyalty";
 }
 
 export const dashboardLinks: AccountNavLink[] = [
@@ -81,6 +84,14 @@ export const dashboardLinks: AccountNavLink[] = [
     labelFallback: "Store credit",
     href: "/account/store-credit",
     icon: Wallet,
+  },
+  {
+    // Points from paid orders, turned into store credit (Settings → Loyalty points).
+    labelKey: "account.loyalty.title",
+    labelFallback: "My points",
+    href: "/account/rewards",
+    icon: Gift,
+    requires: "loyalty",
   },
 ];
 

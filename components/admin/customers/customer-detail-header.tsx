@@ -17,7 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrency } from "@/providers/currency-provider";
 import { cn } from "@/lib/utils";
-import { isLoyaltyEnabled } from "@/lib/customers/loyalty";
+import { useLoyaltyEnabled } from "@/providers/app-settings-provider";
 import { toneClass, type SectionTone } from "./section-card";
 import type {
   CustomerHeaderData,
@@ -121,8 +121,8 @@ export function CustomerDetailHeader({
   const status = STATUS_META[data.status] ?? STATUS_META.active;
   const tier = TIER_META[data.loyaltyTier] ?? TIER_META.bronze;
   // The tier badge and the points tile hide with the rest of loyalty (see
-  // `isLoyaltyEnabled`).
-  const loyaltyEnabled = isLoyaltyEnabled();
+  // `useLoyaltyEnabled`).
+  const loyaltyEnabled = useLoyaltyEnabled();
   const stats = data.stats || {};
   const kpiLoading = statsLoading ?? loading;
   const since = data.createdAt

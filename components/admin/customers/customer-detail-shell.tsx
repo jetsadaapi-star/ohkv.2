@@ -44,13 +44,12 @@ import {
   type LoyaltyTier,
 } from "./customer-detail-types";
 import { USER_ACCOUNT_STATUS } from "@/config/app.config";
-import { isLoyaltyEnabled } from "@/lib/customers/loyalty";
 import {
   areCountryValuesEquivalent,
   settleCountryForPolicy,
   soleAllowedCountry,
 } from "@/lib/intl/country-availability";
-import { useAppSettings } from "@/providers/app-settings-provider";
+import { useAppSettings, useLoyaltyEnabled } from "@/providers/app-settings-provider";
 
 interface CustomerDetailShellProps {
   locale: string;
@@ -510,8 +509,8 @@ export function CustomerDetailShell({
     }
   }, [basePath, confirm, customerId, form, readOnly, router, t]);
 
-  // The Loyalty tab hides with the rest of loyalty (see `isLoyaltyEnabled`).
-  const loyaltyEnabled = isLoyaltyEnabled();
+  // The Loyalty tab hides with the rest of loyalty (see `useLoyaltyEnabled`).
+  const loyaltyEnabled = useLoyaltyEnabled();
 
   const tabs = [
     { value: "profile", label: t("tabProfile"), icon: User },

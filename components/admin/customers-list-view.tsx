@@ -18,7 +18,8 @@ import {
   fetchAdminCustomerStats,
 } from "@/lib/customers/customer-list";
 import { getStoreMoneyFormatter } from "@/lib/intl/server-currency";
-import { isLoyaltyEnabled } from "@/lib/customers/loyalty";
+import { loyaltyEnabledIn } from "@/lib/customers/loyalty";
+import { getSettingsLean } from "@/models/settings.model";
 import type { StaffAccessScope } from "@/lib/access/staff-scope";
 
 type SearchParams = { [key: string]: string | string[] | undefined };
@@ -37,7 +38,7 @@ interface CustomersListViewProps {
 }
 
 /** The customers list route, shared by the admin and staff areas. */
-export function CustomersListView({
+export async function CustomersListView({
   locale,
   area,
   readOnly,
@@ -67,7 +68,8 @@ export function CustomersListView({
   // The admin page gets the vendor area's look: a heading, colour tiles and
   // tinted rows. The staff area keeps its table-titled layout.
   const modern = area === "admin";
-  const tileCount = isLoyaltyEnabled() ? 5 : 4;
+  const loyaltyEnabled = loyaltyEnabledIn(await getSettingsLean());
+  const tileCount = loyaltyEnabled ? 5 : 4;
 
   return (
     <div className={modern ? "space-y-5" : "space-y-4"}>
@@ -146,10 +148,11 @@ async function CustomersTable({
 }
 
 async function CustomersStats({ locale, variant }: { locale: string; variant: "strip" | "tiles" }) {
-  const [t, stats, money] = await Promise.all([
+  const [t, stats, money, settings] = await Promise.all([
     getTranslations({ locale }),
     fetchAdminCustomerStats(),
     getStoreMoneyFormatter(),
+    getSettingsLean(),
   ]);
 
   const items: AdminStatsStripItem[] = [
@@ -168,8 +171,8 @@ async function CustomersStats({ locale, variant }: { locale: string; variant: "s
       iconClassName: "text-green-700 bg-green-100",
     },
     // VIP is the gold and platinum tiers, so it hides with the rest of loyalty
-    // (see `isLoyaltyEnabled`).
-    ...(isLoyaltyEnabled()
+    // (see `loyaltyEnabledIn`).
+    ...(loyaltyEnabledIn(settings)
       ? [
           {
             title: t("admin.customersPage.stats.vipCustomers.title"),

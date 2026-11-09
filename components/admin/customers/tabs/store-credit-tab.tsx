@@ -48,6 +48,7 @@ const SOURCE_LABELS: Record<string, string> = {
   order_refund: "creditOrderRefund",
   order_refund_restore: "creditOrderRefundRestore",
   goodwill: "creditGoodwill",
+  loyalty: "creditLoyalty",
 };
 
 function money(amount: number, currencyCode: string) {

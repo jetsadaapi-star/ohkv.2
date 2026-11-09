@@ -40,13 +40,6 @@ import {
   MAX_RETURN_WINDOW_DAYS,
   MIN_RETURN_WINDOW_DAYS,
 } from "@/lib/returns/return-policy";
-import {
-  DEFAULT_LOYALTY_SPEND_PER_POINT,
-  LOYALTY_THRESHOLDS,
-  MAX_LOYALTY_SPEND_PER_POINT,
-  MIN_LOYALTY_SPEND_PER_POINT,
-  isLoyaltyEnabled,
-} from "@/lib/customers/loyalty";
 import { formatCurrency } from "@/lib/intl/money";
 import type { Settings } from "@/components/admin/settings/types";
 import {
@@ -203,36 +196,6 @@ export function OrdersSettingsTab(props: {
               </>
             )}
 
-            {/* Hidden with the rest of loyalty until the programme is finished
-                (see `isLoyaltyEnabled`); the stored rate stays as it is. */}
-            {isLoyaltyEnabled() && (
-              <SettingRow
-                inputId="loyaltySpendPerPoint"
-                label={t("loyaltyHeading")}
-                hint={t("loyaltySpendPerPointHint", {
-                  silver: LOYALTY_THRESHOLDS.silver,
-                  gold: LOYALTY_THRESHOLDS.gold,
-                  platinum: LOYALTY_THRESHOLDS.platinum,
-                })}
-              >
-                <NumberInput
-                  id="loyaltySpendPerPoint"
-                  className="w-24"
-                  min={MIN_LOYALTY_SPEND_PER_POINT}
-                  max={MAX_LOYALTY_SPEND_PER_POINT}
-                  step={0.01}
-                  value={orders.loyaltySpendPerPoint ?? DEFAULT_LOYALTY_SPEND_PER_POINT}
-                  whenEmpty={DEFAULT_LOYALTY_SPEND_PER_POINT}
-                  onValueChange={(next) =>
-                    updateNestedField(
-                      "orders.loyaltySpendPerPoint",
-                      next ?? DEFAULT_LOYALTY_SPEND_PER_POINT,
-                    )
-                  }
-                />
-                <SettingUnit>{t("loyaltyUnit", { currency: currencyCode })}</SettingUnit>
-              </SettingRow>
-            )}
           </SettingList>
         </CardContent>
       </Card>

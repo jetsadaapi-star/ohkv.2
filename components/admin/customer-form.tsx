@@ -33,7 +33,8 @@ import { AdminFormStickyHeader } from "@/components/admin/admin-form-sticky-head
 import { CountrySelect } from "@/components/common/country-multi-select";
 import { ThaiAddressFields, isThailand } from "@/components/address/thai-address-fields";
 import { USER_ACCOUNT_STATUS } from "@/config/app.config";
-import { computeLoyaltyTier, isLoyaltyEnabled } from "@/lib/customers/loyalty";
+import { computeLoyaltyTier } from "@/lib/customers/loyalty";
+import { useLoyaltyEnabled } from "@/providers/app-settings-provider";
 
 interface CustomerFormProps {
   locale: string;
@@ -180,8 +181,8 @@ export function CustomerForm({
     [customerId, t],
   );
 
-  // The loyalty fields hide with the rest of loyalty (see `isLoyaltyEnabled`).
-  const loyaltyEnabled = isLoyaltyEnabled();
+  // The loyalty fields hide with the rest of loyalty (see `useLoyaltyEnabled`).
+  const loyaltyEnabled = useLoyaltyEnabled();
 
   const pageDescription = useMemo(
     () =>

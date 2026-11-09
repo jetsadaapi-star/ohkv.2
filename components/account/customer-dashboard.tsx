@@ -30,7 +30,7 @@ import { formatCurrency } from "@/lib/intl/money";
 import { resolveCurrency } from "@/lib/intl/currencies";
 import { cn } from "@/lib/utils";
 import type { LoyaltyTier } from "@/types";
-import { isLoyaltyEnabled } from "@/lib/customers/loyalty";
+import { useLoyaltyEnabled } from "@/providers/app-settings-provider";
 import type { PendingReview } from "@/lib/catalog/review-eligibility";
 import {
   EMPTY_ATTENTION,
@@ -94,6 +94,7 @@ export function CustomerDashboard({
   recentOrders,
   pendingReviews = [],
 }: CustomerDashboardProps) {
+  const loyaltyEnabled = useLoyaltyEnabled();
   const t = useTranslations();
   const tf = useFallbackTranslator(t);
   const { currency, formatPrice } = useCurrency();
@@ -229,9 +230,9 @@ export function CustomerDashboard({
             {t("account.overviewDesc")}
           </p>
         </div>
-        {/* Hidden with the rest of loyalty (see `isLoyaltyEnabled`). */}
-        {isLoyaltyEnabled() && stats.loyaltyTier && (
-          <div className="flex items-center gap-2">
+        {/* Hidden with the rest of loyalty (see `useLoyaltyEnabled`). */}
+        {loyaltyEnabled && stats.loyaltyTier && (
+          <Link href="/account/rewards" className="flex items-center gap-2 rounded-full transition hover:opacity-80">
             <Badge variant="outline" className={tierColors[stats.loyaltyTier]}>
               <Star className="h-3 w-3 mr-1" />
               {t(`customerProfile.${stats.loyaltyTier}`)}
@@ -242,7 +243,7 @@ export function CustomerDashboard({
                 {t("customerProfile.loyaltyPoints")}
               </span>
             )}
-          </div>
+          </Link>
         )}
       </div>
 

@@ -1,5 +1,6 @@
 import { createAuthClient } from "better-auth/react";
 import { phoneNumberClient, twoFactorClient } from "better-auth/client/plugins";
+import { passkeyClient } from "@better-auth/passkey/client";
 
 /**
  * Better Auth Client Configuration
@@ -29,7 +30,7 @@ function clientBaseUrl(): string {
 
 export const authClient = createAuthClient({
   baseURL: clientBaseUrl(),
-  plugins: [twoFactorClient(), phoneNumberClient()],
+  plugins: [twoFactorClient(), phoneNumberClient(), passkeyClient()],
 });
 
 // Export commonly used hooks and functions

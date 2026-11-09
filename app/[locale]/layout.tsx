@@ -36,6 +36,7 @@ import { mtnMomoPhoneExample } from "@/lib/payments/mtn-momo";
 import { resolveMtnMomoCredentials } from "@/lib/settings/credentials";
 import { withFallback } from "@/lib/storefront/cached-read";
 import { liveKeyColors } from "@/lib/storefront/themes/key-colors";
+import { loyaltyEnabledIn } from "@/lib/customers/loyalty";
 
 /**
  * The root layout. It lives inside `[locale]` so that `<html lang dir>` comes
@@ -181,6 +182,8 @@ const getInitialAppSettings = withFallback(
         boostingEnabled: Boolean(
           settings.multiVendorMode?.enabled && settings.boosting?.enabled,
         ),
+        // Same trap again: every loyalty screen reads this flag.
+        loyaltyEnabled: loyaltyEnabledIn(settings),
         // Same gate, and the same trap the comment above describes: the vendor
         // sidebar's billing entry reads this flag, so omitting it here hides the
         // billing screen entirely no matter what /api/settings/public reports.

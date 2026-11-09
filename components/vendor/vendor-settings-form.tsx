@@ -671,14 +671,14 @@ export function VendorSettingsForm({
       ? [
           {
             value: "shipping" as const,
-            label: tSafe("admin.sidebar.shipping", "Shipping"),
+            label: tSafe("vendor.settingsTabs.shipping", "Shipping"),
             icon: Truck,
           },
         ]
       : []),
     {
       value: "account" as const,
-      label: tSafe("common.account", "Account"),
+      label: tSafe("vendor.settingsTabs.account", "Account"),
       icon: User,
     },
   ];

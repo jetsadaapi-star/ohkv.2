@@ -4243,7 +4243,7 @@
       "categories": "Categories",
       "brands": "Brands",
       "inventory": "Inventory",
-      "transfers": "Transfers",
+      "transfers": "Stock transfers",
       "customers": "Customers",
       "vendors": "Vendors",
       "vendorPlans": "Vendor Plans",
@@ -4266,11 +4266,11 @@
       "posLocations": "Locations",
       "addPage": "Add Page",
       "navigation": "Navigation",
-      "checkout": "Checkout",
+      "checkout": "Checkout page",
       "productCard": "Product Card",
-      "payments": "Payments",
+      "payments": "Customer payments",
       "payouts": "Payouts",
-      "transactions": "Transactions",
+      "transactions": "Payment transactions",
       "reviews": "Reviews",
       "blogPosts": "Blog posts",
       "inbox": "Inbox",
@@ -4281,7 +4281,7 @@
       "finance": "Finance",
       "financeOverview": "Overview",
       "inventoryLedger": "Inventory and ledger",
-      "receivables": "Receivables",
+      "receivables": "Owed by vendors",
       "financeReports": "Reports",
       "customize": "Customize",
       "sliders": "Sliders",
@@ -18439,7 +18439,7 @@
       "noRecentOrders": "No recent orders"
     },
     "payoutsPage": {
-      "title": "Payouts",
+      "title": "Payouts received",
       "subtitle": "Track your settlement statements and payout statuses.",
       "listSection": {
         "title": "Payout Statements",
@@ -18450,7 +18450,7 @@
         "empty": "No payouts found."
       }
     },
-    "payouts": "Payouts",
+    "payouts": "Payouts received",
     "directory": {
       "subtitle": "Discover every store selling on our marketplace.",
       "empty": "No stores have opened yet. Check back soon.",
@@ -18679,7 +18679,7 @@
     },
     "finance": "Finances",
     "statements": "Statements",
-    "owedToPlatform": "Owed to platform",
+    "owedToPlatform": "Commission owed",
     "planBilling": "Plan & billing",
     "shippingSettingsDesc": "Configure how your own products are shipped. These rates apply to your items in customer carts.",
     "onlineStore": {
@@ -18772,6 +18772,10 @@
       "tab": "Payout account",
       "title": "Where we send your earnings",
       "description": "The bank account the marketplace transfers your sales to, after commission, on the schedule you choose. Customers never see this account — they pay the marketplace at checkout."
+    },
+    "settingsTabs": {
+      "account": "Login account",
+      "shipping": "Delivery rates"
     }
   },
   "footer": {
@@ -20903,7 +20907,7 @@
       "seeAll": "See the full statement",
       "export": "Export",
       "truncated": "Showing the first {shown} of {total} entries. Choose a shorter period to see the rest — the balances above cover the whole period either way.",
-      "owedTitle": "Owed to the marketplace",
+      "owedTitle": "Commission owed",
       "owedSubtitle": "Commission on orders you collected yourself. The money is already yours; this is what you owe on it.",
       "owedEmpty": "You owe nothing for this period.",
       "owedOrders": "Orders",

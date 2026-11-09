@@ -214,7 +214,7 @@ const PAYMENT_METHOD_TH: Record<string, string> = {
   card: "บัตรเครดิต/เดบิต",
   stripe: "บัตรเครดิต/เดบิต",
   paypal: "PayPal",
-  store_credit: "เครดิตร้านค้า",
+  store_credit: "เครดิตช้อปปิ้ง",
   cash: "เงินสด",
   manual: "ชำระกับร้านค้า",
   manual_pending: "ชำระกับร้านค้า",

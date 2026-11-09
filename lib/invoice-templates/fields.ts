@@ -98,7 +98,7 @@ const PAYMENT_METHOD_LABELS: Record<string, Labels> = {
   razorpay: bn("Razorpay", "Razorpay", "Razorpay"),
   paystack: bn("Paystack", "Paystack", "Paystack"),
   mobile_money: bn("Mobile money", "মোবাইল মানি", "พร้อมเพย์ / โมบายแบงกิ้ง"),
-  store_credit: bn("Store credit", "স্টোর ক্রেডিট", "เครดิตร้านค้า"),
+  store_credit: bn("Store credit", "স্টোর ক্রেডিট", "เครดิตช้อปปิ้ง"),
   pay_later: bn("Pay later", "পরে পরিশোধ", "ชำระภายหลัง"),
   wallet: bn("Wallet", "ওয়ালেট", "วอลเล็ต"),
 };

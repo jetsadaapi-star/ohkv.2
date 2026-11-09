@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "title": "Minimart - Online Marketplace",
+    "title": "Oh-K Shop | OTOP Kalasin - Online Marketplace",
     "description": "Discover amazing products from verified vendors. Shop with confidence and enjoy seamless delivery.",
     "keywords": "online shopping, marketplace, e-commerce, products, vendors"
   },
@@ -336,7 +336,7 @@
     "twoFactorAdminDisabled": "Two-factor authentication is currently disabled by the site administrator.",
     "inbox": {
       "title": "Inbox",
-      "subtitle": "Continue your conversations with the store."
+      "subtitle": "Continue your conversations with sellers and our team."
     },
     "storeCredit": "Store credit",
     "storeCreditDesc": "Credit you can spend at checkout, from refunds and from the store.",
@@ -346,7 +346,7 @@
     "storeCreditFromReturn": "Refund for a return",
     "storeCreditFromRefund": "Refund",
     "storeCreditRestored": "Given back from a refunded order",
-    "storeCreditFromStore": "From the store",
+    "storeCreditFromStore": "Given by us",
     "storeCreditEmpty": "You have no store credit.",
     "storeCreditBalance": "Available",
     "storeCreditExpires": "{amount} expires {date}",
@@ -354,7 +354,7 @@
       "title": "Delete account",
       "description": "Close your account and erase your personal details. This cannot be undone.",
       "whatGoes": "Your profile, addresses, sign-in details, cart, wishlist, reviews, notifications, followed stores and waiting-list places are deleted, and you are signed out everywhere.",
-      "whatStays": "Your orders, returns and store credit stay with the store as its financial records.",
+      "whatStays": "Your orders, returns and store credit stay with us as financial records.",
       "button": "Delete my account",
       "confirmTitle": "Delete your account?",
       "confirmDescription": "Enter your password to confirm. Your account is deleted at once and cannot be restored.",
@@ -364,7 +364,7 @@
       "errors": {
         "wrongPassword": "That password is incorrect.",
         "signInAgain": "For your account's safety, sign out and sign in again, then delete your account within ten minutes.",
-        "notAllowed": "This account also runs or helps run the store, so it cannot be deleted here. Contact the store to close it.",
+        "notAllowed": "This account belongs to a seller, team member or admin, so it cannot be deleted here. Contact the site administrator to close it.",
         "generic": "Your account could not be deleted. Please try again."
       }
     },
@@ -380,12 +380,12 @@
       "cannotSignInTitle": "If you cannot sign in",
       "cannotSignInReset": "<reset>Reset your password</reset> first, then delete your account as above.",
       "cannotSignInEmail": "Or write to <email></email> from the email address on your account, asking for it to be deleted.",
-      "cannotSignInContact": "Or <contact>contact the store</contact> from the email address on your account, asking for it to be deleted.",
+      "cannotSignInContact": "Or <contact>contact us</contact> from the email address on your account, asking for it to be deleted.",
       "emailSubject": "Please delete my {storeName} account",
       "whatGoesTitle": "What is deleted",
       "whatGoes": "Your profile, saved addresses, sign-in details (password and two-step verification), cart, wishlist, reviews, notifications, registered devices, followed stores, pre-order waiting lists, unfinished checkouts and chats with the shopping assistant. Your name and contact details are removed from your support conversations, and your email address and connection details from your blog comments, which stay under the name you posted them with. You are signed out on every device. This happens at once and cannot be undone.",
-      "whatStaysTitle": "What the store keeps",
-      "whatStays": "Your orders, with the details on them, and your returns, quote requests and store credit stay with the store as its financial records, which it has to keep."
+      "whatStaysTitle": "What we keep",
+      "whatStays": "Your orders, with the details on them, and your returns, quote requests and store credit stay with us as financial records, which we have to keep."
     },
     "storeCreditFromLoyalty": "Loyalty points redeemed",
     "loyalty": {
@@ -430,7 +430,7 @@
         "reverse": "Refund on order {order}",
         "refundUndone": "Refund on order {order} undone",
         "redeem": "Redeemed for {credit} store credit",
-        "adjust": "Adjusted by the store",
+        "adjust": "Adjusted by our team",
         "bonus": "+{percent}% tier bonus"
       }
     },
@@ -531,7 +531,7 @@
     "pushOrderUpdates": "Orders & Returns",
     "pushOrderUpdatesDesc": "Your orders, payments, returns, quotes and store credit",
     "pushMessages": "Messages",
-    "pushMessagesDesc": "Replies from the store in chat",
+    "pushMessagesDesc": "Chat replies from sellers or our team",
     "totalSpent": "Total Spent",
     "avgOrderValue": "Avg. Order Value",
     "memberSince": "Member Since"
@@ -551,7 +551,7 @@
     "addAddress": "Add New Address",
     "editAddress": "Edit Address",
     "formDescription": "Enter the delivery address details",
-    "countryNoLongerAvailable": "This address was saved for {previous}. The store no longer delivers there, so saving it will file it under {current}.",
+    "countryNoLongerAvailable": "This address was saved for {previous}. We no longer deliver there, so saving it will file it under {current}.",
     "addressType": "Address type",
     "default": "Default",
     "setDefault": "Set as Default",
@@ -875,7 +875,7 @@
         "PHONE_LOGIN_DISABLED": "Signing in with a phone number is turned off.",
         "PHONE_NOT_REGISTERED": "No account uses this number yet. Sign in with your email, then add your number under Account → Security.",
         "PHONE_LOGIN_EMAIL_ONLY": "This account signs in with its email address.",
-        "ACCOUNT_INACTIVE_OR_BANNED": "This account can't sign in. Please contact the store.",
+        "ACCOUNT_INACTIVE_OR_BANNED": "This account can't sign in. Please contact support.",
         "OTP_TOO_MANY": "Too many codes were sent to this number. Try again in an hour.",
         "OTP_SEND_FAILED": "We couldn't send the code. Try again in a moment.",
         "INVALID_OTP": "That code isn't right. Check the text and try again.",
@@ -1194,7 +1194,7 @@
     "highlyRecommended": "Highly Recommended",
     "postedBy": "Posted {time} by {name}",
     "postedTime": "Posted {time}",
-    "brandResponse": "Brand response",
+    "brandResponse": "Response from our team",
     "showingRange": "Showing {from} - {to} of {total} reviews",
     "anonymous": "Anonymous",
     "checkingEligibility": "Checking your eligible orders...",
@@ -1233,10 +1233,10 @@
     "youRated": "You rated this",
     "alreadyReviewed": "You have already reviewed this product. Thank you for sharing your experience!",
     "publishedImmediately": "Your review shows on the product page as soon as you post it.",
-    "publishedAfterModeration": "Your review shows once the store has approved it.",
+    "publishedAfterModeration": "Your review shows once our team has approved it.",
     "statusPublished": "Published",
-    "statusPending": "Waiting for the store's approval",
-    "statusRejected": "Not published by the store"
+    "statusPending": "Waiting for our team's approval",
+    "statusRejected": "Not published by our team"
   },
   "cart": {
     "title": "Shopping Cart",
@@ -1524,20 +1524,20 @@
       "adminTitle": "You're signed in as an admin",
       "vendorTitle": "You're signed in as a seller",
       "staffTitle": "You're signed in as a team member",
-      "body": "Orders on the store are placed from a customer account.",
+      "body": "Orders on this website are placed from a customer account.",
       "createOrder": "Create order",
       "goToDashboard": "Go to dashboard",
       "signOut": "Sign out",
       "hint": "To test checkout, sign out and use a different email."
     },
     "emailNotAllowed": "This email can't be used for checkout. Please use a different email.",
-    "storeNotReady": "This store can't take orders right now. Please try again later.",
+    "storeNotReady": "We can't take orders right now. Please try again later.",
     "account": {
       "exists": "An account with this email already exists. Log in, or untick “Create an account”.",
       "verifyFirst": "Account created. Verify your email, then log in to finish your order.",
       "verifyLater": "Account created — verify your email to see this order in it.",
       "loginRequiredTitle": "Log in to check out",
-      "loginRequired": "This store takes orders from signed-in customers. Log in or create an account to continue.",
+      "loginRequired": "This website takes orders from signed-in customers. Log in or create an account to continue.",
       "createToCheckout": "Create an account to check out",
       "requiredHint": "Choose a password for your new account.",
       "create": "Create an account for faster checkout next time",
@@ -1652,7 +1652,7 @@
     },
     "importDuties": "Import duties",
     "orderCancelledRefunded": "Order cancelled. {amount} is on its way back to you.",
-    "orderCancelledRefundFailed": "Order cancelled, but your refund could not be sent automatically. The store has been told and will send it to you.",
+    "orderCancelledRefundFailed": "Order cancelled, but your refund could not be sent automatically. Our team has been told and will send it to you.",
     "preorderDetails": {
       "title": "Pre-order",
       "expected": "Expected around {date}",
@@ -1668,7 +1668,7 @@
     },
     "returns": {
       "request": "Request return",
-      "contactStore": "To return an item, contact the store.",
+      "contactStore": "To return an item, contact us.",
       "title": "Return requests",
       "description": "Return and refund activity for this order.",
       "rejectionReason": "Reason: {reason}",
@@ -1774,7 +1774,7 @@
         "RETURN_WINDOW_CLOSED": "The return window for this order has closed.",
         "FINAL_SALE": "These items were sold as final sale and cannot be returned.",
         "NOT_RETURNABLE": "Nothing on this order can be returned right now.",
-        "RETURNS_THROUGH_STORE": "This store takes returns through its team. Contact the store to return an item."
+        "RETURNS_THROUGH_STORE": "Returns are handled by our team. Contact us to return an item."
       },
       "shipping": {
         "nothingToSend": "You don't need to send anything back.",
@@ -1974,7 +1974,7 @@
           "tags": "Tags, separated by commas.",
           "note": "A note only your team sees."
         },
-        "otherPlatforms": "Shopify's customer export and WooCommerce's billing columns are read as they are. Total Spent, Total Orders and Tax Exempt are not imported: totals here count the orders placed in this store.",
+        "otherPlatforms": "Shopify's customer export and WooCommerce's billing columns are read as they are. Total Spent, Total Orders and Tax Exempt are not imported: totals here count the orders placed on this marketplace.",
         "rulesTitle": "How rows are imported",
         "rules": {
           "match": "Customers are matched by email, or by phone when a row has no email. Customers already in your store are skipped unless Update existing customers is on.",
@@ -2213,7 +2213,7 @@
         "lost": "Marked lost",
         "withdrawnOn": "Withdrawn {date}",
         "keptWithOrder": "Kept with its order",
-        "contactHidden": "Contact hidden by the store"
+        "contactHidden": "Contact hidden by the marketplace"
       },
       "empty": {
         "all": "No quote requests yet. They arrive when a shopper asks for a price on a product marked Price on request.",
@@ -2286,11 +2286,11 @@
         "internalNote": "Internal note",
         "internalNotePlaceholder": "Only staff see this note",
         "saveNote": "Save note",
-        "contactHidden": "Hidden by the store",
+        "contactHidden": "Hidden by the marketplace",
         "vendorNote": "Vendor note",
-        "vendorNotePlaceholder": "Your own note on this quote. The store can read it; the customer can't.",
+        "vendorNotePlaceholder": "Your own note on this quote. The marketplace can read it; the customer can't.",
         "vendorNoteReadOnly": "Written by the vendor. Only the vendor can change it.",
-        "lockedByStore": "The store has taken over this quote, so its price is the store's to set. You can still read it and keep your own note."
+        "lockedByStore": "The marketplace has taken over this quote, so its price is the marketplace's to set. You can still read it and keep your own note."
       },
       "price": {
         "openUntil": "Open until {date}",
@@ -2351,11 +2351,11 @@
         "chooseVariantError": "Choose which variant the price is for",
         "priceError": "Enter a price above zero",
         "quantityError": "Enter the quantity this price covers",
-        "guestNoteHidden": "{name} is a guest. The store emails them the price; they sign in with the address they asked with to buy it.",
-        "storeFinal": "The store can replace your price with its own, and the store's price is final."
+        "guestNoteHidden": "{name} is a guest. The marketplace emails them the price; they sign in with the address they asked with to buy it.",
+        "storeFinal": "The marketplace can replace your price with its own, and the marketplace's price is final."
       },
       "by": {
-        "admin": "Store",
+        "admin": "Marketplace",
         "vendor": "Vendor"
       }
     },
@@ -2444,7 +2444,7 @@
     "accessRequests": {
       "title": "Access requests",
       "subtitle": "Vendors asking for a capability pack their entitlement does not include.",
-      "marketplaceOffTitle": "Marketplace mode is off",
+      "marketplaceOffTitle": "Multi-vendor mode is off",
       "marketplaceOffBody": "Access requests come from vendors, so this queue is empty until multi-vendor mode is enabled.",
       "tabPending": "Pending",
       "tabDecided": "Decided",
@@ -2842,7 +2842,7 @@
         "keepReturnShipping": "Keep the return shipping",
         "keepReturnShippingCurrency": "The label was paid in another currency, so it can't be taken off this refund.",
         "refundConfirm": "Refund",
-        "internalFulfillment": "Internal fulfillment",
+        "internalFulfillment": "Shipped without a carrier",
         "shipmentStatus": {
           "draft": "Draft",
           "label_ready": "Label ready",
@@ -4263,7 +4263,7 @@
       "pos": "Point of Sale",
       "staff": "Team",
       "shipping": "Shipping",
-      "posLocations": "Locations",
+      "posLocations": "Locations & warehouses",
       "addPage": "Add Page",
       "navigation": "Navigation",
       "checkout": "Checkout page",
@@ -4765,7 +4765,7 @@
         "restore": "Restore it",
         "discard": "Discard"
       },
-      "returnWindowStore": "Store default",
+      "returnWindowStore": "Marketplace default",
       "returnWindowHelp": "Only for this product. Where a collection sets one too, the shorter applies."
     },
     "settings": {
@@ -5274,7 +5274,7 @@
           "vendor": {
             "applicationStatus": {
               "title": "Application updates",
-              "hint": "Received, approved, rejected, payment reminders"
+              "hint": "Received, approved, rejected, plan payment reminders"
             },
             "newOrders": {
               "title": "New orders"
@@ -5412,9 +5412,9 @@
         "windowOverridesHint": "Products in these collections can be returned for this many days instead. A product can set its own too; where several apply, the shortest does.",
         "shippingRefund": "Refund the delivery charge",
         "shippingRefundNever": "Never",
-        "shippingRefundMerchantFault": "Only when the return is our fault",
+        "shippingRefundMerchantFault": "Only when the return is the seller's fault",
         "shippingRefundAlways": "Always",
-        "shippingRefundHint": "Our fault means damaged or defective, not as described, or the wrong item sent.",
+        "shippingRefundHint": "Seller's fault means damaged or defective, not as described, or the wrong item sent.",
         "restockingFee": "Restocking fee",
         "restockingFeeHint": "Kept out of the returned goods, never out of the tax.",
         "returnShippingFee": "Return shipping fee",
@@ -5934,7 +5934,7 @@
           "title": "Who collects cash on delivery",
           "description": "If vendors deliver themselves, they take the cash and owe you commission. If your courier delivers, you take the cash and owe vendors their earnings, and only an admin can mark those orders paid. Applies to new orders.",
           "vendor": "The vendor",
-          "platform": "The store"
+          "platform": "The marketplace"
         },
         "customs": {
           "title": "Customs & duties",
@@ -6164,7 +6164,7 @@
         "packStaff": "Invite and manage store seats",
         "packDiscounts": "Coupons and discount campaigns",
         "packPos": "In-person selling",
-        "packPayouts": "Balance and self-serve withdrawal requests",
+        "packPayouts": "Balance and self-serve payout requests",
         "packBoosts": "Buy sponsored placements",
         "packAiStudio": "AI authoring for listings and media",
         "groups": {
@@ -6178,7 +6178,7 @@
       "vendorConfig": {
         "title": "Vendor Configuration",
         "description": "Registration, approval, and subscription plan policy for vendors.",
-        "marketplaceOff": "Enable Multi-Vendor Management to configure vendor policy.",
+        "marketplaceOff": "Turn on Multi-Vendor Mode to configure vendor policy.",
         "registration": {
           "title": "Registration & approval"
         },
@@ -6187,7 +6187,7 @@
           "description": "Let people apply to become a vendor from the storefront."
         },
         "plans": {
-          "title": "Plans & subscriptions"
+          "title": "Plans & billing"
         },
         "plansEnabled": {
           "label": "Enable subscription plans",
@@ -6206,9 +6206,9 @@
           "title": "Default commission",
           "description": "Applied to vendors without a plan. Also editable under Order Settings.",
           "rateLabel": "Commission rate",
-          "rateDescription": "Percentage the platform keeps on each vendor sale.",
-          "minWithdrawalLabel": "Minimum withdrawal amount",
-          "minWithdrawalDescription": "Smallest balance a payout is made for, in your store currency.",
+          "rateDescription": "Percentage the marketplace keeps on each vendor sale.",
+          "minWithdrawalLabel": "Minimum payout",
+          "minWithdrawalDescription": "Smallest balance a payout is made for, in the marketplace currency.",
           "byCurrencyLabel": "Minimum in other currencies",
           "byCurrencyDescription": "Payouts in a currency other than {currency} use their own minimum. A currency not listed here has no minimum.",
           "byCurrencyAmount": "Minimum payout in {currency}",
@@ -6429,7 +6429,7 @@
         "vendorsEnabled": "Allow vendor accounts",
         "textLimit": "Text generations / user / day",
         "imageLimit": "Image generations / user / day",
-        "imageLimitHint": "Images cost the most — set a cap for shared stores.",
+        "imageLimitHint": "Images cost the most — set a cap when staff or vendors share your key.",
         "imageStyle": "Image style guidance (optional)",
         "imageStylePlaceholder": "e.g. \"Soft natural light, warm neutral palette, minimal props.\"",
         "imageStyleHint": "Applied to generated images (not edits) so product visuals stay on-brand.",
@@ -6602,9 +6602,9 @@
           },
           "setup": {
             "version": "Live sync needs META_GRAPH_API_VERSION on the server",
-            "versionHint": "Set it to the Graph API version your Meta app uses, for example v23.0, and restart the store.",
+            "versionHint": "Set it to the Graph API version your Meta app uses, for example v23.0, and restart the server.",
             "key": "Saving a token needs META_CATALOG_ENCRYPTION_KEY on the server",
-            "keyHint": "Set it to at least 32 random characters and restart the store. MESSAGING_ENCRYPTION_KEY is used when it is not set."
+            "keyHint": "Set it to at least 32 random characters and restart the server. MESSAGING_ENCRYPTION_KEY is used when it is not set."
           },
           "status": {
             "lastSync": "Last sync {when}",
@@ -6747,7 +6747,7 @@
           "home": "Home page",
           "homeHint": "The Sponsored section. Its size is set in the <link>page builder</link>.",
           "homeMissing": "Your home page has no Sponsored section now, so nothing shows there. Add it in the <link>page builder</link>.",
-          "listing": "Shop and category pages",
+          "listing": "All-products and category pages",
           "listingHint": "The first cards on page 1. Search and filtered pages stay as they are.",
           "productPage": "Product pages",
           "productPageHint": "The Sponsored carousel on each product page.",
@@ -6768,13 +6768,13 @@
           "longest": "Longest booking",
           "longestHint": "Keeps one vendor from holding a position for a whole season.",
           "longestOverWindow": "Longer than the booking window, so the window is the real limit.",
-          "hold": "Unpaid checkout hold",
+          "hold": "Hold while a vendor's boost payment is pending",
           "holdHint": "An unpaid checkout keeps its days this long, then they go back on sale. Stripe needs at least {minutes} minutes.",
           "days": "days",
           "minutes": "minutes"
         },
         "payments": {
-          "title": "Payment methods",
+          "title": "Boost payment methods",
           "description": "What vendors can pay for a boost with. A gateway also has to be on in <link>Payment Settings</link>."
         },
         "turnOff": {
@@ -7190,23 +7190,23 @@
           "inherit": "Same as its category",
           "customRate": "Custom rate {rate}%",
           "lockedLabel": "Tax",
-          "lockedApproval": "The store approves changes to this product's tax.",
-          "lockedNever": "The store manages this product's tax.",
+          "lockedApproval": "The marketplace approves changes to this product's tax.",
+          "lockedNever": "The marketplace manages this product's tax.",
           "newProductApproval": "A new product is taxed as its category. Once it is saved you can ask for a different tax.",
           "requestChange": "Request a change",
-          "pending": "Change requested: {tax}. Waiting for the store.",
+          "pending": "Change requested: {tax}. Waiting for the marketplace.",
           "withdraw": "Withdraw",
           "withdrawn": "Request withdrawn",
           "withdrawFailed": "The request could not be withdrawn",
           "dialogTitle": "Request a tax change",
-          "dialogDescription": "{count, plural, one {The store reviews your request. Until it approves, the product keeps its current tax.} other {The store reviews your request for # products. Until it approves, they keep their current tax.}}",
+          "dialogDescription": "{count, plural, one {The marketplace reviews your request. Until it approves, the product keeps its current tax.} other {The marketplace reviews your request for # products. Until it approves, they keep their current tax.}}",
           "chargeTax": "Charge tax",
           "reason": "Why should the tax change?",
           "reasonPlaceholder": "For example: these items are exempt from sales tax in our state.",
           "reasonTooShort": "Add a sentence on why the tax should change.",
           "send": "Send request",
           "cancel": "Cancel",
-          "sent": "Request sent to the store",
+          "sent": "Request sent to the marketplace",
           "sendFailed": "The request could not be sent",
           "bulkAction": "Request tax change"
         }
@@ -7257,7 +7257,7 @@
           "days": "days"
         },
         "notes": {
-          "credit": "The store pays for redeemed credit (booked as a promotion), so sellers' payouts are not affected.",
+          "credit": "The marketplace pays for redeemed credit (booked as a promotion), so vendor payouts are not affected.",
           "refunds": "A refunded order takes its points back. Credit a customer already redeemed stays theirs.",
           "tier": "You can adjust a customer's points on their page in Customers; the change shows in their history."
         },
@@ -7426,7 +7426,7 @@
         "title": "Import products",
         "description": "Add new products or update existing ones in bulk from a CSV or JSON file.",
         "sampleTitle": "Start from the sample file",
-        "sampleDescription": "It has the columns the import reads and a few example products, already filed under this store's categories. Replace the examples with your own products, keep the first row as it is, and upload the file here.",
+        "sampleDescription": "It has the columns the import reads and a few example products, already filed under this marketplace's categories. Replace the examples with your own products, keep the first row as it is, and upload the file here.",
         "sampleCsv": "Sample CSV",
         "sampleJson": "Sample JSON",
         "sampleJsonHint": "Use JSON for products with options and variants, such as size and color.",
@@ -8142,11 +8142,11 @@
       "redacted": "Redacted",
       "not_needed": "Not needed",
       "who_pays_for_this_discount": "Who pays for this discount",
-      "the_store": "The store",
+      "the_store": "The marketplace",
       "the_sellers_who_deliver_the_parcels": "The sellers who deliver the parcels",
       "the_sellers_whose_items_it_discounts": "The sellers whose items it discounts",
-      "when_the_store_pays_sellers_still_earn_the_delivery_charge_their_parcel_was_rated_at_applies_to_orders_placed_from_now_on": "When the store pays, sellers still earn the delivery charge their parcel was rated at. Applies to orders placed from now on.",
-      "when_the_store_pays_sellers_are_paid_as_if_their_items_sold_at_full_price_applies_to_orders_placed_from_now_on": "When the store pays, sellers are paid as if their items sold at full price. Applies to orders placed from now on.",
+      "when_the_store_pays_sellers_still_earn_the_delivery_charge_their_parcel_was_rated_at_applies_to_orders_placed_from_now_on": "When the marketplace pays, sellers still earn the delivery charge their parcel was rated at. Applies to orders placed from now on.",
+      "when_the_store_pays_sellers_are_paid_as_if_their_items_sold_at_full_price_applies_to_orders_placed_from_now_on": "When the marketplace pays, sellers are paid as if their items sold at full price. Applies to orders placed from now on.",
       "show_to_shoppers": "Show to shoppers",
       "list_this_code_in_the_shopping_app_s_coupon_sheet_off_it_works_only_when_typed": "List this code in the shopping app's coupon sheet. Off: it works only when typed.",
       "team_members_exported": "Team members exported",
@@ -8192,7 +8192,7 @@
       "applications_stores_plans_and_commissions": "Applications, stores, plans and commissions",
       "payouts": "Payouts",
       "manage_sends_vendors_their_money": "Manage sends vendors their money",
-      "payments": "Payments",
+      "payments": "Customer payments",
       "transactions_and_chargebacks": "Transactions and chargebacks",
       "finance": "Finance",
       "ledger_expenses_periods_and_reports": "Ledger, expenses, periods and reports",
@@ -8299,7 +8299,7 @@
       "where_they_work_and_what_they_start_with_you_can_change_any_permission_below_for_this_member": "Where they work and what they start with. You can change any permission below for this member.",
       "works_in_the_admin_dashboard": "Works in the admin dashboard",
       "works_in_the_staff_area_and_at_the_till": "Works in the staff area and at the till",
-      "writes_copy_and_images_with_the_store_s_ai_key": "Writes copy and images with the store's AI key",
+      "writes_copy_and_images_with_the_store_s_ai_key": "Writes copy and images with the marketplace's AI key",
       "anything_only_in_the_admin_dashboard": "anything only in the admin dashboard",
       "this_member": "this member",
       "by_role": "By role",
@@ -8319,7 +8319,7 @@
       "store": "Store",
       "open": "Open",
       "closed": "Closed",
-      "store_default": "Store default",
+      "store_default": "Marketplace default",
       "from_plan": "From plan",
       "custom_rate": "Custom rate"
     },
@@ -9196,7 +9196,7 @@
       "brandLogoHint": "A logo never runs wider than the card, so a wide wordmark stops growing once it spans the card — sooner on phones, where cards are narrower."
     },
     "checkoutStudio": {
-      "title": "Checkout",
+      "title": "Checkout page",
       "intro": "Choose what checkout asks for and how it looks. The steps keep their order, so payments never break.",
       "status": {
         "unsaved": "Unsaved changes",
@@ -10379,7 +10379,7 @@
       "metrics": {
         "paidRevenue": "Paid Revenue",
         "refundedAmount": "Refunded Amount",
-        "pendingPayments": "Pending Payments",
+        "pendingPayments": "Pending customer payments",
         "refundedOrders": "Refunded Orders",
         "pendingPayoutAmount": "Pending Payout Amount",
         "paidPayoutAmount": "Paid Payout Amount",
@@ -12640,7 +12640,7 @@
         "description": "Whether this vendor may open pre-orders. A pre-order takes a shopper's money before the goods exist, so the store can review who is allowed to.",
         "rulesLink": "Pre-order rules",
         "loadFailed": "Could not load pre-order access.",
-        "storeOff": "Pre-orders are switched off for the whole store, so nobody can open one right now. What you set here applies once they are back on, and the vendor is not notified of it.",
+        "storeOff": "Pre-orders are switched off for the whole marketplace, so nobody can open one right now. What you set here applies once they are back on, and the vendor is not notified of it.",
         "reviewOff": "Review is off, so this vendor can already open pre-orders. What you set here applies once review is turned on, and the vendor is not notified of it.",
         "limits": "Once approved, release dates can be up to {days, plural, one {# day} other {# days}} out and deposits up to {percent}% of the price. Withdrawing access never pulls listings that are already selling."
       }
@@ -13001,13 +13001,13 @@
       "bankMissing": "Missing: {fields}. A payout can only be paid by cash or gateway until the details are added on the Business tab.",
       "frozenTitle": "Payouts are frozen",
       "frozen": "This seller is suspended. Their sales keep counting, but nothing is paid out until they are restored.",
-      "owedNow": "Owed now",
+      "owedNow": "Payable to vendor now",
       "owedNowHint": "What a payout created now would carry: delivered, paid sales past their return window, less what the seller owes.",
       "createPayout": "Create payout",
       "noneAwaiting": "No delivered, paid orders are awaiting payout.",
       "nothingPayable": "{count, plural, one {# eligible order} other {# eligible orders}}, but refunds and discounts leave nothing payable.",
       "across": "Across {count, plural, one {# order} other {# orders}} · {gross} gross less {commission} commission. Refunds and discounts are already deducted.",
-      "belowMinimumTitle": "Below the minimum withdrawal",
+      "belowMinimumTitle": "Below the minimum payout",
       "belowMinimum": "Payouts must be at least {minimum}. Creating one now would be rejected.",
       "commissionLeft": "{amount} of commission the seller owes on cash sales does not fit in the next payout and stays owed.",
       "overpaidTitle": "{amount} paid for sales refunded afterwards",
@@ -13022,11 +13022,11 @@
       "vendorEarningsHint": "gross less commission",
       "paidOut": "Paid out",
       "pendingAmount": "{amount} pending",
-      "platformRevenue": "Platform revenue from this seller",
-      "platformRevenueHint": "Commission and retained shipping from their sales, plus the subscription fees they paid. Revenue before platform costs.",
+      "platformRevenue": "Marketplace revenue from this seller",
+      "platformRevenueHint": "Commission and retained shipping from their sales, plus the plan fees they paid. Revenue before marketplace costs.",
       "commission": "Commission",
       "commissionHint": "on delivered, paid sales, net of refunds",
-      "subscriptions": "Subscriptions",
+      "subscriptions": "Plan fees",
       "invoicesPaid": "{paid} of {total} invoices paid",
       "noInvoices": "no invoices",
       "shipping": "Shipping",
@@ -13045,7 +13045,7 @@
         "title": "Record a repayment",
         "description": "Money the seller paid back for sales refunded after their payout. It comes off what they owe, so later payouts stop recovering it.",
         "amount": "Amount ({currency})",
-        "receivedInto": "Received into",
+        "receivedInto": "Received into (marketplace account)",
         "receivedAt": "Day it arrived",
         "reference": "Reference",
         "note": "Note",
@@ -13712,9 +13712,9 @@
         "saveNote": "Save note"
       },
       "vendorBillingAlert": {
-        "portalError": "Could not open billing settings",
-        "paymentFailedTitle": "Subscription payment failed",
-        "renewalDueTitle": "Subscription renewal due",
+        "portalError": "Could not open plan & billing",
+        "paymentFailedTitle": "Plan payment failed",
+        "renewalDueTitle": "Plan renewal due",
         "updatePaymentBefore": "Update your payment method before {date} to keep your store active.",
         "renewBefore": "Renew your plan before {date} to keep your store active.",
         "updatePaymentGrace": "Update your payment method during the grace period to keep your store active.",
@@ -13760,7 +13760,7 @@
         "sourceVendor": "Vendor",
         "sourceAdmin": "Admin",
         "colStoreName": "StoreName",
-        "defaultStore": "Default store",
+        "defaultStore": "Marketplace",
         "colSource": "Source",
         "inStock": "{count} in stock",
         "filterVendor": "Vendor",
@@ -13822,20 +13822,20 @@
         "countryPlaceholder": "Select country",
         "phoneLabel": "Phone",
         "phonePlaceholder": "e.g. +1 555 0123",
-        "ownerAccountTitle": "Owner Account",
+        "ownerAccountTitle": "Owner user account",
         "ownerAccountDescription": "User account linked to this vendor",
         "ownerNameLabel": "Owner name",
         "ownerEmailLabel": "Owner email",
         "ownerPhoneLabel": "Owner phone",
         "statusTitle": "Status",
-        "statusDescription": "Approval and account state",
+        "statusDescription": "Approval and user account state",
         "vendorStatusLabel": "Vendor status",
         "statusPending": "Pending",
-        "statusPaymentRequired": "Payment Required",
+        "statusPaymentRequired": "Plan payment required",
         "statusApproved": "Approved",
         "statusSuspended": "Suspended",
         "statusRejected": "Rejected",
-        "ownerAccountStatusLabel": "Owner account status",
+        "ownerAccountStatusLabel": "Owner user account status",
         "userStatusActive": "Active",
         "userStatusInactive": "Inactive",
         "userStatusBanned": "Banned",
@@ -13846,10 +13846,10 @@
         "verifiedVendorHelp": "Shows the green “Verified vendor” badge on this store's public page. Award it once you have checked the seller's documents and identity — it is never granted automatically.",
         "commissionLabel": "Commission %",
         "codCollectedByLabel": "Cash on delivery collected by",
-        "codStoreDefault": "Store default",
+        "codStoreDefault": "Marketplace default",
         "codVendor": "The vendor (their own fleet)",
-        "codPlatform": "The store (our courier)",
-        "codHelp": "The vendor collecting means they hold the cash and owe you commission; the store collecting means you hold it and owe them their earnings. Existing orders keep the answer they were placed under.",
+        "codPlatform": "The marketplace (our courier)",
+        "codHelp": "If the vendor collects, they hold the cash and owe the marketplace commission; if the marketplace collects, it holds the cash and owes the vendor their earnings. Existing orders keep the answer they were placed under.",
         "basicInfoTitle": "Basic information",
         "basicInfoDescription": "Staff member identity and contact details",
         "fullNameLabel": "Full name *",
@@ -13878,7 +13878,7 @@
         "ordersProcessed": "Orders processed"
       },
       "businessTab": {
-        "title": "Business & Payment Details",
+        "title": "Business & Payout Account",
         "description": "Bank account used for vendor payouts. Provided by the vendor or entered by an admin.",
         "incompleteTitle": "Incomplete payout account",
         "incompleteDescription": "Missing {fields}. Payouts for this vendor can still be recorded, but there is no account to send them to.",
@@ -13903,7 +13903,7 @@
         "distressPastDueGrace": "Access ends {date} unless payment succeeds.",
         "distressPastDueUncollected": "Payment has not been collected for the current period.",
         "distressInactiveTitle": "Subscription is no longer active",
-        "distressInactiveDetail": "The vendor has reverted to the store's default commission rate.",
+        "distressInactiveDetail": "The vendor has reverted to the marketplace's default commission rate.",
         "distressInvoiceFailedTitle": "Last invoice failed",
         "distressInvoiceFailedDetail": "The most recent subscription charge did not go through. Stripe will retry within the grace window.",
         "invoicePaid": "Paid",
@@ -13951,7 +13951,7 @@
         "downgradeCancelled": "Scheduled downgrade cancelled",
         "cancelDowngradeFailed": "Failed to cancel the scheduled downgrade",
         "subscriptionPlanTitle": "Subscription Plan",
-        "plansDisabled": "Vendor subscription plans are not enabled for this store.",
+        "plansDisabled": "Vendor subscription plans are not enabled on this marketplace.",
         "subscriptionPlanDescription": "Assign or cancel this vendor's subscription plan. The plan's commission rate is projected onto the vendor.",
         "commissionPercent": "{rate}% commission",
         "pendingChange": "Pending {type}:",
@@ -14003,7 +14003,7 @@
         "tabOrders": "Orders",
         "tabPayouts": "Payouts",
         "tabAccess": "Access",
-        "tabSubscription": "Subscription",
+        "tabSubscription": "Plan & billing",
         "tabBusiness": "Business",
         "tabDocuments": "Documents",
         "tabActivity": "Activity",
@@ -14039,15 +14039,15 @@
         "invoiceCancelled": "Invoice cancelled",
         "actionFailed": "That did not go through",
         "title": "Commission owed by this vendor",
-        "description": "Cash, COD and own-terminal sales the platform never received — so the commission could not be deducted from a payout",
+        "description": "Cash, COD and own-terminal sales the marketplace never received — so the commission could not be deducted from a payout",
         "raiseInvoice": "Raise invoice",
-        "nothingOutstanding": "Nothing outstanding — this vendor's sales all settled through the platform.",
+        "nothingOutstanding": "Nothing outstanding — this vendor's sales all settled through the marketplace.",
         "owedSummary": "Across {count, plural, one {# order} other {# orders}} they collected themselves · {gross} gross. Refunds are already deducted; anything on an open invoice below is excluded.",
         "otherCurrencies": "Also owed in {currencies} — currencies are never added together. Switch to bill it:",
         "invoiceOrders": "{count, plural, one {# order} other {# orders}}",
         "cancel": "Cancel",
         "markCollected": "Mark collected",
-        "markCollectedHint": "Marking an invoice collected records money received outside the platform — a bank transfer or cash. It does not charge the vendor."
+        "markCollectedHint": "Marking an invoice collected records money the marketplace received outside the system — a bank transfer or cash. It does not charge the vendor."
       },
       "vendorDocumentsTab": {
         "docHint": "PDF, PNG, JPG or WEBP up to 10MB",
@@ -14076,7 +14076,7 @@
       "vendorDetailHeader": {
         "statusApproved": "Approved",
         "statusPending": "Pending",
-        "statusPaymentRequired": "Payment Required",
+        "statusPaymentRequired": "Plan payment required",
         "statusSuspended": "Suspended",
         "statusRejected": "Rejected",
         "storeAlt": "Store",
@@ -14111,7 +14111,7 @@
         "colItems": "Items",
         "colVendorTotal": "Vendor total",
         "colCommission": "Commission",
-        "colEarnings": "Earnings",
+        "colEarnings": "Vendor earnings",
         "orderStatusLabel": "Order: {status}",
         "title": "Order history",
         "description": "All orders containing this vendor's items, newest first. Status, item count and money are this vendor's share of each order — payment status is order-wide. Earnings shown here are before refunds and order-level discounts; see the Payouts tab for the payable figure.",
@@ -14173,11 +14173,11 @@
         "vendorView": "Vendor view",
         "addPlan": "Add plan",
         "emptyTitle": "No plans yet",
-        "emptyDescription": "Create a plan to charge vendors a monthly or yearly fee. Until then, every vendor sells on the {rate}% store commission."
+        "emptyDescription": "Create a plan to charge vendors a monthly or yearly fee. Until then, every vendor sells on the {rate}% default marketplace commission."
       },
       "vendorPlansGrid": {
         "addPlan": "Add plan",
-        "commissionOnlyNote": "{count, plural, =0 {Vendors not on any plan pay the {rate}% store commission.} one {1 vendor isn’t on any plan. They pay the {rate}% store commission.} other {# vendors aren’t on any plan. They pay the {rate}% store commission.}}",
+        "commissionOnlyNote": "{count, plural, =0 {Vendors not on any plan pay the {rate}% default marketplace commission.} one {1 vendor isn’t on any plan. They pay the {rate}% default marketplace commission.} other {# vendors aren’t on any plan. They pay the {rate}% default marketplace commission.}}",
         "freeTrial": "{days}-day free trial",
         "commission": "Commission",
         "products": "Products",
@@ -14188,7 +14188,7 @@
       },
       "vendorPlansList": {
         "commissionOnly": "Commission only",
-        "commissionOnlySummary": "{count, plural, =0 {{rate}% store commission for vendors not on any plan} one {{rate}% store commission · 1 vendor not on any plan} other {{rate}% store commission · # vendors not on any plan}}",
+        "commissionOnlySummary": "{count, plural, =0 {{rate}% default marketplace commission for vendors not on any plan} one {{rate}% default marketplace commission · 1 vendor not on any plan} other {{rate}% default marketplace commission · # vendors not on any plan}}",
         "colOrder": "Order",
         "colPlan": "Plan",
         "colPrice": "Price",
@@ -14206,15 +14206,15 @@
       },
       "preorderCard": {
         "releaseDatePast": "The release date can't be in the past",
-        "depositCapFixed": "This deposit is {percent}% of the price — the store allows at most {max}%",
-        "depositCapPercent": "The store allows a deposit of at most {max}%",
-        "lockStore": "Pre-orders are switched off for this store.",
-        "lockApproval": "Your store has to approve you for pre-orders first. Request access in the Pre-orders section.",
+        "depositCapFixed": "This deposit is {percent}% of the price — the marketplace allows at most {max}%",
+        "depositCapPercent": "The marketplace allows a deposit of at most {max}%",
+        "lockStore": "Pre-orders are switched off on this marketplace.",
+        "lockApproval": "The marketplace has to approve you for pre-orders first. Request access in the Pre-orders section.",
         "paymentCollection": "Payment collection",
         "fullPayment": "Full payment",
         "deposit": "Deposit",
         "payLater": "Pay later",
-        "fullPaymentOnly": "Only full payment is available: no payment method on this store can charge the rest later. Turn on card payments to offer a deposit.",
+        "fullPaymentOnly": "Only full payment is available: no payment method on this marketplace can charge the rest later. Turn on card payments to offer a deposit.",
         "depositType": "Deposit type",
         "percentage": "Percentage",
         "fixedAmount": "Fixed amount",
@@ -14304,14 +14304,14 @@
         "validFor": "Valid for",
         "days": "{count, plural, one {# day} other {# days}}",
         "enterAboveZero": "Enter a discount above zero.",
-        "maxPercentOff": "The store allows at most {percent}% off.",
-        "maxAmountOff": "The store allows at most {amount} off your items here.",
+        "maxPercentOff": "The marketplace allows at most {percent}% off.",
+        "maxAmountOff": "The marketplace allows at most {amount} off your items here.",
         "offerSent": "Offer sent to the shopper",
         "offerQueued": "Offer queued — delivery is being retried",
         "offerNotSent": "The offer could not be sent",
         "andMore": " and {count} more",
         "sendOfferTitle": "Send an offer",
-        "sendOfferDescription": "The store emails the shopper a discount on your items in this checkout. You won't see who they are, and the discount comes off your earnings.",
+        "sendOfferDescription": "The marketplace emails the shopper a discount on your items in this checkout. You won't see who they are, and the discount comes off your earnings.",
         "yourItems": "Your items:",
         "discount": "Discount",
         "upToPercent": "Up to {percent}%.",
@@ -14327,10 +14327,10 @@
         "autoTurnedOff": "Automatic offer turned off",
         "saveAutoFailed": "Could not save your automatic offer",
         "autoTitle": "Automatic offer",
-        "autoDescription": "Sent with the store's second reminder to shoppers who leave your products in a checkout. Where a checkout holds several sellers' goods, the seller with the most in it makes the offer.",
+        "autoDescription": "Sent with the marketplace's second reminder to shoppers who leave your products in a checkout. Where a checkout holds several sellers' goods, the seller with the most in it makes the offer.",
         "sendAutoOffer": "Send an automatic offer",
         "neverMoreThan": "Never more than {percent}% of your items in a checkout: a larger amount is lowered to fit.",
-        "recoveryEmailsOff": "The store's automatic recovery emails are off, so this offer won't go out until the store turns them on. You can still send offers by hand.",
+        "recoveryEmailsOff": "The marketplace's automatic recovery emails are off, so this offer won't go out until the marketplace turns them on. You can still send offers by hand.",
         "save": "Save"
       },
       "adminHeader": {
@@ -14424,10 +14424,10 @@
         "showResults": "Show results"
       },
       "preorderAccessNotice": {
-        "requestSent": "Request sent — the store will review it",
+        "requestSent": "Request sent — the marketplace will review it",
         "requestFailed": "Could not send the request",
-        "pendingTitle": "Your pre-order request is with the store",
-        "reviewTitle": "This store reviews vendors before they can sell pre-orders",
+        "pendingTitle": "Your pre-order request is with the marketplace",
+        "reviewTitle": "This marketplace reviews vendors before they can sell pre-orders",
         "sending": "Sending...",
         "requestAccess": "Request access",
         "pendingBody": "You will be able to open pre-orders as soon as it is approved. Anything already selling is unaffected.",
@@ -14443,13 +14443,13 @@
       },
       "vendorDashboardContent": {
         "addProductTitle": "Add a product",
-        "addProductDescription": "Create product drafts now. They stay hidden from customers until subscription payment activates your store.",
+        "addProductDescription": "Create product drafts now. They stay hidden from customers until your plan payment activates your store.",
         "prepareCatalogTitle": "Prepare your catalog",
         "prepareCatalogDescription": "Review products, inventory, categories, collections, and brands.",
         "configureStoreTitle": "Configure your store",
         "configureStoreDescription": "Finish store details, branding, shipping, and notification settings.",
         "setupTitle": "Store setup dashboard",
-        "setupDescription": "Prepare your store during the seven-day setup period. Selling and financial activity will unlock only after payment.",
+        "setupDescription": "Prepare your store during the seven-day setup period. Selling and financial activity will unlock only after you pay for your plan.",
         "setupChecklist": "Setup checklist"
       },
       "vendorPlansPage": {
@@ -14462,7 +14462,7 @@
         "exportFailed": "Products could not be exported"
       },
       "vendorsOnboardingPage": {
-        "marketplaceOffTitle": "Marketplace mode is off",
+        "marketplaceOffTitle": "Multi-vendor mode is off",
         "marketplaceOffDescription": "Enable multi-vendor mode to customize the vendor onboarding flow."
       },
       "returnsDataTable": {
@@ -14579,7 +14579,7 @@
         "reason": "Reason",
         "refundNotePlaceholder": "Optional refund note",
         "faultIntro": "The shopper gave <b>{reason}</b>. What you found decides the delivery refund and the two fees — the estimate is recalculated when you save.",
-        "faultMerchantTitle": "Our failure",
+        "faultMerchantTitle": "The seller's fault",
         "faultMerchantDetail": "Delivery comes back, and no restocking or return shipping fee is charged.",
         "faultCustomerTitle": "The shopper's choice",
         "faultCustomerDetail": "Goods and tax come back. Delivery stays with us, and the policy's fees apply.",
@@ -14789,7 +14789,7 @@
         "cancel": "Cancel",
         "updating": "Updating...",
         "updateAndNotify": "Update and notify",
-        "balanceDescription": "For money that reached you outside the store — a bank transfer, cash, or a payment link on another gateway. This settles the order and releases it for fulfillment; it does not charge anyone.",
+        "balanceDescription": "For money that reached you outside the marketplace's checkout — a bank transfer, cash, or a payment link on another gateway. This settles the order and releases it for fulfillment; it does not charge anyone.",
         "wholeBalanceHint": "The whole balance, or nothing — a part payment would mark the order paid while it is not.",
         "howPaid": "How it was paid",
         "howPaidPlaceholder": "Bank transfer, cash, mobile money...",
@@ -14945,7 +14945,7 @@
         "resolution": "Resolution",
         "widthMm": "Width (mm)",
         "heightMm": "Height (mm)",
-        "customSizeHelp": "Width {minWidth}–{maxWidth} mm, height {minHeight}–{maxHeight} mm. This size is not saved to the store; this computer remembers the last one you used.",
+        "customSizeHelp": "Width {minWidth}–{maxWidth} mm, height {minHeight}–{maxHeight} mm. This size is not saved to the system; this computer remembers the last one you used.",
         "wideLabelWarning": "Most desktop thermal printers print up to {width} mm wide. A wider label may be cut off.",
         "useStockQuantity": "Print current on-hand quantity",
         "showSku": "Show SKU",
@@ -14976,7 +14976,7 @@
         "emailsSentDesc": "Recovery emails delivered to SMTP",
         "potentialRevenueDesc": "Open abandoned checkout value",
         "vendorAbandonedDesc": "Checkouts left with your products",
-        "vendorOpenDesc": "The store may still win these back",
+        "vendorOpenDesc": "You may still win these back",
         "vendorRecoveredDesc": "The shopper came back and bought",
         "vendorPotentialRevenueDesc": "Your products in open checkouts",
         "mostOftenLeftBehind": "Most often left behind",
@@ -15033,9 +15033,9 @@
       },
       "vendorCarrierAccountCard": {
         "title": "Carrier account",
-        "description": "Labels are bought from a carrier account. Use the store's, or connect your own so the shipping cost is billed to you.",
-        "platformTitle": "Use the store's carrier account",
-        "platformDescription": "Nothing to configure. The store is billed for labels.",
+        "description": "Labels are bought from a carrier account. Use the marketplace's, or connect your own so the shipping cost is billed to you.",
+        "platformTitle": "Use the marketplace's carrier account",
+        "platformDescription": "Nothing to configure. The marketplace is billed for labels.",
         "ownTitle": "Use my own carrier account",
         "ownDescription": "Your negotiated rates, billed to you.",
         "environment": "Environment",
@@ -15355,7 +15355,7 @@
         "countOfTotal": "{count} of {total}",
         "all": "All",
         "regions": "Regions",
-        "noScopeSet": "No scope set — this staff member can reach the whole store.",
+        "noScopeSet": "No scope set — this staff member can reach everything.",
         "scopeNarrowing": "Each dimension narrows the last: a vendor plus a location means orders that match both."
       },
       "staffDetailHeader": {
@@ -15569,7 +15569,7 @@
         "statusDescription": "Approval and account state",
         "vendorStatus": "Vendor status",
         "statusPending": "Pending",
-        "statusPaymentRequired": "Payment Required",
+        "statusPaymentRequired": "Plan payment required",
         "statusApproved": "Approved",
         "statusSuspended": "Suspended",
         "statusRejected": "Rejected",
@@ -15813,21 +15813,21 @@
         "deliveryDaysMax": "Delivery days (max)",
         "active": "Active",
         "ownRatesTitle": "Set my own shipping rates",
-        "ownRatesDescription": "When off, your items are charged the store's rates everywhere. When on, you set your own prices for the store's zones — any zone you leave alone still uses the store's rates.",
-        "legacyZonesNotice": "This store now defines the shipping zones and you set your price inside each one. Your previous zones are still being used until you save prices below, which replaces them.",
+        "ownRatesDescription": "When off, your items are charged the marketplace's rates everywhere. When on, you set your own prices for the marketplace's zones — any zone you leave alone still uses the marketplace's rates.",
+        "legacyZonesNotice": "The marketplace now defines the shipping zones and you set your price inside each one. Your previous zones are still being used until you save prices below, which replaces them.",
         "zonePrices": "Zone prices",
-        "noStoreZones": "The store has not created any shipping zones yet.",
-        "zonePricesDescription": "Weights are in {unit}, set by the store. The most specific zone matching a customer's address is the one that prices their order.",
-        "noStoreZonesEmpty": "Once the store adds zones they will appear here for you to price.",
+        "noStoreZones": "The marketplace has not created any shipping zones yet.",
+        "zonePricesDescription": "Weights are in {unit}, set by the marketplace. The most specific zone matching a customer's address is the one that prices their order.",
+        "noStoreZonesEmpty": "Once the marketplace adds zones they will appear here for you to price.",
         "unnamedZone": "Unnamed zone",
         "restOfWorld": "(rest of the world)",
-        "useStoreRates": "Use store rates",
+        "useStoreRates": "Use marketplace rates",
         "setOwnRates": "Set my own rates",
-        "usingStoreRatesNone": "Using the store's rates — the store has none for this zone, so its fallback applies.",
-        "usingStoreRates": "Using the store's rates: {names}.",
+        "usingStoreRatesNone": "Using the marketplace's rates — the marketplace has none for this zone, so its fallback applies.",
+        "usingStoreRates": "Using the marketplace's rates: {names}.",
         "myRates": "My rates",
         "addRate": "Add rate",
-        "emptyOverrideWarning": "No rates here means your items cannot be delivered to this zone. Add a rate, or choose \"Use store rates\".",
+        "emptyOverrideWarning": "No rates here means your items cannot be delivered to this zone. Add a rate, or choose \"Use marketplace rates\".",
         "processingTime": "Processing time",
         "processingTimeDescription": "Days you need before handing an order to the carrier. Added to the delivery estimate the customer sees.",
         "minimumDays": "Minimum days",
@@ -15905,7 +15905,7 @@
           "manual_required": "manual required"
         },
         "loadError": "Failed to load order",
-        "cancelRefundFailed": "Order cancelled, but the shopper's refund could not be sent automatically. The store admin has been told.",
+        "cancelRefundFailed": "Order cancelled, but the shopper's refund could not be sent automatically. The marketplace admin has been told.",
         "orderUpdated": "Order updated",
         "updateOrderError": "Failed to update order",
         "pickupReadyToast": "Customer can now collect this order",
@@ -15980,10 +15980,10 @@
         "tax": "Tax",
         "importDuty": "Import duty",
         "collectOnDelivery": "Collect on delivery",
-        "storePromotion": "Store promotion, paid by the store",
-        "billedByStore": "Billed to you by the store",
-        "vendorCollectsNote": "You take this payment yourself, so nothing is paid out to you for it. The store bills you its {charges, select, withDelivery {commission and the delivery charge} other {commission}} instead{promo, select, yes {, less the discount it paid for on this sale} other {}}.",
-        "storeCollectsNote": "The store collects this payment and pays your earnings out to you.",
+        "storePromotion": "Marketplace promotion, paid by the marketplace",
+        "billedByStore": "Billed to you by the marketplace",
+        "vendorCollectsNote": "You take this payment yourself, so nothing is paid out to you for it. The marketplace bills you its {charges, select, withDelivery {commission and the delivery charge} other {commission}} instead{promo, select, yes {, less the discount it paid for on this sale} other {}}.",
+        "storeCollectsNote": "The marketplace collects this payment and pays your earnings out to you.",
         "markAsShipped": "Mark as shipped",
         "markAsShippedDescription": "Add an optional tracking number before confirming shipment.",
         "carrier": "Carrier",
@@ -16383,7 +16383,7 @@
         "saving": "Saving…",
         "saveChanges": "Save changes",
         "intro": "Design the become-a-vendor wizard: rename steps, reorder and toggle fields, mark them required, and add your own custom fields.",
-        "marketplaceOff": "Marketplace mode is off. You can design the flow now; it becomes live once multi-vendor mode is enabled.",
+        "marketplaceOff": "Multi-vendor mode is off. You can design the flow now; it becomes live once multi-vendor mode is enabled.",
         "tabBuilder": "Builder",
         "tabPreview": "Preview",
         "addStep": "Add step",
@@ -16398,7 +16398,7 @@
         "collapseStep": "Collapse step",
         "editStep": "Edit step",
         "deleteStep": "Delete step",
-        "planSelectionInfo": "Plan selection — shown when subscription plans are enabled. Manage plans under Vendor Plans.",
+        "planSelectionInfo": "Plan selection — shown when vendor plans are enabled. Manage plans under Vendor Plans.",
         "summaryInfo": "Automatic summary of everything the applicant entered.",
         "noFields": "No fields yet.",
         "addCustomField": "Add custom field",
@@ -16423,7 +16423,7 @@
         "signIn": "Sign in",
         "review": "Review",
         "choosePlan": "Choose your plan",
-        "choosePlanHint": "Pick the subscription you want the admin to review with your application.",
+        "choosePlanHint": "Pick the vendor plan you want the marketplace admin to review with your application.",
         "noPlans": "No active plans yet — add plans under Vendor Plans.",
         "reviewHint": "Please review your details before submitting. You can go back and edit anything.",
         "plan": "Plan",
@@ -16474,9 +16474,9 @@
         "lineHeld": "{returnable} of {ordered} · {held}",
         "lineCanReturn": "{returnable} of {ordered} can come back",
         "quantityOf": "Quantity of {name}",
-        "onlyStorePastWindowOrFinalSale": "Only the store can open a return past the return window or on a final sale item.",
-        "onlyStoreFinalSale": "Only the store can open a return on a final sale item.",
-        "onlyStorePastWindow": "Only the store can open a return past the return window.",
+        "onlyStorePastWindowOrFinalSale": "Only the marketplace admin can open a return past the return window or on a final sale item.",
+        "onlyStoreFinalSale": "Only the marketplace admin can open a return on a final sale item.",
+        "onlyStorePastWindow": "Only the marketplace admin can open a return past the return window.",
         "nothingToOpen": "Nothing on this order can come back now.",
         "overrideOutsideRules": "Open it outside the return rules",
         "overrideFinalSale": "Take back final sale items too",
@@ -16651,7 +16651,7 @@
         "savedToLogo": "Saved to brand logo",
         "logoHint": "Brand logo shown on the storefront brands page and on product pages. Use a transparent square image for best results.",
         "reviewStatus": "Review status",
-        "reviewEditNotice": "Edits to a brand's name or logo are re-submitted for admin review before going live. Visibility and featured placement are managed by the store admin.",
+        "reviewEditNotice": "Edits to a brand's name or logo are re-submitted for admin review before going live. Visibility and featured placement are managed by the marketplace admin.",
         "reviewNewNotice": "New brands are submitted for admin review. Once approved they become visible on the storefront and available to assign to products.",
         "featuredBrand": "Featured brand"
       },
@@ -16731,16 +16731,16 @@
         "apply": "Apply"
       },
       "vendorPaymentRequiredAlert": {
-        "title": "Subscription payment required",
+        "title": "Plan payment required",
         "completePayment": "Complete payment",
         "body": "You can prepare your store until {until}. Selling, orders, POS, payouts, and all financial transactions remain locked until your payment is confirmed.",
         "endOfSetupPeriod": "the end of your setup period",
-        "dialogTitle": "Complete your subscription payment",
+        "dialogTitle": "Complete your plan payment",
         "dialogDescription": "Choose how to pay for your vendor plan."
       },
       "vendorReturnsPage": {
         "title": "Returns and refunds",
-        "description": "Review return requests for your products, approve them, and record what came back. The store admin issues the refund."
+        "description": "Review return requests for your products, approve them, and record what came back. The marketplace admin issues the refund."
       },
       "preorderBalancePolicyNotice": {
         "hours": "{count, plural, one {# hour} other {# hours}}",
@@ -16756,16 +16756,16 @@
         "openDashboardError": "Could not open the setup dashboard",
         "titlePending": "Application under review",
         "titleTrialEnded": "Your free trial has ended",
-        "titlePaymentRequired": "Complete subscription payment",
+        "titlePaymentRequired": "Complete plan payment",
         "titleRejected": "Application rejected",
         "titleSuspended": "Vendor account suspended",
         "titleDefault": "Vendor application status",
-        "descriptionPending": "Your vendor profile exists, but it is waiting for admin approval. Until then, vendor tools, public store visibility, products, orders, payments, and payouts are locked.",
+        "descriptionPending": "Your vendor profile exists, but it is waiting for admin approval. Until then, vendor tools, public store visibility, products, orders, accepting payments, and payouts are locked.",
         "descriptionTrialEnded": "Your trial period is over and your store is no longer visible to shoppers. Pay for your first billing period to bring it back — your plan, products and orders are all still here.",
         "descriptionSetupExpired": "Your seven-day setup access has ended. Complete payment to reactivate your vendor dashboard and activate selling.",
         "descriptionPaymentRequired": "Your application passed admin review. You can continue to a restricted setup dashboard, but selling and financial transactions stay locked until your payment is confirmed.",
         "descriptionRejected": "Your vendor application was not approved. Your normal user account remains active. Review the reason you were sent, update your details, and apply again.",
-        "descriptionSuspended": "Your vendor selling access is suspended. Products, orders, payments, and payouts are locked until an admin restores access.",
+        "descriptionSuspended": "Your vendor selling access is suspended. Products, orders, accepting payments, and payouts are locked until an admin restores access.",
         "descriptionDefault": "Your vendor access is not active yet.",
         "statusPending": "pending",
         "statusPaymentRequired": "payment required",
@@ -16783,7 +16783,7 @@
         "openingDashboard": "Opening dashboard...",
         "continueToDashboard": "Continue to dashboard",
         "applyAgain": "Update and apply again",
-        "dialogTitle": "Complete your subscription payment",
+        "dialogTitle": "Complete your plan payment",
         "dialogDescriptionPlan": "Choose how to pay for the {plan} plan.",
         "dialogDescription": "Choose how to pay for your vendor plan."
       },
@@ -16976,7 +16976,7 @@
         "imagesTitle": "Store images",
         "imagesDescription": "The logo and banner shown on the storefront",
         "moneyTitle": "Commission & cash on delivery",
-        "moneyDescription": "What the store pays the marketplace, and who holds COD cash"
+        "moneyDescription": "What the vendor pays the marketplace, and who holds COD cash"
       },
       "bankEditor": {
         "bank": "Bank / wallet",
@@ -17388,7 +17388,7 @@
       },
       "vendorBrands": {
         "title": "Brands",
-        "subtitle": "Brands you can file products under — the shared catalogue plus your own",
+        "subtitle": "Brands you can file products under — the marketplace's shared catalogue plus your own",
         "importExport": "Import / export",
         "import": "Import CSV",
         "export": "Export CSV",
@@ -17590,7 +17590,7 @@
       "vendorCampaignBanners": {
         "title": "Campaign banners",
         "description": "Popups and bars that announce offers on your store page — schedule when they show and on which devices.",
-        "adminDescription": "Popups and announcement bars on your store's home page — schedule them and pick the devices they show on."
+        "adminDescription": "Popups and announcement bars on the marketplace home page — schedule them and pick the devices they show on."
       },
       "vendorSettingsPage": {
         "preview": "How shoppers see your store"
@@ -17746,7 +17746,7 @@
         "paidDesc": "{count, plural, one {# payout paid} other {# payouts paid}}",
         "onTheWay": "On the way",
         "onTheWayDesc": "{count, plural, one {# payout waiting or being sent} other {# payouts waiting or being sent}}",
-        "count": "Payouts",
+        "count": "Vendor payouts",
         "countDesc": "Every payout made to vendors",
         "failed": "Failed",
         "failedDesc": "Payouts whose transfer did not go through"
@@ -17811,7 +17811,7 @@
       "funding": {
         "title": "Who pays for it",
         "hint": "Applies to orders placed from now on.",
-        "store": "The store",
+        "store": "The marketplace",
         "storeHint": "Sellers are paid as if their items sold at full price.",
         "storeShippingHint": "Sellers still earn the delivery charge their parcel was rated at.",
         "vendor": "The sellers whose items it discounts",
@@ -18102,13 +18102,13 @@
     "earnings": "Earnings",
     "totalRevenue": "Total Revenue",
     "netEarnings": "Net Earnings",
-    "awaitingPayment": "{amount} awaiting payment",
+    "awaitingPayment": "{amount} awaiting customer payment",
     "totalOrders": "Total Orders",
     "openOrdersCount": "{count} open",
     "activeProducts": "Active Products",
     "followers": "Followers",
     "totalProducts": "Total Products",
-    "commission": "Commission Paid",
+    "commission": "Commission paid to the marketplace",
     "pendingOrders": "Pending Orders",
     "salesChart": "Sales (Last 30 Days)",
     "recentOrders": "Recent Orders",
@@ -18151,7 +18151,7 @@
     "accountSettings": "Account Settings",
     "accountSettingsDesc": "Manage your personal account details",
     "registration": {
-      "title": "Start Selling on Minimart",
+      "title": "Start Selling on Oh-K Shop",
       "subtitle": "Join thousands of successful sellers and reach millions of customers",
       "confirmPassword": "Confirm Password",
       "addressPlaceholder": "Address",
@@ -18193,7 +18193,7 @@
       "applicationSuspended": "Account Suspended",
       "applicationSuspendedDesc": "Your vendor account has been suspended. Please contact support.",
       "optional": "Optional",
-      "teamAccountTitle": "This account belongs to the store team",
+      "teamAccountTitle": "This account belongs to the marketplace team",
       "teamAccountDesc": "Admin and staff accounts cannot apply as a vendor. To open a store, sign out and apply with a customer account.",
       "showcase": {
         "eyebrow": "For local makers and community enterprises",
@@ -18418,7 +18418,7 @@
       "emailChanged": "Email updated. Sign in with your new email from now on.",
       "emailChangeFailed": "Failed to update email",
       "phoneInvalid": "Enter a valid phone number",
-      "payoutScheduleHint": "On your payout day the store prepares a payout of what is ready, once it reaches your minimum and the store's. The store then sends it to the account above."
+      "payoutScheduleHint": "On your payout day the marketplace prepares a payout of what is ready, once it reaches your minimum and the marketplace's. The marketplace then sends it to the account above."
     },
     "quickLinks": {
       "dashboardDescription": "Return to your vendor dashboard overview.",
@@ -18613,7 +18613,7 @@
       "renewNow": "Renew now",
       "renewTitle": "Renew your plan",
       "renewDescription": "Pay for the next billing period to keep your store active.",
-      "pageTitle": "Billing",
+      "pageTitle": "Plan & billing",
       "pageSubtitle": "Your plan, how you pay for it, and everything you have been charged.",
       "planSubtitle": "Your current subscription with the marketplace.",
       "noPlanTitle": "No paid plan",
@@ -18699,7 +18699,7 @@
     "payoutDetail": {
       "back": "Payouts",
       "period": "Sales ordered {start} – {end}",
-      "noteFromStore": "Note from the store",
+      "noteFromStore": "Note from the marketplace",
       "grossSales": "Gross sales",
       "grossSalesHint": "your share of the orders below",
       "commission": "Commission",
@@ -18720,8 +18720,8 @@
         "reserveCreditReturnedHint": "handed back after its payout was paid again",
         "commissionOffset": "Commission on cash sales",
         "commissionOffsetHint": "owed on sales you collected yourself, settled here instead of invoiced",
-        "commissionCredit": "Store promotions on cash sales",
-        "commissionCreditHint": "discounts the store paid for beyond the commission you owed"
+        "commissionCredit": "Marketplace-funded promotions on cash sales",
+        "commissionCreditHint": "discounts the marketplace paid for beyond the commission you owed"
       },
       "reserveUntil": "released on {date}",
       "otherAdjustments": "Other adjustments",
@@ -19228,7 +19228,7 @@
         "exchange": "Exchange",
         "later": "Refund later"
       },
-      "adminOnly": "Refunds are made by an administrator. The return is recorded now and the refund waits for them under Returns.",
+      "adminOnly": "Refunds are made by someone with refund permission. The return is recorded now and the refund waits for them under Returns.",
       "exchangeHint": "The refund pays toward a new sale rung up next.",
       "laterHint": "The return is recorded now. Refund it later from Returns.",
       "refundTotal": "Refund",
@@ -19239,7 +19239,7 @@
       "doneCash": "Give the customer {amount} from the drawer.",
       "doneCredit": "{amount} added to the customer's store credit.",
       "creditBack": "{amount} went back to the customer's store credit, which paid for part of the sale.",
-      "doneLater": "The refund waits for an administrator.",
+      "doneLater": "The refund waits for someone with refund permission.",
       "doneExchange": "{amount} goes toward the new sale.",
       "print": "Print return slip",
       "printBlocked": "The slip window was blocked. Allow pop-ups for this site to print.",
@@ -20042,7 +20042,7 @@
       "instagramFailed": "Unable to complete Instagram signup"
     },
     "chatWithVendor": "Chat with vendor",
-    "chatWithStore": "Chat with store",
+    "chatWithStore": "Chat with customer support",
     "chatWithSeller": "Chat with Seller",
     "startConversation": "Start a conversation",
     "startDescription": "Ask about availability, delivery, variants, or anything else.",
@@ -20108,7 +20108,7 @@
     "signIn": "Sign in",
     "cancel": "Cancel",
     "signInToChatTitle": "Sign in to start chatting",
-    "signInToChatDescription": "Your conversation with the store is kept in your account inbox, so you can pick it up any time and never lose a reply.",
+    "signInToChatDescription": "Your conversation with the store or support is kept in your account inbox, so you can pick it up any time and never lose a reply.",
     "newConversation": "New conversation",
     "draftProductContext": "The product you were viewing is attached to this message.",
     "draftStoreContext": "Your message goes straight to the store you were viewing.",
@@ -20153,7 +20153,7 @@
       "staffSubtitle": "Reply to conversations for the vendors assigned to you.",
       "vendorTitle": "Vendor inbox",
       "vendorSubtitle": "Reply to customers across your connected channels.",
-      "customerTitle": "Store conversations",
+      "customerTitle": "Conversations with stores and support",
       "emptyStore": "No customer conversations yet",
       "emptyLiveChat": "No live-chat conversations yet",
       "emptyCustomer": "You have not started a live chat yet"
@@ -20327,11 +20327,11 @@
       "ctr": "CTR",
       "ctrDescription": "Click-through rate",
       "revenue": "Boost revenue",
-      "revenueDescription": "Paid bookings less refunds, all time (store currency)",
+      "revenueDescription": "Paid bookings less refunds, all time (marketplace currency)",
       "upcoming": "Upcoming",
       "upcomingDescription": "Booked, not started",
       "creditOwed": "Credit owed",
-      "creditOwedDescription": "bookings to settle",
+      "creditOwedDescription": "bookings to refund to vendors",
       "creditOwedNone": "nothing outstanding",
       "otherCurrencies": "excludes"
     },
@@ -20414,7 +20414,7 @@
       "bookedAtOnce": "The days are booked as soon as you create it — nobody else can buy them.",
       "payWith": "Pay with",
       "termSlot": "You're buying slot #{position}. If a slot above is unsold, yours doesn't move up.",
-      "termListings": "On listings it shows on the shop and category pages, never in search results.",
+      "termListings": "On listings it shows on the all-products and category pages, never in search results.",
       "termRefund": "Days already run aren't refundable. Future days can be released for credit.",
       "termHold": "Your dates are held for {minutes} minutes while you pay."
     },
@@ -20471,7 +20471,7 @@
       "archived": "Archived",
       "createTitle": "Add position",
       "created": "Position created",
-      "currencyMismatch": "Positions {positions} were priced in a different currency to the store's {currency}. Re-price them — vendors cannot check out until you do.",
+      "currencyMismatch": "Positions {positions} were priced in a different currency to the marketplace's {currency}. Re-price them — vendors cannot check out until you do.",
       "deleteDescription": "Position numbers are reserved even while archived, so deleting is the only way to free #{position} for a new rung. Bookings from today onward block deletion.",
       "deleteFailed": "Could not delete",
       "deleteTitle": "Delete this position?",
@@ -20541,7 +20541,7 @@
       "noFreeDay": "no free day in the next {days} days",
       "noNewBookings": "no new bookings",
       "noData": "no data yet",
-      "storeCurrency": "store is {currency}",
+      "storeCurrency": "marketplace is {currency}",
       "editAria": "Edit position {position}",
       "moreActions": "More actions for position {position}",
       "viewBookings": "View bookings",
@@ -20592,7 +20592,7 @@
       "other": "Other"
     },
     "book": {
-      "own": "Own store",
+      "own": "Your own store",
       "marketplace": "Marketplace",
       "all": "Both books",
       "ownHint": "You are the seller: all of it is yours, and so is the stock it cost",
@@ -20607,7 +20607,7 @@
       "voided": "Expense voided",
       "voidHint": "Remove this expense from your totals. Its original details and the reason will stay in your records.",
       "voidReason": "Reason",
-      "dialogSubtitle": "Costs the store pays out — rent, salaries, advertising, anything no order or payout already records.",
+      "dialogSubtitle": "Costs you pay out — rent, salaries, advertising, anything no order or payout already records.",
       "date": "Date",
       "amount": "Amount",
       "description": "Description",
@@ -20730,7 +20730,7 @@
       "cost_of_goods": "Cost of goods",
       "opening_inventory_equity": "Opening inventory equity",
       "inventory_adjustments": "Inventory adjustments",
-      "promotions": "Store-funded discounts and credit",
+      "promotions": "Discounts and credit you funded",
       "chargeback_losses": "Chargeback losses",
       "operating_expense": "Operating expenses",
       "store_credit_payable": "Store credit held by shoppers",
@@ -20745,7 +20745,7 @@
       "netHint": "Income less costs",
       "gmv": "Order volume",
       "gmvHint": "Everything ordered, before costs and without tax — counted when the order was placed",
-      "gmvHintMarketplace": "Everything ordered through the store, vendors' sales included, without tax — counted when the order was placed",
+      "gmvHintMarketplace": "Everything ordered through the marketplace, vendors' sales included, without tax — counted when the order was placed",
       "whereItCameFrom": "Where it came from",
       "whereItWent": "Where it went",
       "noCosts": "No costs recorded in this period. Payment fees and shipping labels arrive on their own; rent and salaries have to be entered.",
@@ -20794,16 +20794,16 @@
       "cashTotal": "Cash across all accounts",
       "anomalyElsewhere": "Balances that cannot be right in another currency:",
       "owed": "Owed",
-      "owedHint": "What the store owes others, and what others still owe it",
+      "owedHint": "What you owe others, and what others still owe you",
       "youOwe": "You owe",
-      "youOweHint": "Sitting in the accounts above, but not the store's to spend",
+      "youOweHint": "Sitting in the accounts above, but not yours to spend",
       "owedToYou": "Owed to you",
       "owedToYouHint": "Not received yet, so not in the accounts above",
       "commissionCredit": "Commission credit owed to vendors",
       "commissionCreditHint": "Refunded after the commission was invoiced — comes off their next invoice",
       "costsHint": "Payment fees and shipping labels arrive on their own. Rent and salaries have to be entered under Expenses.",
       "storeCredit": "Store credit held by shoppers",
-      "storeCreditHint": "Given on refunds and by the store, not spent yet",
+      "storeCreditHint": "Given on refunds and by you, not spent yet",
       "netSalesWithCost": "Net product sales with cost recorded",
       "netSalesWithoutCost": "Net product sales without cost recorded",
       "productCogs": "Product cost of goods",
@@ -20842,11 +20842,11 @@
       "vendor": "Vendor",
       "net": "Net to settle",
       "emptyTitle": "Nothing outstanding",
-      "emptyBody": "Balances appear as orders are paid: the platform holds a vendor's share until a payout clears, and a vendor who collects cash themselves owes the commission on it.",
+      "emptyBody": "Balances appear as orders are paid: the marketplace holds a vendor's share until a payout clears, and a vendor who collects cash themselves owes the commission on it.",
       "collectNote": "Read from the ledger, so a sale counts from the moment its money arrives. Payouts shows what is payable today.",
       "overpaidTitle": "Paid out more than was ever held",
       "overpaidHint": "A payout settled a sale whose money the vendor had collected themselves. New payouts can no longer do this; the balance already recorded is cleared with an adjustment on the Finance overview.",
-      "owedBackTitle": "Sellers who owe money back",
+      "owedBackTitle": "Sellers who owe you money back",
       "owedBackHint": "Usually a refund after the seller was already paid. It comes off their next payout on its own, or record a repayment on the seller's Payouts tab if they pay it back. Do not post an adjustment as well — that would recover it twice.",
       "heldForVendors": "You are holding for vendors",
       "commissionTheyOwe": "Commission they owe you",
@@ -20951,7 +20951,7 @@
       "exportLedgerTitle": "Ledger",
       "exportLedgerBody": "Every entry behind these figures — date, account, book, currency, and the order, payout or expense it came from.",
       "exportExpensesTitle": "Expenses",
-      "exportExpensesBody": "What the store recorded as spent, with payee, category, what it was paid from and a link to each receipt.",
+      "exportExpensesBody": "What you recorded as spent, with payee, category, what it was paid from and a link to each receipt.",
       "forPeriod": "For {period}",
       "currency": "Currency",
       "taxCurrencyHint": "Each currency stands on its own line and is never added to another.",
@@ -21029,9 +21029,9 @@
       "reserve": "Held against pre-orders",
       "reserveHint": "Released from {date}",
       "reserveUndated": "Released with a later payout",
-      "owedBack": "Owed back to the store",
+      "owedBack": "Owed back to the marketplace",
       "owedBackHint": "Paid to you on orders refunded since; it comes off your next payout",
-      "tooManyOrders": "More than 500 orders are ready: the store pays them in parts, oldest first",
+      "tooManyOrders": "More than 500 orders are ready: the marketplace pays them in parts, oldest first",
       "frozen": "Payouts are paused while your account is suspended. Your sales keep counting.",
       "inPayout": "In a payout being prepared",
       "inPayoutHint": "{numbers} — on its way to you",
@@ -21041,7 +21041,7 @@
       "awaitingBalanceHint": "Payable once the shopper pays the rest and the goods are delivered",
       "commissionLeft": "Commission still to settle",
       "commissionLeftHint": "On sales you collected yourself; it comes off a later payout or an invoice",
-      "owedBackLater": "Still owed back to the store",
+      "owedBackLater": "Still owed back to the marketplace",
       "owedBackLaterHint": "Paid to you on orders refunded since; more than the next payout can take, so it comes off later ones",
       "nextPayout": "Estimated next payout",
       "nothingReady": "Nothing ready yet",
@@ -21074,7 +21074,7 @@
       "paidAt": "Paid",
       "returnedAt": "Returned",
       "noPayable": "No payable amount",
-      "belowMinimum": "Below minimum withdrawal",
+      "belowMinimum": "Below the minimum payout",
       "tooManyOrders": "Narrow the period: at most 500 orders per payout",
       "collectionScope": "Customer money collected, including vendor collections",
       "estimatedCollections": "Includes {count} estimated historical receipts",
@@ -21105,14 +21105,14 @@
       "reserveUntil": "released on {date}",
       "commissionOffset": "Commission on cash sales",
       "commissionOffsetHint": "owed on sales the vendor took the money for, deducted here instead of invoiced",
-      "commissionCredit": "Store promotions on cash sales",
-      "commissionCreditHint": "discounts the store paid for on sales the vendor collected, beyond the commission they owed",
+      "commissionCredit": "Marketplace-funded promotions on cash sales",
+      "commissionCreditHint": "discounts the marketplace paid for on sales the vendor collected, beyond the commission they owed",
       "otherAdjustments": "Other adjustments",
       "otherAdjustmentsHint": "refund recoveries and pre-order reserve movements",
       "netPayout": "Net payout",
       "paidOn": "Paid {date}",
-      "reference": "Payment reference",
-      "noReference": "No payment reference recorded",
+      "reference": "Payout reference",
+      "noReference": "No payout reference recorded",
       "returnedOn": "Came back {date} — the vendor is owed it again",
       "statusTitle": "Status",
       "returnedStep": "Money came back",
@@ -21138,7 +21138,7 @@
       "vendorShare": "Vendor's share",
       "vendorEarnings": "After commission",
       "noOrders": "No orders linked to this payout.",
-      "sellerShareNote": "The seller's share of the goods on each order adds up to gross sales; after commission it adds up to the net payout. Shipping and tax the store collected are not part of it.",
+      "sellerShareNote": "The seller's share of the goods on each order adds up to gross sales; after commission it adds up to the net payout. Shipping and tax charged to customers are not part of it.",
       "adjustment": {
         "recoveryDeducted": "Refund recovery",
         "recoveryDeductedHint": "paid earlier on orders refunded since",
@@ -21154,8 +21154,8 @@
         "reserveCreditReturnedHint": "handed back after its payout was paid again",
         "commissionOffset": "Commission on cash sales",
         "commissionOffsetHint": "owed on sales the seller took the money for",
-        "commissionCredit": "Store promotions on cash sales",
-        "commissionCreditHint": "discounts the store paid for beyond the commission owed"
+        "commissionCredit": "Marketplace-funded promotions on cash sales",
+        "commissionCreditHint": "discounts the marketplace paid for beyond the commission owed"
       }
     }
   },
@@ -21190,7 +21190,7 @@
     "searchLanguage": "Search language…",
     "currency": "Currency",
     "searchCurrency": "Search currency…",
-    "multiVendor": "Multi-vendor marketplace",
+    "multiVendor": "Multi-vendor mode",
     "multiVendorHint": "Let other sellers open stores. You can change this later in Settings.",
     "pos": "Point of sale",
     "posHint": "Sell in person and take payments at the counter. You can change this later in Settings.",
@@ -22637,7 +22637,7 @@
       "loading": "Loading..."
     },
     "returnPolicyPageView": {
-      "contactFromOrder": "Contact the store team from your order details page."
+      "contactFromOrder": "Contact the seller or our team from your order details page."
     },
     "unsubscribeView": {
       "updateFailed": "Could not update your preferences",
@@ -22650,7 +22650,7 @@
       "transactionalNote": "Order confirmations, delivery updates and returns are not affected — those are sent for orders you place.",
       "resubscribe": "Resubscribe",
       "unsubscribe": "Unsubscribe",
-      "backToStore": "Back to the store"
+      "backToStore": "Back to home"
     },
     "modelViewer": {
       "loadFailed": "Failed to load 3D model",
@@ -22746,7 +22746,7 @@
       "failedToPlacePreorder": "Failed to place the pre-order",
       "paymentNotCompleted": "Payment was not completed",
       "failedToProcessCheckout": "Failed to process checkout",
-      "razorpayStoreName": "Store",
+      "razorpayStoreName": "Online marketplace",
       "orderPayment": "Order payment",
       "approvePaymentOnPhone": "Check your phone to approve the payment",
       "failedToCreatePaymentSession": "Failed to create payment session",
@@ -22802,7 +22802,7 @@
       "notNow": "Not now"
     },
     "homeLoading": {
-      "loading": "Loading store..."
+      "loading": "Loading home..."
     },
     "accountOrdersListLoading": {
       "loading": "Loading orders..."
@@ -22870,14 +22870,14 @@
     },
     "contactPage": {
       "metaTitle": "Contact Us",
-      "metaDescription": "Contact the {storeName} team for order help, product questions, and store support.",
+      "metaDescription": "Contact the {storeName} team for order help, product questions, and support.",
       "followUs": "Follow us",
       "mapIframeTitle": "{storeName} location map"
     },
     "orderAddressPage": {
       "metaTitle": "Correct your delivery address",
       "heading": "Correct your delivery address",
-      "backToStore": "Back to the store",
+      "backToStore": "Back to home",
       "invalidTitle": "This link is not valid",
       "invalidBody": "It may have been mistyped or truncated by an email client. Open it from your email again, or contact us and we will help.",
       "orderTitle": "Order #{number}",
@@ -22889,7 +22889,7 @@
     "orderPayPage": {
       "metaTitle": "Pay for your order",
       "heading": "Pay for your order",
-      "backToStore": "Back to the store",
+      "backToStore": "Back to home",
       "invalidTitle": "This payment link is not valid",
       "invalidBody": "It may have expired — these links last a week — or been truncated by an email client. Contact us and we will send you a fresh one.",
       "noLongerNeededTitle": "Order #{number} is no longer needed",
@@ -22906,7 +22906,7 @@
     "preOrderBalancePage": {
       "metaTitle": "Pay pre-order balance",
       "heading": "Pre-order balance",
-      "backToStore": "Back to the store",
+      "backToStore": "Back to home",
       "invalidTitle": "This payment link is not valid",
       "invalidBody": "It may have been mistyped or truncated by an email client. Open the link from your pre-order email again, or contact us and we will send a fresh one.",
       "nothingToPayTitle": "Nothing left to pay on #{number}",
@@ -22916,7 +22916,7 @@
     "preOrderManagePage": {
       "metaTitle": "Manage your pre-order",
       "heading": "Manage your pre-order",
-      "backToStore": "Back to the store",
+      "backToStore": "Back to home",
       "invalidTitle": "This link is not valid",
       "invalidBody": "It may have been mistyped or truncated by an email client. Open it from your pre-order email again, or contact us and we will send a fresh one.",
       "preOrderTitle": "Pre-order #{number}",
@@ -22926,13 +22926,13 @@
       "metaTitle": "Confirm your subscription",
       "invalidTitle": "This link is no longer valid",
       "invalidBody": "It may have been mistyped, or the subscription it confirms has since been cancelled. Tick the box at your next checkout to subscribe again.",
-      "backToStore": "Back to the store"
+      "backToStore": "Back to home"
     },
     "unsubscribePage": {
       "metaTitle": "Email preferences",
       "invalidTitle": "This link is no longer valid",
       "invalidBody": "It may have been mistyped or truncated by an email client. Open the link from the foot of a recent email again, or sign in and change your preferences from your account.",
-      "backToStore": "Back to the store"
+      "backToStore": "Back to home"
     },
     "returnsPage": {
       "metaTitle": "Return and Refund Policy",
@@ -22992,7 +22992,7 @@
       "methodPromptpay": "PromptPay QR",
       "methodPromptpayDetail": "Scan the QR in any Thai banking app, then attach the slip within {time}.",
       "methodBank": "Bank transfer",
-      "methodBankDetail": "Transfer to the store's bank account, then attach the slip within {time}.",
+      "methodBankDetail": "Transfer to our bank account, then attach the slip within {time}.",
       "copyAria": "Copy {label}",
       "copied": "Copied",
       "copy": "Copy",
@@ -23031,18 +23031,18 @@
       "sendSlip": "Send slip to confirm payment",
       "slipTip": "Use the slip from your banking app that clearly shows the amount, account and time.",
       "paidTitle": "Payment confirmed",
-      "paidBody": "Thank you! The store has confirmed your payment and is preparing your order.",
+      "paidBody": "Thank you! We have confirmed your payment and the seller is preparing your order.",
       "orderNumber": "Order number",
       "amountPaid": "Amount paid",
       "viewOrders": "View my orders",
       "continueShopping": "Continue shopping",
       "expiredTitle": "Payment time has run out",
       "cancelledTitle": "This order was cancelled",
-      "expiredBody": "The order was cancelled because no slip arrived in time. If you already transferred, contact the store with your slip and order number. Please don't transfer again.",
+      "expiredBody": "The order was cancelled because no slip arrived in time. If you already transferred, contact us with your slip and order number. Please don't transfer again.",
       "amount": "Amount",
       "backToShop": "Back to the shop",
       "reviewTitle": "We're checking your slip",
-      "reviewBody": "The store is checking your transfer. This page updates itself — you'll see the result here.",
+      "reviewBody": "Our team is checking your transfer. This page updates itself — you'll see the result here.",
       "reviewing": "Checking",
       "method": "Method",
       "slipSentAt": "Slip sent",
@@ -23053,10 +23053,10 @@
       "amountToPay": "Amount to transfer",
       "checkBeforeConfirm": "Check the account name and amount in your banking app before you confirm.",
       "rejectedTitle": "Your slip couldn't be confirmed",
-      "rejectedBody": "The store couldn't match this slip to your payment.",
+      "rejectedBody": "We couldn't match this slip to your payment.",
       "rejectedHint": "Please send the correct slip below.",
       "step1PromptpayTitle": "Scan the QR to pay",
-      "step1BankTitle": "Transfer to the store's account",
+      "step1BankTitle": "Transfer to our account",
       "step1PromptpayBody": "The amount {amount} is filled in for you when you scan.",
       "step1BankBody": "Transfer exactly {amount} to one of these accounts.",
       "step2Title": "Attach the transfer slip",

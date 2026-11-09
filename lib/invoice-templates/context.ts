@@ -434,7 +434,7 @@ function posBlock(order: SourceOrder, sources: OrderContextSources, locale: Temp
 const TENDER_LABELS: Record<TemplateLocale, Record<string, string>> = {
   en: { cash: "Cash", card: "Card", bank: "Bank transfer", store_credit: "Store credit", mobile_money: "Mobile money" },
   bn: { cash: "নগদ", card: "কার্ড", bank: "ব্যাংক ট্রান্সফার", store_credit: "স্টোর ক্রেডিট", mobile_money: "মোবাইল মানি" },
-  th: { cash: "เงินสด", card: "บัตร", bank: "โอนเงินผ่านธนาคาร", store_credit: "เครดิตร้านค้า", mobile_money: "พร้อมเพย์ / โมบายแบงกิ้ง" },
+  th: { cash: "เงินสด", card: "บัตร", bank: "โอนเงินผ่านธนาคาร", store_credit: "เครดิตช้อปปิ้ง", mobile_money: "พร้อมเพย์ / โมบายแบงกิ้ง" },
 };
 
 function methodLabel(method: string, locale: TemplateLocale): string {

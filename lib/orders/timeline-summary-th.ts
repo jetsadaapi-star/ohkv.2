@@ -25,7 +25,7 @@ const METHOD_TH: Record<string, string> = {
   cod: "เก็บเงินปลายทาง",
   card: "บัตร",
   stripe: "บัตร",
-  store_credit: "เครดิตร้านค้า",
+  store_credit: "เครดิตช้อปปิ้ง",
   cash: "เงินสด",
   manual: "ชำระกับร้าน",
 };
@@ -81,9 +81,9 @@ const RULES: Array<[RegExp, (...m: string[]) => string]> = [
   [
     /^(Payment|Deposit) of (.+?) received via (\S+?)(?:, with (.+?) of store credit)?$/,
     (_, kind, amount, via, credit) =>
-      `ได้รับ${kind === "Deposit" ? "มัดจำ" : "ชำระเงิน"} ${money(amount)} ผ่าน${method(via)}${credit ? ` และเครดิตร้านค้า ${money(credit)}` : ""}`,
+      `ได้รับ${kind === "Deposit" ? "มัดจำ" : "ชำระเงิน"} ${money(amount)} ผ่าน${method(via)}${credit ? ` และเครดิตช้อปปิ้ง ${money(credit)}` : ""}`,
   ],
-  [/^Paid with (.+?) of store credit$/, (_, amount) => `ชำระด้วยเครดิตร้านค้า ${money(amount)}`],
+  [/^Paid with (.+?) of store credit$/, (_, amount) => `ชำระด้วยเครดิตช้อปปิ้ง ${money(amount)}`],
   [
     /^Order cancelled (automatically|by the customer|by staff)(?: — (.+))?$/,
     (_, by, reason) =>

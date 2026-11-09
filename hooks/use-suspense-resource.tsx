@@ -427,3 +427,27 @@ export function useSuspenseResource<T>(
   const state = use(promise);
   return { ...state, refresh, mutate };
 }
+
+/**
+ * Starts loading a url into the same cache `useSuspenseResource` reads, so a
+ * page opened from a link the pointer is already on renders at once instead of
+ * behind its fallback. An answer already held (and not expired) is left alone:
+ * hovering again asks nothing.
+ *
+ * Pass `load` exactly as the page's reader does when it has one: the cache
+ * holds whatever the loader returns, keyed only by the url.
+ */
+export function usePrefetchResource() {
+  const owner = useContext(ResourceScopeContext);
+  return useCallback(
+    (url: string, load?: () => Promise<unknown>) => {
+      if (typeof window === "undefined") return;
+      ensureEntry(
+        cacheKey(owner, url),
+        () => settle(load ?? (() => fetchEnvelope<unknown>(url))),
+        owner !== null,
+      );
+    },
+    [owner],
+  );
+}

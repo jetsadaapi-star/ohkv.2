@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "@/components/language/link";
 import { useTranslations } from "next-intl";
-import { ChevronRight, Loader2, LockKeyhole, ShieldCheck } from "lucide-react";
+import { BadgeCheck, ChevronRight, Loader2, LockKeyhole, ShieldCheck, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,7 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { KHIT_TILE, SILK_GRADIENT } from "@/components/auth/silk-pattern";
+import { AccountSection, FanPlaHem } from "./account-ui";
 import { toast } from "@/components/ui/toast-notification";
 import { WarningBanner } from "@/components/ui/warning-banner";
 import { authClient } from "@/lib/auth/auth-client";
@@ -73,6 +74,14 @@ export function ProfileForm() {
   const [isSaving, setIsSaving] = useState(false);
   const demoMode = normalizeDemoModeState(profile?.demoMode);
   const isDemoMode = demoMode.enabled;
+  const initials =
+    (profile?.user?.name || profile?.user?.email || "?")
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part.charAt(0))
+      .join("")
+      .toUpperCase();
 
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -177,14 +186,48 @@ export function ProfileForm() {
         </WarningBanner>
       )}
 
+      <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+      {/* Who this is, on the store's silk. */}
+      <aside className="h-fit overflow-hidden rounded-2xl border bg-card">
+        <div className="relative isolate h-24 overflow-hidden" style={{ background: SILK_GRADIENT }}>
+          <span aria-hidden className="absolute inset-0 -z-10 opacity-[0.14]" style={{ backgroundImage: KHIT_TILE }} />
+          <FanPlaHem className="absolute inset-x-0 bottom-0" />
+        </div>
+        <div className="relative z-10 -mt-10 px-5 pb-5 text-center">
+          <span className="mx-auto flex size-20 items-center justify-center overflow-hidden rounded-2xl border-4 border-card bg-primary text-2xl font-bold text-primary-foreground shadow-md">
+            {profile?.user?.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={profile.user.image} alt="" className="size-full object-cover" />
+            ) : (
+              initials
+            )}
+          </span>
+          <p className="mt-3 truncate text-lg font-bold">{profile?.user?.name}</p>
+          <p className="truncate text-sm text-muted-foreground">{profile?.user?.email}</p>
+          {profile?.user?.emailVerified ? (
+            <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+              <BadgeCheck className="size-3.5" />
+              {t.has("account.hub.verified") ? t("account.hub.verified") : "Verified"}
+            </span>
+          ) : null}
+          <Link
+            href="/account/security"
+            className="mt-5 flex items-center gap-3 rounded-xl border bg-background/60 px-3 py-2.5 text-start transition hover:border-primary/30 hover:bg-primary/[0.04]"
+          >
+            <ShieldCheck className="size-5 shrink-0 text-primary" />
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold">{t("account.security")}</span>
+              <span className="block truncate text-xs text-muted-foreground">
+                {t("account.securityDescription")}
+              </span>
+            </span>
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground rtl:rotate-180" />
+          </Link>
+        </div>
+      </aside>
+
       {/* Personal Information */}
-      <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle>
-            {t("profile.personal")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <AccountSection icon={<UserRound />} title={t("profile.personal")} className="h-fit">
           <Form {...profileForm}>
             <form
               id="customer-profile-form"
@@ -208,7 +251,7 @@ export function ProfileForm() {
                         <Input
                           {...field}
                           autoComplete="given-name"
-                          className="h-11 bg-background/50 focus:bg-background transition-colors"
+                          className="h-11 rounded-xl bg-muted/40 transition-colors focus:bg-background"
                         />
                       </FormControl>
                       <FormMessage />
@@ -228,7 +271,7 @@ export function ProfileForm() {
                         <Input
                           {...field}
                           autoComplete="family-name"
-                          className="h-11 bg-background/50 focus:bg-background transition-colors"
+                          className="h-11 rounded-xl bg-muted/40 transition-colors focus:bg-background"
                         />
                       </FormControl>
                       <FormMessage />
@@ -249,7 +292,7 @@ export function ProfileForm() {
                           {...field}
                           autoComplete="email"
                           disabled
-                          className="h-11 bg-muted"
+                          className="h-11 rounded-xl bg-muted"
                         />
                       </FormControl>
                       <FormMessage />
@@ -271,7 +314,7 @@ export function ProfileForm() {
                           type="tel"
                           autoComplete="tel"
                           inputMode="tel"
-                          className="h-11 bg-background/50 focus:bg-background transition-colors"
+                          className="h-11 rounded-xl bg-muted/40 transition-colors focus:bg-background"
                         />
                       </FormControl>
                       <FormMessage />
@@ -293,7 +336,7 @@ export function ProfileForm() {
                             {...field}
                             type="date"
                             autoComplete="bday"
-                            className="h-11 bg-background/50 focus:bg-background transition-colors block w-full"
+                            className="block h-11 w-full rounded-xl bg-muted/40 transition-colors focus:bg-background"
                           />
                         </div>
                       </FormControl>
@@ -316,7 +359,7 @@ export function ProfileForm() {
                         disabled={isDemoMode || isSaving}
                       >
                         <FormControl>
-                          <SelectTrigger className="h-11 bg-background/50 focus:bg-background transition-colors">
+                          <SelectTrigger className="w-full rounded-xl bg-muted/40 transition-colors focus:bg-background data-[size=default]:h-11">
                             <SelectValue
                               placeholder={t("profile.selectGender")}
                             />
@@ -342,23 +385,8 @@ export function ProfileForm() {
               </fieldset>
             </form>
           </Form>
-        </CardContent>
-      </Card>
-
-      <Link
-        href="/account/security"
-        aria-label={t("account.security")}
-        className="flex min-h-11 items-center gap-3 rounded-xl border bg-card px-4 py-3 transition-colors hover:bg-accent"
-      >
-        <ShieldCheck className="h-5 w-5 shrink-0 text-store-link" />
-        <span className="min-w-0 flex-1">
-          <span className="block font-medium">{t("account.security")}</span>
-          <span className="block text-sm text-muted-foreground">
-            {t("account.securityDescription")}
-          </span>
-        </span>
-        <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
-      </Link>
+      </AccountSection>
+      </div>
 
       {profileForm.formState.isDirty && (
         <div className="fixed inset-x-0 z-40 border-t bg-background/95 px-4 py-3 backdrop-blur bottom-0 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:static lg:flex lg:justify-end lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
@@ -366,7 +394,7 @@ export function ProfileForm() {
             type="submit"
             form="customer-profile-form"
             disabled={isDemoMode || isSaving}
-            className="h-11 w-full lg:w-auto"
+            className="h-11 w-full rounded-xl shadow-md shadow-primary/20 lg:w-auto lg:px-8"
           >
             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t("profile.saveChanges")}

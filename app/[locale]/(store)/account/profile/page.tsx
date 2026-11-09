@@ -2,6 +2,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ClientSuspense } from "@/components/common/client-suspense";
 import { ProfileForm } from "@/components/account/profile-form";
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { AccountPageHeader } from "@/components/account/account-ui";
+import { UserRound } from "lucide-react";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -14,15 +16,8 @@ export default async function ProfilePage({ params }: PageProps) {
   const t = await getTranslations({ locale });
 
   return (
-    <div className="space-y-6">
-      {/* Page Header — desktop only. On mobile the account layout's sticky
-          identity strip already carries this title and a back affordance. */}
-      <div className="hidden lg:block">
-        <h1 className="text-xl font-bold sm:text-2xl">{t("profile.title")}</h1>
-        <p className="text-sm text-muted-foreground sm:text-base">
-          {t("profile.subtitle")}
-        </p>
-      </div>
+    <div className="mx-auto w-full max-w-5xl space-y-5">
+      <AccountPageHeader icon={<UserRound />} title={t("profile.title")} description={t("profile.subtitle")} />
 
       {/* Profile Form — its loading state is this boundary's fallback. */}
       <ClientSuspense fallback={<ProfileFormSkeleton />}>
@@ -34,13 +29,16 @@ export default async function ProfilePage({ params }: PageProps) {
 
 function ProfileFormSkeleton() {
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-14" />
-        ))}
+    <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]" aria-busy="true">
+      <Skeleton className="h-72 rounded-2xl" />
+      <div className="space-y-4 rounded-2xl border p-6">
+        <Skeleton className="h-6 w-40" />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-16 rounded-xl" />
+          ))}
+        </div>
       </div>
-      <Skeleton className="h-10 w-32 ml-auto" />
     </div>
   );
 }

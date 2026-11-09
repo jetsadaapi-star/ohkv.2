@@ -2,13 +2,14 @@
 
 import { useEffect, useId, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/toast-notification";
 import { StickySaveFooter } from "@/components/admin/settings/sections/sticky-save-footer";
 import { useSuspenseResource } from "@/hooks/use-suspense-resource";
 import { cn } from "@/lib/utils";
+import { Heart, Megaphone, Package } from "lucide-react";
+import { AccountSection, type AccountTone } from "./account-ui";
 
 interface CustomerProfile {
   emailNotifications?: {
@@ -150,8 +151,8 @@ export function PreferencesForm() {
       {/* One card, three groups by purpose. Marketing emails is the real
           consent switch; Promotions and Newsletter are topics under it, so
           they are held off while it is off. */}
-      <Card className="gap-0 divide-y overflow-hidden py-0">
-        <Group title={t("customerProfile.groupOrders")}>
+      <div className="grid gap-5 lg:grid-cols-2">
+        <Group icon={<Package />} tone="silk" title={t("customerProfile.groupOrders")}>
           <Row
             title={t("customerProfile.orderUpdates")}
             description={t("customerProfile.orderUpdatesDesc")}
@@ -168,7 +169,7 @@ export function PreferencesForm() {
           )}
         </Group>
 
-        <Group title={t("customerProfile.groupWishlist")}>
+        <Group icon={<Heart />} tone="madder" title={t("customerProfile.groupWishlist")}>
           <Row
             title={t("customerProfile.priceDrops")}
             description={t("customerProfile.priceDropsDesc")}
@@ -183,7 +184,7 @@ export function PreferencesForm() {
           />
         </Group>
 
-        <Group title={t("customerProfile.groupNews")}>
+        <Group icon={<Megaphone />} tone="gold" title={t("customerProfile.groupNews")} className="lg:col-span-2">
           <Row
             title={t("customerProfile.marketingOptIn")}
             description={t("customerProfile.marketingOptInHint")}
@@ -207,7 +208,7 @@ export function PreferencesForm() {
             disabled={!draft.marketingOptIn}
           />
         </Group>
-      </Card>
+      </div>
 
       <StickySaveFooter
         label={t("admin.settings.saveChanges")}
@@ -222,18 +223,21 @@ export function PreferencesForm() {
 
 function Group({
   title,
+  icon,
+  tone,
+  className,
   children,
 }: {
   title: string;
+  icon: React.ReactNode;
+  tone: AccountTone;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <section>
-      <h2 className="px-4 pt-5 pb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:px-6 rtl:tracking-normal">
-        {title}
-      </h2>
-      <div className="divide-y">{children}</div>
-    </section>
+    <AccountSection icon={icon} tone={tone} title={title} className={className} bodyClassName="px-0 py-0 sm:px-0">
+      <div className="mt-2 divide-y border-t">{children}</div>
+    </AccountSection>
   );
 }
 
@@ -256,8 +260,8 @@ function Row({
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-6 px-4 py-4 sm:px-6",
-        nested && "ps-8 sm:ps-12",
+        "flex items-center justify-between gap-6 px-5 py-4 transition-colors hover:bg-muted/30 sm:px-6",
+        nested && "border-s-2 border-s-[var(--highlight)]/40 ps-9 sm:ps-12",
       )}
     >
       <div className={cn("min-w-0 space-y-0.5", disabled && "opacity-50")}>

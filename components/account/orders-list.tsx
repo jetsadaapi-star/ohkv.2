@@ -2,7 +2,7 @@
 
 import { ORDER_STATUS_CLASSES } from "@/lib/theme-colors/status";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "@/components/language/link";
 import { useTranslations } from "next-intl";
 import { AlertCircle, ChevronRight, Package } from "lucide-react";
@@ -13,6 +13,8 @@ import { ORDER_STATUS } from "@/config/app.config";
 import { getPreorderStatusLabel } from "@/lib/orders/preorder-status-label";
 import { useSuspenseResource } from "@/hooks/use-suspense-resource";
 import { useDateFormat } from "@/lib/intl/use-date-format";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AccountEmpty, AccountPills } from "./account-ui";
 
 // Matches the server default limit for /api/orders (parsePageLimit defaultLimit).
 const ORDERS_PAGE_SIZE = 10;
@@ -20,6 +22,7 @@ const ORDERS_PAGE_SIZE = 10;
 interface OrderItem {
   productId: string;
   name: string;
+  image?: string;
   quantity: number;
   price: number;
   purchaseType?: string;
@@ -59,8 +62,28 @@ interface Order {
 
 type OrdersFilter = "all" | "regular" | "preorders";
 
+/**
+ * The url and loader the order history reads first — for prefetching it from
+ * a link before the page opens (see `usePrefetchResource`).
+ */
+export function ordersFirstPage(filter: OrdersFilter = "regular", status: StatusTab = "all") {
+  return {
+    url: `/api/orders?type=${filter}&limit=${ORDERS_PAGE_SIZE}&status=${status}`,
+    load: async (): Promise<LoadedOrders> => {
+      const { list, hasNext } = await fetchOrdersPage(filter, 1, status);
+      return { orders: list, page: 1, hasNext };
+    },
+  };
+}
+
+/** The status tabs over the history; "all" sends no status. */
+const STATUS_TABS = ["all", "pending", "processing", "shipped", "delivered", "cancelled"] as const;
+type StatusTab = (typeof STATUS_TABS)[number];
+
 interface CustomerOrdersListProps {
   filter?: OrdersFilter;
+  /** Tabs to narrow the list by status (the order history page). */
+  statusTabs?: boolean;
   emptyTitle?: string;
   emptyDescription?: string;
 }
@@ -79,8 +102,10 @@ interface LoadedOrders {
 async function fetchOrdersPage(
   filter: OrdersFilter,
   nextPage: number,
+  status: StatusTab = "all",
 ): Promise<{ list: Order[]; hasNext: boolean }> {
   const params = new URLSearchParams();
+  if (status !== "all") params.set("status", status);
   params.set("page", String(nextPage));
   params.set("limit", String(ORDERS_PAGE_SIZE));
   if (filter === "preorders") params.set("type", "preorders");
@@ -135,14 +160,65 @@ function getStatusBadge(
     variant: "outline",
     label: status,
   };
-  return <Badge variant={variant} className={ORDER_STATUS_CLASSES[status]}>{label}</Badge>;
+  return (
+    <Badge variant={variant} className={`rounded-full ${ORDER_STATUS_CLASSES[status] ?? ""}`}>
+      {label}
+    </Badge>
+  );
 }
 
-export function CustomerOrdersList({
+export function CustomerOrdersList(props: CustomerOrdersListProps) {
+  const [status, setStatus] = useState<StatusTab>("all");
+  const t = useTranslations();
+  const label = (tab: StatusTab) =>
+    tab === "all"
+      ? t.has("common.all")
+        ? t("common.all")
+        : "All"
+      : TRANSLATED_ORDER_STATUSES.includes(tab)
+        ? t(`orders.${tab}`)
+        : tab;
+  if (!props.statusTabs) return <OrdersListBody {...props} status="all" />;
+  return (
+    <div className="space-y-4">
+      <AccountPills
+        label={t.has("orders.orderHistory") ? t("orders.orderHistory") : "Orders"}
+        value={status}
+        onChange={setStatus}
+        items={STATUS_TABS.map((tab) => ({ id: tab, label: label(tab) }))}
+      />
+      {/* Each tab is its own held list: switching back is instant. */}
+      <Suspense fallback={<OrdersListFallback />}>
+        <OrdersListBody key={status} {...props} status={status} />
+      </Suspense>
+    </div>
+  );
+}
+
+/** Row placeholders, for a status tab loading for the first time. */
+export function OrdersListFallback() {
+  return (
+    <div className="space-y-3" aria-busy="true">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} className="flex items-center gap-4 rounded-2xl border bg-card p-4">
+          <Skeleton className="size-16 rounded-xl" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-3 w-1/3" />
+          </div>
+          <Skeleton className="h-6 w-20 rounded-full" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function OrdersListBody({
   filter = "all",
+  status,
   emptyTitle,
   emptyDescription,
-}: CustomerOrdersListProps) {
+}: CustomerOrdersListProps & { status: StatusTab }) {
   const fmtDate = useDateFormat();
   const t = useTranslations();
   const ts = useTranslations("storeText.ordersList");
@@ -150,15 +226,10 @@ export function CustomerOrdersList({
   // Suspends on the first page — the list pages wrap this in
   // `<ClientSuspense>` with the list skeleton. Opening an order and coming
   // back renders the held list, "Load more" pages included, with no request.
-  const { data, error, mutate } = useSuspenseResource<LoadedOrders>(
-    `/api/orders?type=${filter}&limit=${ORDERS_PAGE_SIZE}`,
-    {
-      load: async () => {
-        const { list, hasNext } = await fetchOrdersPage(filter, 1);
-        return { orders: list, page: 1, hasNext };
-      },
-    },
-  );
+  const first = ordersFirstPage(filter, status);
+  const { data, error, mutate } = useSuspenseResource<LoadedOrders>(first.url, {
+    load: first.load,
+  });
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const orders = data?.orders ?? [];
   const hasNext = data?.hasNext ?? false;
@@ -168,7 +239,7 @@ export function CustomerOrdersList({
     setIsLoadingMore(true);
     try {
       const nextPage = data.page + 1;
-      const { list, hasNext: more } = await fetchOrdersPage(filter, nextPage);
+      const { list, hasNext: more } = await fetchOrdersPage(filter, nextPage, status);
       mutate((current) => {
         const seen = new Set(current.orders.map((order) => order._id));
         return {
@@ -189,104 +260,141 @@ export function CustomerOrdersList({
 
   if (error) {
     return (
-      <div className="text-center py-12">
-        <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-        <p className="text-muted-foreground">{ts("loadFailed")}</p>
-        <Button
-          variant="outline"
-          className="mt-4"
-          onClick={() => window.location.reload()}
-        >
-          {ts("tryAgain")}
-        </Button>
-      </div>
+      <AccountEmpty
+        icon={<AlertCircle />}
+        title={ts("loadFailed")}
+        action={
+          <Button variant="outline" className="rounded-xl" onClick={() => window.location.reload()}>
+            {ts("tryAgain")}
+          </Button>
+        }
+      />
     );
   }
 
   if (orders.length === 0) {
     return (
-      <div className="text-center py-12">
-        <Package className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="font-medium text-lg mb-2">
-          {emptyTitle ||
-            t("orders.noOrders")}
-        </h3>
-        <p className="text-muted-foreground mb-4">
-          {emptyDescription ||
-            t("orders.startShopping")}
-        </p>
-        <Button asChild>
-          <Link href="/products">
-            {t("orders.browseProducts")}
-          </Link>
-        </Button>
-      </div>
+      <AccountEmpty
+        icon={<Package />}
+        title={emptyTitle || t("orders.noOrders")}
+        description={status === "all" ? emptyDescription || t("orders.startShopping") : undefined}
+        action={
+          status === "all" ? (
+            <Button asChild className="rounded-xl">
+              <Link href="/products">{t("orders.browseProducts")}</Link>
+            </Button>
+          ) : undefined
+        }
+      />
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {orders.map((order) => {
         const preorderReleaseDate = getPreorderReleaseDate(order);
-        const preorderStatusLabel = getPreorderStatusLabel(
-          getPreorderStatus(order),
-        );
+        const preorderStatusLabel = getPreorderStatusLabel(getPreorderStatus(order));
+        const pictures = order.items.filter((item) => item.image).slice(0, 3);
+        const units = order.items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+        const first = order.items[0];
+        const split =
+          (order.subOrders?.length ?? 0) > 1 &&
+          new Set(order.subOrders!.map((shipment) => shipment.status)).size > 1;
 
         return (
           <Link
             key={order._id}
             href={`/account/orders/${order._id}`}
-            className="block rounded-lg border p-4 hover:bg-accent/50 transition-colors"
+            className="group relative flex gap-4 overflow-hidden rounded-2xl border bg-card p-4 transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_10px_28px_-14px_color-mix(in_oklab,var(--primary)_35%,transparent)] sm:p-5"
           >
-            <div className="flex items-center justify-between mb-2">
+            {/* Up to three of the order's pictures, fanned like a stack. */}
+            <div className="relative size-16 shrink-0 sm:size-20">
+              {pictures.length > 0 ? (
+                pictures
+                  .slice()
+                  .reverse()
+                  .map((item, index, list) => {
+                    const depth = list.length - 1 - index;
+                    return (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        key={`${item.productId}-${depth}`}
+                        src={item.image}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        className="absolute inset-0 size-full rounded-xl border-2 border-card bg-muted object-cover shadow-sm"
+                        style={{
+                          transform: depth ? `translate(${depth * 5}px, ${-depth * 5}px) scale(${1 - depth * 0.08})` : undefined,
+                          zIndex: 3 - depth,
+                          opacity: depth ? 0.85 : 1,
+                        }}
+                      />
+                    );
+                  })
+              ) : (
+                <span className="flex size-full items-center justify-center rounded-xl bg-primary/8 text-primary">
+                  <Package className="size-6" />
+                </span>
+              )}
+            </div>
+
+            <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="font-medium">{order.orderNumber}</span>
+                <span className="text-xs font-semibold tracking-wide text-muted-foreground">
+                  #{order.orderNumber}
+                </span>
                 {getStatusBadge(order.status, ts)}
                 {order.hasPreorder ? (
-                  <Badge variant="outline">{ts("preorder")}</Badge>
+                  <Badge variant="outline" className="rounded-full border-[var(--highlight)] text-[color-mix(in_oklab,var(--highlight)_60%,black)]">
+                    {ts("preorder")}
+                  </Badge>
                 ) : null}
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <p className="text-sm text-muted-foreground mb-2">
-              {ts("itemsCount", { count: order.items.length })}{" "}
-              - {fmtDate(order.createdAt, "dateTime")}
-            </p>
-            {/* The order badge above is the least advanced of these, so on a
-                split order it is true but incomplete — a shopper whose first
-                parcel arrived should not have to open the order to learn that.
-                Only worth the room when the sellers actually disagree. */}
-            {(order.subOrders?.length ?? 0) > 1 &&
-            new Set(order.subOrders!.map((shipment) => shipment.status)).size > 1 ? (
-              <div className="mb-2 flex flex-wrap gap-x-3 gap-y-1">
-                {order.subOrders!.map((shipment, position) => (
-                  <span
-                    key={shipment._id ?? shipment.vendorId ?? position}
-                    className="text-xs text-muted-foreground"
-                  >
-                    {shipment.vendorName || t("product.vendor")}:{" "}
-                    <span className="font-medium">
-                      {TRANSLATED_ORDER_STATUSES.includes(shipment.status)
-                        ? t(`orders.${shipment.status}`)
-                        : shipment.status}
-                    </span>
-                  </span>
-                ))}
-              </div>
-            ) : null}
-            {order.hasPreorder ? (
-              <p className="text-sm text-muted-foreground mb-2">
-                {preorderStatusLabel || ts("preorder")}
-                {preorderReleaseDate
-                  ? ` - ${ts("shipsAround", {
-                      date: fmtDate(preorderReleaseDate),
-                    })}`
-                  : ""}
+              <p className="mt-1 line-clamp-1 text-sm font-semibold sm:text-base">
+                {first?.name || order.orderNumber}
+                {order.items.length > 1 ? (
+                  <span className="font-normal text-muted-foreground"> +{order.items.length - 1}</span>
+                ) : null}
               </p>
-            ) : null}
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">{ts("total")}</span>
-              <span className="font-semibold">{formatPrice(order.total)}</span>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {fmtDate(order.createdAt, "dateTime")} · {ts("itemsCount", { count: units || order.items.length })}
+              </p>
+              {/* The order badge is the least advanced consignment, so on a
+                  split order it is true but incomplete. */}
+              {split ? (
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {order.subOrders!.map((shipment, position) => (
+                    <span
+                      key={shipment._id ?? shipment.vendorId ?? position}
+                      className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground"
+                    >
+                      {shipment.vendorName || t("product.vendor")}:{" "}
+                      <span className="font-semibold text-foreground">
+                        {TRANSLATED_ORDER_STATUSES.includes(shipment.status)
+                          ? t(`orders.${shipment.status}`)
+                          : shipment.status}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              {order.hasPreorder ? (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {preorderStatusLabel || ts("preorder")}
+                  {preorderReleaseDate
+                    ? ` · ${ts("shipsAround", { date: fmtDate(preorderReleaseDate) })}`
+                    : ""}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="flex shrink-0 flex-col items-end justify-between gap-2">
+              <span className="text-base font-extrabold tabular-nums sm:text-lg">{formatPrice(order.total)}</span>
+              <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-primary opacity-80 transition group-hover:opacity-100">
+                {t.has("common.viewDetails") ? t("common.viewDetails") : ts("total")}
+                <ChevronRight className="size-4 transition group-hover:translate-x-0.5 rtl:rotate-180" />
+              </span>
             </div>
           </Link>
         );
@@ -296,6 +404,7 @@ export function CustomerOrdersList({
         <div className="flex justify-center pt-2">
           <Button
             variant="outline"
+            className="rounded-xl"
             onClick={() => void loadMore()}
             disabled={isLoadingMore}
           >

@@ -1,6 +1,6 @@
 "use client";
 
-import { LOYALTY_CLASSES, ORDER_STATUS_CLASSES } from "@/lib/theme-colors/status";
+import { ORDER_STATUS_CLASSES } from "@/lib/theme-colors/status";
 
 import Link from "@/components/language/link";
 import { useTranslations } from "next-intl";
@@ -8,8 +8,10 @@ import {
   Package,
   ShoppingBag,
   ChevronRight,
+  Crown,
   Heart,
-  Star,
+  LayoutGrid,
+  Truck,
   DollarSign,
   Bell,
   LogOut,
@@ -29,6 +31,9 @@ import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import { formatCurrency } from "@/lib/intl/money";
 import { resolveCurrency } from "@/lib/intl/currencies";
 import { cn } from "@/lib/utils";
+import { SILK_GRADIENT, SilkBackdrop } from "@/components/auth/silk-pattern";
+import { AccountEmpty, AccountSection, AccountStat, type AccountTone } from "./account-ui";
+import { useAccountPrefetch } from "./use-account-prefetch";
 import type { LoyaltyTier } from "@/types";
 import { useLoyaltyEnabled } from "@/providers/app-settings-provider";
 import type { PendingReview } from "@/lib/catalog/review-eligibility";
@@ -71,7 +76,6 @@ interface CustomerDashboardProps {
   pendingReviews?: PendingReview[];
 }
 
-const tierColors: Record<LoyaltyTier,string> = LOYALTY_CLASSES;
 
 /** What a stat card is made of; a card with an href is the shortcut to its page. */
 interface StatCard {
@@ -82,8 +86,6 @@ interface StatCard {
   href?: string;
 }
 
-const statCardClassName =
-  "flex items-center gap-3 rounded-xl border bg-card p-3 shadow-sm xl:gap-4 xl:p-5";
 
 export function CustomerDashboard({
   locale,
@@ -95,6 +97,7 @@ export function CustomerDashboard({
   pendingReviews = [],
 }: CustomerDashboardProps) {
   const loyaltyEnabled = useLoyaltyEnabled();
+  const warm = useAccountPrefetch();
   const t = useTranslations();
   const tf = useFallbackTranslator(t);
   const { currency, formatPrice } = useCurrency();
@@ -176,9 +179,6 @@ export function CustomerDashboard({
       label: t("customerProfile.preferences"),
     },
   ];
-  const activityLabel = t.has("common.activity")
-    ? t("common.activity")
-    : "Activity";
 
   // A card without an href (Total Spent) is a plain read-out — every other
   // number doubles as the shortcut to its page, which is why Orders, Wishlist
@@ -215,252 +215,237 @@ export function CustomerDashboard({
     },
   ];
 
+  const initials =
+    (user.name || user.email)
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part.charAt(0))
+      .join("")
+      .toUpperCase() || "?";
+  const memberSince = stats.memberSince
+    ? new Date(stats.memberSince).toLocaleDateString(locale, { year: "numeric", month: "long" })
+    : null;
+  const statTones: Record<string, AccountTone> = {
+    orders: "silk",
+    spent: "gold",
+    wishlist: "madder",
+    credit: "jade",
+  };
+  const shortcutLinks = [...activityLinks, ...settingsMenuLinks.map((link) => ({ ...link, count: 0 }))];
+
   return (
-    // Like Preferences, a column rather than the full width: on a wide screen
-    // a list row stretched edge to edge leaves its name and its price a
-    // thousand pixels apart.
+    // A column rather than the full width: on a wide screen a list row
+    // stretched edge to edge leaves its name and its price far apart.
     <div className="mx-auto w-full max-w-6xl space-y-6">
-      {/* Page Header — desktop only; the top bar carries the title on phones. */}
-      <div className="hidden items-center justify-between lg:flex">
-        <div>
-          <h1 className="text-xl font-bold sm:text-2xl">
-            {t("account.welcome", { name: firstName })}
-          </h1>
-          <p className="text-sm text-muted-foreground sm:text-base">
-            {t("account.overviewDesc")}
-          </p>
-        </div>
-        {/* Hidden with the rest of loyalty (see `useLoyaltyEnabled`). */}
-        {loyaltyEnabled && stats.loyaltyTier && (
-          <Link href="/account/rewards" className="flex items-center gap-2 rounded-full transition hover:opacity-80">
-            <Badge variant="outline" className={tierColors[stats.loyaltyTier]}>
-              <Star className="h-3 w-3 mr-1" />
-              {t(`customerProfile.${stats.loyaltyTier}`)}
-            </Badge>
-            {typeof stats.loyaltyPoints === "number" && (
-              <span className="text-sm text-muted-foreground">
-                {stats.loyaltyPoints.toLocaleString(locale)}{" "}
-                {t("customerProfile.loyaltyPoints")}
-              </span>
+      {/* The welcome, on the store's silk: who is signed in, since when, and
+          their tier — at every width, since it is the page's whole title. */}
+      <section
+        className="relative isolate overflow-hidden rounded-3xl p-5 text-white shadow-lg shadow-primary/20 sm:p-7"
+        style={{ background: SILK_GRADIENT }}
+      >
+        <SilkBackdrop lotusClassName="-bottom-24 -right-20 size-80 opacity-30" />
+        <div className="flex flex-wrap items-center gap-4">
+          <span className="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white/15 text-xl font-bold ring-2 ring-[var(--highlight)]/70 sm:size-16">
+            {user.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={user.image} alt="" className="size-full object-cover" />
+            ) : (
+              initials
             )}
+          </span>
+          <div className="min-w-0 flex-1 basis-52">
+            <h1 className="text-xl font-extrabold tracking-tight sm:text-2xl">
+              {t("account.welcome", { name: firstName })}
+            </h1>
+            <p className="mt-0.5 text-sm text-white/80">
+              {memberSince
+                ? `${t("customerProfile.memberSince")} ${memberSince}`
+                : t("account.overviewDesc")}
+            </p>
+          </div>
+          {/* Hidden with the rest of loyalty (see `useLoyaltyEnabled`). */}
+          {loyaltyEnabled && stats.loyaltyTier ? (
+            <Link
+              href="/account/rewards"
+              className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3.5 py-1.5 text-sm font-semibold ring-1 ring-inset ring-white/25 backdrop-blur transition hover:bg-white/25"
+            >
+              <Crown className="size-4 text-[var(--highlight)]" />
+              {t(`customerProfile.${stats.loyaltyTier}`)}
+              {typeof stats.loyaltyPoints === "number" ? (
+                <span className="rounded-full bg-[var(--highlight)] px-2 text-xs font-bold text-[#3b2410]">
+                  {stats.loyaltyPoints.toLocaleString(locale)} {t("customerProfile.loyaltyPoints")}
+                </span>
+              ) : null}
+            </Link>
+          ) : null}
+        </div>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <Link
+            href="/account/orders"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-white/90"
+          >
+            <Truck className="size-4" />
+            {tf("account.hub.trackOrders", "Track my orders")}
           </Link>
-        )}
-      </div>
+          <Link
+            href="/products"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-white/30 transition hover:bg-white/20"
+          >
+            <ShoppingBag className="size-4" />
+            {t("account.startShopping")}
+          </Link>
+        </div>
+      </section>
 
       {/* Only what waits on the shopper — and not on the page at all when
           nothing does. "Where is my order" is the most common reason this page
           is opened, so the order on its way is in it at every width. */}
-      <AttentionCard
-        locale={locale}
-        attention={attention}
-        pendingReviews={pendingReviews}
-      />
+      <AttentionCard locale={locale} attention={attention} pendingReviews={pendingReviews} />
 
-      {/* Stat cards — one design at every width: 2×2 until `xl`, where the
-          column is wide enough for four. The icon sits in the brand tint (the
-          chip the phone menus below use), the number leads and its label
-          captions it. */}
-      <div className="grid grid-cols-2 gap-2 xl:grid-cols-4 xl:gap-4">
+      {/* Every figure but the total spent is the shortcut to its page. */}
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4 xl:gap-4">
         {statCards.map((card) => {
           const Icon = card.icon;
-          const inner = (
-            <>
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-store-link xl:size-11">
-                <Icon className="size-4 xl:size-5" aria-hidden />
-              </div>
-              {/* Formatted currency can be a long non-breaking string, so the
-                  wrapper needs a constrained width — `min-w-0` alone leaves
-                  the intrinsic width intact and the value overflows. */}
-              <div className="min-w-0 flex-1">
-                <p className="break-words text-lg font-bold leading-6 tabular-nums xl:text-2xl xl:leading-8">
-                  {card.value}
-                </p>
-                <p className="break-words text-xs text-muted-foreground xl:text-[13px]">
-                  {card.label}
-                </p>
-              </div>
-            </>
+          const tile = (
+            <AccountStat
+              tone={statTones[card.key]}
+              icon={<Icon aria-hidden />}
+              value={card.value}
+              label={card.label}
+              className="h-full"
+            />
           );
           return card.href ? (
             <Link
               key={card.key}
               href={card.href}
-              className={cn(
-                statCardClassName,
-                "transition-colors hover:bg-muted/50 active:bg-muted/50",
-              )}
-            >
-              {inner}
+              onPointerEnter={() => warm(card.href!)}
+              onTouchStart={() => warm(card.href!)}
+              className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+              {tile}
             </Link>
           ) : (
-            <div key={card.key} className={statCardClassName}>
-              {inner}
-            </div>
+            <div key={card.key}>{tile}</div>
           );
         })}
       </div>
 
-      {/* Recent Orders. Not asked about twice: an order the attention card
-          shows is left out, so a shopper whose only order is in it has no list
-          here — which is not the same as having no orders. */}
-      {recentOrders.length > 0 || !hasAttentionOrder ? (
-        <section aria-labelledby="recent-orders-title">
-          <div className="mb-1 flex items-center justify-between sm:mb-3">
-            <h2 id="recent-orders-title" className="text-base font-semibold">
-              {t("account.recentOrders")}
-            </h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="-mr-2 min-h-11 sm:mr-0 sm:min-h-8"
-              asChild
-            >
-              <Link href="/account/orders">
-                {t("common.viewAll")}
-                <ChevronRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-          {recentOrders.length === 0 ? (
-            <div className="rounded-xl border bg-card py-8 text-center text-muted-foreground shadow-sm">
-              <Package className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>{t("account.noOrders")}</p>
-              <Button variant="outline" className="mt-4" asChild>
-                <Link href="/products">{t("account.startShopping")}</Link>
-              </Button>
-            </div>
-          ) : (
-            <div className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
-              {recentOrders.map((order) => (
-                <Link
-                  key={order._id}
-                  href={`/account/orders/${order._id}`}
-                  className="flex min-h-[72px] items-center gap-3 px-3 py-3 transition-colors hover:bg-muted/50 sm:gap-4 sm:px-5 sm:py-3.5"
-                >
-                  <ProductThumb product={order.product} />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium leading-5">
-                      {productTitle(
-                        order.product,
-                        order.orderNumber,
-                        order.moreItems,
-                        plusMore,
-                      )}
-                    </p>
-                    <p className="text-xs text-muted-foreground sm:text-[13px] sm:leading-[18px]">
-                      #{order.orderNumber} · {formatDate(order.createdAt)}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 flex-col items-end gap-0.5 sm:flex-row sm:items-center sm:gap-4">
-                    {/* Delivered is the normal case, so it is a quiet word;
-                        the status that needs a look gets the badge. */}
-                    {order.status === "delivered" ? (
-                      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground sm:text-[13px]">
-                        <span
-                          className="size-1.5 rounded-full bg-status-on-positive"
-                          aria-hidden
-                        />
-                        {orderStatusLabel(t, order.status)}
-                      </span>
-                    ) : (
-                      <Badge
-                        variant="secondary"
-                        className={ORDER_STATUS_CLASSES[order.status]}
-                      >
-                        {orderStatusLabel(t, order.status)}
-                      </Badge>
-                    )}
-                    <span className="whitespace-nowrap text-sm font-semibold tabular-nums max-sm:order-first sm:w-24 sm:text-right">
-                      {formatPrice(order.totalAmount)}
-                    </span>
-                  </div>
-                  <ChevronRight
-                    className="hidden size-4 shrink-0 text-muted-foreground sm:block"
-                    aria-hidden
-                  />
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+        {/* Recent Orders. Not asked about twice: an order the attention card
+            shows is left out, so a shopper whose only order is in it has no
+            list here — which is not the same as having no orders. */}
+        {recentOrders.length > 0 || !hasAttentionOrder ? (
+          <AccountSection
+            icon={<Package />}
+            title={t("account.recentOrders")}
+            action={
+              <Button variant="ghost" size="sm" className="-me-2 text-primary" asChild>
+                <Link href="/account/orders">
+                  {t("common.viewAll")}
+                  <ChevronRight className="ms-0.5 size-4 rtl:rotate-180" />
                 </Link>
-              ))}
-            </div>
-          )}
-        </section>
-      ) : null}
+              </Button>
+            }
+            bodyClassName="px-0 py-0 sm:px-0"
+          >
+            {recentOrders.length === 0 ? (
+              <div className="px-5 pb-6 sm:px-6">
+                <AccountEmpty
+                  icon={<Package />}
+                  title={t("account.noOrders")}
+                  action={
+                    <Button asChild className="rounded-xl">
+                      <Link href="/products">{t("account.startShopping")}</Link>
+                    </Button>
+                  }
+                />
+              </div>
+            ) : (
+              <ul className="divide-y border-t">
+                {recentOrders.map((order) => (
+                  <li key={order._id}>
+                    <Link
+                      href={`/account/orders/${order._id}`}
+                      className="group flex min-h-[76px] items-center gap-3 px-5 py-3 transition-colors hover:bg-primary/[0.03] sm:gap-4 sm:px-6"
+                    >
+                      <ProductThumb product={order.product} />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold leading-5">
+                          {productTitle(order.product, order.orderNumber, order.moreItems, plusMore)}
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          #{order.orderNumber} · {formatDate(order.createdAt)}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 flex-col items-end gap-1">
+                        <span className="whitespace-nowrap text-sm font-bold tabular-nums">
+                          {formatPrice(order.totalAmount)}
+                        </span>
+                        {order.status === "delivered" ? (
+                          <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <span className="size-1.5 rounded-full bg-status-on-positive" aria-hidden />
+                            {orderStatusLabel(t, order.status)}
+                          </span>
+                        ) : (
+                          <Badge variant="secondary" className={cn("rounded-full", ORDER_STATUS_CLASSES[order.status])}>
+                            {orderStatusLabel(t, order.status)}
+                          </Badge>
+                        )}
+                      </div>
+                      <ChevronRight className="hidden size-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 sm:block rtl:rotate-180" aria-hidden />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </AccountSection>
+        ) : (
+          <div className="hidden lg:block" />
+        )}
 
-      {/* Mobile menus. Activity holds the two rows a shopper checks, with
-          their unread counts; Settings holds configuration only. Sign out gets
-          its own card at the end so the destructive row can't be mis-tapped as
-          part of a list. */}
-      <div className="space-y-5 lg:hidden">
-        <div>
-          <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            {activityLabel}
-          </p>
-          <div className="divide-y overflow-hidden rounded-lg border bg-card">
-            {activityLinks.map((link) => {
+        {/* Shortcuts: the rest of the account in one card. On phones it is
+            the account's whole map, so it ends with signing out. */}
+        <AccountSection
+          icon={<LayoutGrid />}
+          tone="gold"
+          title={tf("account.hub.shortcuts", "Shortcuts")}
+          bodyClassName="pt-3"
+          className="h-fit"
+        >
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
+            {shortcutLinks.map((link) => {
               const Icon = link.icon;
               return (
                 <Link
                   key={link.href}
-                  href={`${link.href}`}
-                  className="flex min-h-11 items-center gap-3 px-3 py-2.5 transition-colors hover:bg-muted/50"
+                  href={link.href}
+                  onPointerEnter={() => warm(link.href)}
+                  onTouchStart={() => warm(link.href)}
+                  className="group flex min-h-12 items-center gap-2.5 rounded-xl border bg-background/60 px-3 py-2.5 text-sm font-medium transition hover:border-primary/30 hover:bg-primary/[0.04]"
                 >
-                  <span className="rounded-md bg-primary/10 p-1.5 text-store-link">
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                    {link.label}
-                  </span>
-                  {link.count > 0 && (
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold tabular-nums text-store-link">
+                  <Icon className="size-4 shrink-0 text-primary" />
+                  <span className="min-w-0 flex-1 truncate">{link.label}</span>
+                  {link.count > 0 ? (
+                    <span className="rounded-full bg-primary px-1.5 text-[11px] font-bold tabular-nums text-primary-foreground">
                       {link.count > 99 ? "99+" : link.count}
                     </span>
+                  ) : (
+                    <ChevronRight className="size-3.5 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 rtl:rotate-180" />
                   )}
-                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
                 </Link>
               );
             })}
           </div>
-        </div>
-
-        <div>
-          <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            {t("common.settings")}
-          </p>
-          <div className="divide-y overflow-hidden rounded-lg border bg-card">
-            {settingsMenuLinks.map((link) => {
-              const Icon = link.icon;
-              return (
-                <Link
-                  key={link.href}
-                  href={`${link.href}`}
-                  className="flex min-h-11 items-center gap-3 px-3 py-2.5 transition-colors hover:bg-muted/50"
-                >
-                  <span className="rounded-md bg-primary/10 p-1.5 text-store-link">
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                    {link.label}
-                  </span>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="overflow-hidden rounded-lg border bg-card">
           <button
             type="button"
             onClick={handleLogout}
-            className="flex min-h-11 w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-muted/50"
+            className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-destructive/20 text-sm font-semibold text-destructive transition hover:bg-destructive/5 lg:hidden"
           >
-            <span className="rounded-md bg-destructive/10 p-1.5 text-destructive">
-              <LogOut className="h-4 w-4" />
-            </span>
-            <span className="min-w-0 flex-1 truncate text-sm font-medium text-destructive">
-              {t("auth.signOut")}
-            </span>
+            <LogOut className="size-4" />
+            {t("auth.signOut")}
           </button>
-        </div>
+        </AccountSection>
       </div>
     </div>
   );

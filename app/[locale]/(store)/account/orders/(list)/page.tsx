@@ -1,17 +1,10 @@
 import Link from "@/components/language/link";
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { ClientSuspense } from "@/components/common/client-suspense";
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { CustomerOrdersList } from "@/components/account/orders-list";
+import { CustomerOrdersList, OrdersListFallback } from "@/components/account/orders-list";
+import { AccountPageHeader } from "@/components/account/account-ui";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -24,60 +17,24 @@ export default async function OrdersPage({ params }: PageProps) {
   const t = await getTranslations({ locale });
 
   return (
-    <div className="space-y-6">
-      {/* Page Header. The title block is desktop-only — the mobile identity
-          strip carries it — but Pre-orders stays reachable on every viewport. */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="hidden lg:block">
-          <h1 className="text-xl font-bold sm:text-2xl">{t("orders.title")}</h1>
-          <p className="text-sm text-muted-foreground sm:text-base">
-            {t("orders.subtitle")}
-          </p>
-        </div>
-        <Button variant="outline" className="min-h-11 sm:min-h-9" asChild>
-          <Link href="/account/orders/pre-orders">
-            <CalendarClock className="mr-2 h-4 w-4" />
-            {t("orders.preOrders")}
-          </Link>
-        </Button>
-      </div>
+    <div className="mx-auto w-full max-w-5xl space-y-5">
+      <AccountPageHeader
+        icon={<Package />}
+        title={t("orders.title")}
+        description={t("orders.subtitle")}
+        actions={
+          <Button variant="outline" className="min-h-11 rounded-xl sm:min-h-10" asChild>
+            <Link href="/account/orders/pre-orders">
+              <CalendarClock className="size-4 text-primary" />
+              {t("orders.preOrders")}
+            </Link>
+          </Button>
+        }
+      />
 
-      {/* Orders List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {t("orders.orderHistory")}
-          </CardTitle>
-          <CardDescription>
-            {t("orders.historyDesc")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ClientSuspense fallback={<OrdersListSkeleton />}>
-            <CustomerOrdersList filter="regular" />
-          </ClientSuspense>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-function OrdersListSkeleton() {
-  return (
-    <div className="space-y-4">
-      {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="rounded-lg border p-4 space-y-3">
-          <div className="flex justify-between">
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-6 w-20" />
-          </div>
-          <Skeleton className="h-4 w-48" />
-          <div className="flex justify-between">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-4 w-20" />
-          </div>
-        </div>
-      ))}
+      <ClientSuspense fallback={<OrdersListFallback />}>
+        <CustomerOrdersList filter="regular" statusTabs />
+      </ClientSuspense>
     </div>
   );
 }

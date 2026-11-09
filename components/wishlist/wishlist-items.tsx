@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AccountEmpty } from "@/components/account/account-ui";
 import { useWishlist, wishlistFirstSync } from "@/hooks/use-wishlist";
 import { DEFAULT_STALE_TIME_MS } from "@/hooks/use-suspense-resource";
 import {
@@ -40,20 +41,16 @@ export function WishlistItems() {
 
   if (items.length === 0) {
     return (
-      <div className="text-center py-16">
-        <Heart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-        <h2 className="text-xl font-semibold mb-2">
-          {t("wishlist.empty")}
-        </h2>
-        <p className="text-muted-foreground mb-6">
-          {t("wishlist.emptyDescription")}
-        </p>
-        <Button asChild>
-          <Link href="/products">
-            {t("common.browseProducts")}
-          </Link>
-        </Button>
-      </div>
+      <AccountEmpty
+        icon={<Heart />}
+        title={t("wishlist.empty")}
+        description={t("wishlist.emptyDescription")}
+        action={
+          <Button asChild className="rounded-xl">
+            <Link href="/products">{t("common.browseProducts")}</Link>
+          </Button>
+        }
+      />
     );
   }
 
@@ -95,6 +92,11 @@ export function WishlistItems() {
   });
 
   return (
+    <div className="space-y-4">
+      <p className="inline-flex items-center gap-2 rounded-full bg-primary/8 px-3 py-1 text-sm font-semibold text-primary ring-1 ring-inset ring-primary/15">
+        <Heart className="size-4 fill-current" />
+        {t("account.hub.savedCount", { count: products.length })}
+      </p>
     <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ${CARD_GRID_GAP}`}>
       {products.map((product) => (
         <ModernProductCard
@@ -104,6 +106,7 @@ export function WishlistItems() {
           showQuickView={true}
         />
       ))}
+    </div>
     </div>
   );
 }

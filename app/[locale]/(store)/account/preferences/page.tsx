@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Card } from "@/components/ui/card";
+import { SlidersHorizontal } from "lucide-react";
+import { AccountPageHeader } from "@/components/account/account-ui";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ClientSuspense } from "@/components/common/client-suspense";
 import { PreferencesForm } from "@/components/account/preferences-form";
@@ -14,16 +15,12 @@ export default async function PreferencesPage({ params }: PageProps) {
   const t = await getTranslations({ locale });
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6">
-      {/* Desktop only; the mobile identity strip titles this page. */}
-      <div className="hidden lg:block">
-        <h1 className="text-xl font-bold sm:text-2xl">
-          {t("customerProfile.preferences")}
-        </h1>
-        <p className="text-sm text-muted-foreground sm:text-base">
-          {t("customerProfile.preferencesDesc")}
-        </p>
-      </div>
+    <div className="mx-auto w-full max-w-5xl space-y-5">
+      <AccountPageHeader
+        icon={<SlidersHorizontal />}
+        title={t("customerProfile.preferences")}
+        description={t("customerProfile.preferencesDesc")}
+      />
       <ClientSuspense fallback={<PreferencesSkeleton />}>
         <PreferencesForm />
       </ClientSuspense>
@@ -31,33 +28,27 @@ export default async function PreferencesPage({ params }: PageProps) {
   );
 }
 
-/** Mirrors the form: one card, three groups of switch rows. */
+/** Mirrors the form: three sections of switch rows. */
 function PreferencesSkeleton() {
   return (
-    <div aria-busy="true">
-      <Card className="gap-0 divide-y overflow-hidden py-0">
-        {[2, 2, 3].map((rows, group) => (
-          <div key={group}>
-            <div className="px-4 pt-5 pb-1 sm:px-6">
-              <Skeleton className="h-4 w-28" />
-            </div>
-            <div className="divide-y">
-              {Array.from({ length: rows }).map((_, row) => (
-                <div
-                  key={row}
-                  className="flex items-center justify-between gap-6 px-4 py-4 sm:px-6"
-                >
-                  <div className="min-w-0 flex-1 space-y-2">
-                    <Skeleton className="h-4 w-40 max-w-full" />
-                    <Skeleton className="h-4 w-72 max-w-full" />
-                  </div>
-                  <Skeleton className="h-5 w-9 shrink-0 rounded-full" />
-                </div>
-              ))}
-            </div>
+    <div className="grid gap-5 lg:grid-cols-2" aria-busy="true">
+      {[2, 2, 3].map((rows, group) => (
+        <div key={group} className={`space-y-4 rounded-2xl border p-5 ${group === 2 ? "lg:col-span-2" : ""}`}>
+          <div className="flex items-center gap-3">
+            <Skeleton className="size-10 rounded-xl" />
+            <Skeleton className="h-5 w-32" />
           </div>
-        ))}
-      </Card>
+          {Array.from({ length: rows }).map((_, row) => (
+            <div key={row} className="flex items-center justify-between gap-6">
+              <div className="min-w-0 flex-1 space-y-2">
+                <Skeleton className="h-4 w-40 max-w-full" />
+                <Skeleton className="h-4 w-64 max-w-full" />
+              </div>
+              <Skeleton className="h-5 w-9 shrink-0 rounded-full" />
+            </div>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }

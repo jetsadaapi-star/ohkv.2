@@ -5,10 +5,11 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import Link from "@/components/language/link";
 import { useRouter } from "@/hooks/use-locale-navigation";
-import { Loader2, ShoppingCart } from "lucide-react";
+import { FileText, Loader2, ShoppingCart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { AccountEmpty } from "./account-ui";
 import { toast } from "@/components/ui/toast-notification";
 import { useCartActions } from "@/hooks/use-cart";
 import { useLiveResource } from "@/hooks/use-live-resource";
@@ -63,6 +64,7 @@ function formatDate(value?: string) {
 
 export function CustomerQuotes() {
   const t = useTranslations("account.quotesList");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const { addItem } = useCartActions();
   const { formatPrice } = useCurrency();
@@ -109,11 +111,15 @@ export function CustomerQuotes() {
 
   if (quotes.length === 0) {
     return (
-      <Card>
-        <CardContent className="py-16 text-center text-sm text-muted-foreground">
-          {t("empty")}
-        </CardContent>
-      </Card>
+      <AccountEmpty
+        icon={<FileText />}
+        title={t("empty")}
+        action={
+          <Button asChild className="rounded-xl">
+            <Link href="/products">{tCommon("browseProducts")}</Link>
+          </Button>
+        }
+      />
     );
   }
 
@@ -126,8 +132,17 @@ export function CustomerQuotes() {
           Boolean(row.productSlug) &&
           (state === "expired" || state === "withdrawn" || state === "closed");
         return (
-          <Card key={row._id}>
-            <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:justify-between">
+          <div
+            key={row._id}
+            className={cn(
+              "relative overflow-hidden rounded-2xl border bg-card transition hover:shadow-md",
+              state === "ready" && "border-[color-mix(in_oklab,var(--highlight)_60%,transparent)] shadow-[0_8px_24px_-14px_color-mix(in_oklab,var(--highlight)_70%,transparent)]",
+            )}
+          >
+            {state === "ready" ? (
+              <span aria-hidden className="absolute inset-y-0 start-0 w-1 bg-[var(--highlight)]" />
+            ) : null}
+            <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:justify-between sm:p-5">
               <div className="min-w-0 space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
                   {row.productSlug ? (
@@ -140,7 +155,7 @@ export function CustomerQuotes() {
                   ) : (
                     <span className="font-medium">{row.productName}</span>
                   )}
-                  <Badge variant={badge.variant}>{t(badge.key)}</Badge>
+                  <Badge variant={badge.variant} className="rounded-full">{t(badge.key)}</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {row.variantName ? `${row.variantName} · ` : ""}
@@ -150,8 +165,8 @@ export function CustomerQuotes() {
                   })}
                 </p>
                 {row.offer ? (
-                  <p className="text-sm">
-                    <span className="font-medium">
+                  <p className="mt-1 inline-flex flex-wrap items-baseline gap-x-1 rounded-xl bg-muted/60 px-3 py-1.5 text-sm">
+                    <span className="font-bold text-primary">
                       {t("each", { price: formatPrice(row.offer.unitPrice) })}
                     </span>
                     <span className="text-muted-foreground">
@@ -187,6 +202,7 @@ export function CustomerQuotes() {
                   <Button
                     onClick={() => buy(row)}
                     disabled={addingId === row._id}
+                    className="rounded-xl shadow-md shadow-primary/20"
                   >
                     {addingId === row._id ? (
                       <Loader2 className="me-2 h-4 w-4 animate-spin" />
@@ -196,21 +212,21 @@ export function CustomerQuotes() {
                     {t("addToCart")}
                   </Button>
                 ) : state === "ordered" && row.orderId ? (
-                  <Button asChild variant="outline">
+                  <Button asChild variant="outline" className="rounded-xl">
                     <Link href={`/account/orders/${row.orderId}`}>
                       {t("viewOrder")}
                     </Link>
                   </Button>
                 ) : canAskAgain ? (
-                  <Button asChild variant="outline">
+                  <Button asChild variant="outline" className="rounded-xl">
                     <Link href={`/products/${row.productSlug}`}>
                       {t("askAgain")}
                     </Link>
                   </Button>
                 ) : null}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         );
       })}
     </div>

@@ -18,6 +18,7 @@ export interface UserProfilePayload {
     birthday?: string;
     gender?: string;
     twoFactorEnabled?: boolean;
+    emailVerified?: boolean;
     /** Whether the store offers self-service 2FA to this user's role. */
     twoFactorAvailable?: boolean;
     passkeyAvailable?: boolean;

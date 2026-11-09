@@ -465,6 +465,28 @@
         "inactive": "This account can't sign in. Contact support.",
         "emailNotVerified": "Please verify your email address before signing in."
       }
+    },
+    "hub": {
+      "trackOrders": "Track my orders",
+      "shortcuts": "Shortcuts",
+      "savedCount": "{count, plural, one {# saved item} other {# saved items}}",
+      "verified": "Email verified",
+      "creditHistory": "History",
+      "security": {
+        "title": "Account protection",
+        "level": {
+          "strong": "Strongly protected",
+          "good": "Well protected",
+          "weak": "Could be safer"
+        },
+        "progress": "{done} of {total} protections on",
+        "checks": {
+          "password": "Password set",
+          "email": "Email verified",
+          "twoFactor": "Two-step verification",
+          "phone": "Phone sign-in linked"
+        }
+      }
     }
   },
   "customerProfile": {

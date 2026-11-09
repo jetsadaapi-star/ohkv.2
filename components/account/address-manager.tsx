@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Plus, Loader2 } from "lucide-react";
+import { Briefcase, Home, Loader2, MapPin, Pencil, Phone, Plus, Star, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { SILK_GRADIENT } from "@/components/auth/silk-pattern";
+import { ToneIcon } from "./account-ui";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -258,21 +261,29 @@ export function AddressManager() {
                 ? t("addresses.labelOther")
                 : t("addresses.labelHome");
 
+          const LabelIcon = labelType === "work" ? Briefcase : labelType === "other" ? MapPin : Home;
+
           return (
             <div
               key={index}
-              className="bg-card rounded-xl border border-border p-5 flex flex-col min-h-[220px] shadow-sm"
+              className={cn(
+                "relative flex min-h-[220px] flex-col overflow-hidden rounded-2xl border bg-card p-5 transition hover:shadow-md",
+                address.isDefault &&
+                  "border-[color-mix(in_oklab,var(--highlight)_65%,transparent)] shadow-[0_10px_28px_-16px_color-mix(in_oklab,var(--highlight)_80%,transparent)]",
+              )}
             >
+              {address.isDefault ? (
+                <span aria-hidden className="absolute inset-x-0 top-0 h-[3px] bg-[linear-gradient(90deg,var(--primary),var(--highlight)_55%,var(--primary))]" />
+              ) : null}
               {/* Header with label and default badge */}
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="text-base font-semibold text-foreground">
-                  {labelDisplay}
-                </h3>
+              <div className="mb-3 flex items-center gap-3">
+                <ToneIcon tone={address.isDefault ? "gold" : "silk"}>
+                  <LabelIcon />
+                </ToneIcon>
+                <h3 className="min-w-0 flex-1 truncate text-base font-bold text-foreground">{labelDisplay}</h3>
                 {address.isDefault && (
-                  <Badge
-                    variant="secondary"
-                    className="bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border-0 text-xs font-medium px-2 py-0.5"
-                  >
+                  <Badge className="rounded-full border-0 bg-[var(--highlight)] px-2.5 py-0.5 text-xs font-bold text-[#3b2410]">
+                    <Star className="me-1 size-3 fill-current" />
                     {t("addresses.default")}
                   </Badge>
                 )}
@@ -280,53 +291,57 @@ export function AddressManager() {
 
               {/* Address Details */}
               <div className="flex-1 space-y-1 text-sm text-muted-foreground">
-                {/* Full Name */}
                 {getFullName(address) && (
-                  <p className="text-foreground">{getFullName(address)}</p>
+                  <p className="font-semibold text-foreground">{getFullName(address)}</p>
                 )}
-                {/* Street Address */}
                 <p>
                   {address.street}
                   {address.apartment && `, ${address.apartment}`}
                 </p>
-                {/* City, State, Zip, Country */}
                 <p>
                   {address.city}
                   {address.state && `, ${address.state}`} {address.postalCode}
                   {address.country && `, ${address.country}`}
                 </p>
-                {/* Phone */}
-                {address.phone && <p className="pt-2">{address.phone}</p>}
+                {address.phone && (
+                  <p className="inline-flex items-center gap-1.5 pt-2">
+                    <Phone className="size-3.5" />
+                    {address.phone}
+                  </p>
+                )}
               </div>
 
-              {/* Action Links */}
-              <div className="flex items-center gap-3 pt-4 mt-auto border-t border-border/50">
-                <button
+              {/* Actions */}
+              <div className="mt-4 flex flex-wrap items-center gap-2 border-t pt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-lg"
                   onClick={() => handleOpenEditDialog(address, index)}
-                  className="text-sm font-medium text-foreground underline hover:no-underline"
                 >
+                  <Pencil className="size-3.5" />
                   {t("common.edit")}
-                </button>
-                <span className="text-muted-foreground/50">|</span>
-                <button
-                  onClick={() => openDeleteDialog(address, index)}
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground"
-                >
-                  {t("common.remove")}
-                </button>
-                <span className="text-muted-foreground/50">|</span>
-                {address.isDefault ? (
-                  <span className="text-sm text-muted-foreground/50">
-                    {t("addresses.setDefault")}
-                  </span>
-                ) : (
-                  <button
+                </Button>
+                {address.isDefault ? null : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-lg text-primary hover:text-primary"
                     onClick={() => handleSetDefault(address, index)}
-                    className="text-sm font-medium text-muted-foreground underline hover:text-foreground hover:no-underline"
                   >
+                    <Star className="size-3.5" />
                     {t("addresses.setDefault")}
-                  </button>
+                  </Button>
                 )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="ms-auto size-8 rounded-lg text-muted-foreground hover:text-destructive"
+                  aria-label={t("common.remove")}
+                  onClick={() => openDeleteDialog(address, index)}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
               </div>
             </div>
           );
@@ -335,12 +350,15 @@ export function AddressManager() {
         {/* Add Address Card */}
         <button
           onClick={handleOpenAddDialog}
-          className="bg-transparent rounded-xl border-2 border-dashed border-muted-foreground/30 p-5 flex flex-col items-center justify-center min-h-[220px] hover:border-muted-foreground/50 hover:bg-muted/20 transition-colors cursor-pointer"
+          className="group flex min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-primary/25 bg-primary/[0.02] p-5 transition hover:border-primary/50 hover:bg-primary/[0.05]"
         >
-          <Plus className="h-6 w-6 text-muted-foreground mb-2" />
-          <span className="text-sm text-muted-foreground">
-            {t("addresses.addAddress")}
+          <span
+            className="mb-3 flex size-12 items-center justify-center rounded-2xl text-white shadow-md shadow-primary/25 transition group-hover:scale-105"
+            style={{ background: SILK_GRADIENT }}
+          >
+            <Plus className="size-6" />
           </span>
+          <span className="text-sm font-semibold text-primary">{t("addresses.addAddress")}</span>
         </button>
       </div>
 

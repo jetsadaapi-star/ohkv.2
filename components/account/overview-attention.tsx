@@ -64,7 +64,7 @@ export function ProductThumb({
   return (
     <div
       className={cn(
-        "relative size-11 shrink-0 overflow-hidden rounded-lg bg-muted sm:size-12",
+        "relative size-11 shrink-0 overflow-hidden rounded-xl bg-muted ring-1 ring-black/5 sm:size-12",
         className,
       )}
     >
@@ -105,9 +105,9 @@ function IconChip({
   );
 }
 
-const rowClassName = "flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:gap-4 sm:px-5 sm:py-4";
+const rowClassName = "flex flex-col gap-2 px-4 py-3.5 sm:flex-row sm:items-center sm:gap-4 sm:px-6 sm:py-4";
 const overlineClassName =
-  "block text-[11px] font-bold uppercase leading-4 tracking-wider text-muted-foreground";
+  "block text-[11px] font-bold uppercase leading-4 tracking-wider text-primary";
 
 function RowText({
   overline,
@@ -399,8 +399,12 @@ export function AttentionCard({
   return (
     <section
       aria-label={tf("account.overview.needsAttention", "Needs your attention")}
-      className="overflow-hidden rounded-xl border bg-card shadow-sm"
+      className="relative overflow-hidden rounded-2xl border bg-card shadow-[0_8px_24px_-12px_color-mix(in_oklab,var(--primary)_22%,transparent)]"
     >
+      <span
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-[3px] bg-[linear-gradient(90deg,var(--primary),var(--highlight)_55%,var(--primary))]"
+      />
       <div className="divide-y">{visible}</div>
       {foldable > 0 ? (
         // The rule is the wrapper's: a button's own radius would curve its ends.

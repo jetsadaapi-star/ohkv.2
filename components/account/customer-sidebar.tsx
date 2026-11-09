@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "@/components/language/link";
 import { useLoyaltyEnabled } from "@/providers/app-settings-provider";
+import { useAccountPrefetch } from "./use-account-prefetch";
 import { usePathname } from "@/hooks/use-locale-navigation";
 import { useTranslations } from "next-intl";
 import { LogOut } from "lucide-react";
@@ -218,6 +219,7 @@ export function CustomerSidebar({ locale, stats = {} }: CustomerSidebarProps) {
   // The first group goes unlabelled, as the admin's does: it sits right under
   // the brand, where a heading would only repeat what the page already is.
   const loyaltyEnabled = useLoyaltyEnabled();
+  const warm = useAccountPrefetch();
   const navGroups = [
     { key: "dashboard", label: "", links: dashboardLinks },
     { key: "settings", label: t("admin.settings.title"), links: settingsLinks },
@@ -303,6 +305,9 @@ export function CustomerSidebar({ locale, stats = {} }: CustomerSidebarProps) {
                           prefetch={false}
                           href={`/${locale}${link.href}`}
                           className="relative w-full"
+                          onPointerEnter={() => warm(link.href)}
+                          onFocus={() => warm(link.href)}
+                          onTouchStart={() => warm(link.href)}
                         >
                           <div className="flex w-full items-center gap-3 group-data-[collapsible=icon]:justify-center">
                             <span className="relative inline-flex shrink-0">

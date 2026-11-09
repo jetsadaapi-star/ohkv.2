@@ -13,6 +13,8 @@ import { buildLoginUrl } from "@/lib/auth/return-path";
 import { localeHref } from "@/lib/i18n/locale-routing";
 import { brandIconUrl, resolveBrand } from "@/lib/branding/brand";
 import { getSettingsLean } from "@/models/settings.model";
+import { AccountPageHeader } from "@/components/account/account-ui";
+import { MessageSquare } from "lucide-react";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -110,12 +112,12 @@ export default async function CustomerInboxPage({
 
   return (
     <div className="flex flex-col gap-4 [--inbox-offset:7.5rem]">
-      <div className="shrink-0">
-        <h1 className="text-xl font-bold sm:text-2xl">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground sm:text-base">
-          {t("subtitle")}
-        </p>
-      </div>
+      <AccountPageHeader
+        className="shrink-0"
+        icon={<MessageSquare />}
+        title={t("title")}
+        description={t("subtitle")}
+      />
 
       {/* The inbox is the one storefront screen that needs every `chat`
           string; the bundle other storefront pages ship carries a few. */}

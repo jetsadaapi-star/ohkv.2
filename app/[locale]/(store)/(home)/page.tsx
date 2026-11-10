@@ -3,7 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import { type Locale } from "@/config/i18n.config";
 import { CampaignBannerHost } from "@/components/store/campaign-banners/campaign-banner-host";
 import { StoreSections } from "@/components/store/store-sections";
-import { FlashSaleStrip } from "@/components/flash-sale/flash-sale-client";
+import { FlashSaleHomeRail } from "@/components/flash-sale/flash-sale-client";
 import { getStorefrontCampaignBanners } from "@/lib/campaign-banners/storefront";
 import { getHomePageRender } from "@/lib/storefront/pages/get-home-page";
 import { storefrontPageMetadata } from "@/lib/storefront/storefront-metadata";
@@ -71,7 +71,7 @@ export default async function HomePage({ params }: PageProps) {
   return (
     <>
       <CampaignBannerHost banners={campaignBanners} />
-      <FlashSaleStrip />
+      <FlashSaleHomeRail />
       <StoreSections sections={sections} ctx={ctx} />
     </>
   );

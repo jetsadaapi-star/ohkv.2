@@ -1139,6 +1139,18 @@ export interface ICatalogSettings {
  * the feature gate, the two storefront depths it owns, and the booking rules.
  */
 /**
+ * Admin → Flash Sale → rules for stores (lib/catalog/flash-sales.ts): whether
+ * a store may run Flash Sales of its own products, and within what.
+ */
+export interface IFlashSaleSettings {
+  vendorsEnabled: boolean;
+  /** The deepest discount a store may set, in percent. */
+  vendorMaxDiscount?: number;
+  /** The most products one store sale may hold. */
+  vendorMaxProducts?: number;
+}
+
+/**
  * Settings → Loyalty points (lib/customers/loyalty.ts): paid orders earn
  * points, a higher tier earns more of them, and a customer turns points into
  * store credit they spend at checkout.
@@ -1459,6 +1471,7 @@ export interface ISettings extends Document {
   catalog: ICatalogSettings;
   boosting: IBoostingSettings;
   loyalty: ILoyaltySettings;
+  flashSales: IFlashSaleSettings;
   notifications: INotificationSettings;
   storage: IStorageSettings;
   aiSalesAgent: IAISalesAgentSettings;
@@ -3016,6 +3029,19 @@ const SettingsSchema = new Schema<ISettings>(
             ),
             default: undefined,
           },
+        },
+        { _id: false },
+      ),
+      default: () => ({}),
+    },
+
+    // Flash Sale rules for stores — see IFlashSaleSettings.
+    flashSales: {
+      type: new Schema(
+        {
+          vendorsEnabled: { type: Boolean, default: true },
+          vendorMaxDiscount: { type: Number, min: 1, max: 90, default: 90 },
+          vendorMaxProducts: { type: Number, min: 1, max: 100, default: 50 },
         },
         { _id: false },
       ),

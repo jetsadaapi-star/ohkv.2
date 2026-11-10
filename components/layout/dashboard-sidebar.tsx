@@ -853,6 +853,12 @@ function buildVendorNavGroups(
       href: "/vendor/discounts",
       icon: "Percent",
     });
+    // A Flash Sale is the store's other promotion: the same permission opens it.
+    items.push({
+      label: "admin.sidebar.flashSales",
+      href: "/vendor/flash-sales",
+      icon: "Zap",
+    });
   }
 
   if (perms.has("view_boosts") || perms.has("manage_boosts")) {

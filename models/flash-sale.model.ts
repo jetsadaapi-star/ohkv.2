@@ -8,6 +8,10 @@ import mongoose, { Schema, type Document, type Model, type Types } from "mongoos
  * selling deal is, so every price the store shows and charges — cards, the
  * product page, the cart, checkout — is the sale price without any of them
  * knowing about sales. `priceSnapshot` keeps what to put back.
+ *
+ * A sale is the marketplace's own (no `vendorId`: Admin → Flash Sale, any
+ * product) or one store's (`vendorId`: Vendor → Flash Sale, that store's
+ * products alone, inside the limits Admin → Flash Sale sets).
  */
 
 export const FLASH_SALE_STATES = ["scheduled", "live", "ended", "cancelled"] as const;
@@ -47,6 +51,8 @@ export interface IFlashSale extends Document {
   state: FlashSaleState;
   items: IFlashSaleItem[];
   priceSnapshot: IFlashSaleSnapshot[];
+  /** The store running it; absent for the marketplace's own sales. */
+  vendorId?: Types.ObjectId | null;
   createdByUserId?: Types.ObjectId;
   startedAt?: Date;
   endedAt?: Date;
@@ -95,6 +101,7 @@ const FlashSaleSchema = new Schema<IFlashSale>(
     state: { type: String, enum: FLASH_SALE_STATES, default: "scheduled", required: true },
     items: { type: [FlashSaleItemSchema], default: [] },
     priceSnapshot: { type: [SnapshotSchema], default: [] },
+    vendorId: { type: Schema.Types.ObjectId, ref: "Vendor", default: null },
     createdByUserId: { type: Schema.Types.ObjectId, ref: "User" },
     startedAt: Date,
     endedAt: Date,
@@ -106,6 +113,7 @@ const FlashSaleSchema = new Schema<IFlashSale>(
 FlashSaleSchema.index({ state: 1, startsAt: 1 });
 FlashSaleSchema.index({ state: 1, endsAt: 1 });
 FlashSaleSchema.index({ "items.productId": 1, state: 1 });
+FlashSaleSchema.index({ vendorId: 1, startsAt: -1 });
 
 export const FlashSale: Model<IFlashSale> =
   mongoose.models.FlashSale || mongoose.model<IFlashSale>("FlashSale", FlashSaleSchema);

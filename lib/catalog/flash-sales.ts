@@ -3,6 +3,7 @@ import "server-only";
 import { Types } from "mongoose";
 import { NotFoundError, ValidationError } from "@/lib/api/errors";
 import { connectDB } from "@/lib/db";
+import { getSettingsLean } from "@/models/settings.model";
 import { revalidateProductContent } from "@/lib/cache-invalidation";
 import { Order, Product } from "@/models";
 import { syncProductAggregates } from "@/models/product.model";
@@ -15,8 +16,10 @@ import {
 } from "@/models/flash-sale.model";
 
 /**
- * Flash Sales (Admin → Flash Sale): a set of products at a percentage off for
- * a window, each optionally capped at a number of units.
+ * Flash Sales: a set of products at a percentage off for a window, each
+ * optionally capped at a number of units. The marketplace runs its own (Admin
+ * → Flash Sale, any product); a store runs its own (Vendor → Flash Sale), of
+ * its own products only, within the rules the admin sets there.
  *
  * The engine is the live-selling deal's: on start the sale price is written
  * onto the product (the regular price becomes the compare-at price, so every
@@ -38,6 +41,69 @@ export const FLASH_SALE_LIMITS = {
 } as const;
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
+
+/** Who is acting: the marketplace (no vendor) or one store. */
+export interface FlashSaleScope {
+  vendorId?: string | Types.ObjectId | null;
+}
+
+export interface FlashSaleVendorRules {
+  vendorsEnabled: boolean;
+  maxDiscount: number;
+  maxProducts: number;
+}
+
+/** Admin → Flash Sale's rules for stores, with their defaults. */
+export function flashSaleRulesOf(settings: { flashSales?: { vendorsEnabled?: boolean; vendorMaxDiscount?: number; vendorMaxProducts?: number } | null }): FlashSaleVendorRules {
+  const raw = settings.flashSales ?? {};
+  const clamp = (value: unknown, min: number, max: number, fallback: number) => {
+    const n = Math.round(Number(value));
+    return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
+  };
+  return {
+    vendorsEnabled: raw.vendorsEnabled !== false,
+    maxDiscount: clamp(raw.vendorMaxDiscount, FLASH_SALE_LIMITS.minDiscount, FLASH_SALE_LIMITS.maxDiscount, FLASH_SALE_LIMITS.maxDiscount),
+    maxProducts: clamp(raw.vendorMaxProducts, 1, FLASH_SALE_LIMITS.items, 50),
+  };
+}
+
+export async function getFlashSaleVendorRules() {
+  await connectDB();
+  return flashSaleRulesOf(await getSettingsLean());
+}
+
+function vendorObjectId(scope?: FlashSaleScope) {
+  const id = scope?.vendorId;
+  if (!id) return null;
+  return id instanceof Types.ObjectId ? id : new Types.ObjectId(String(id));
+}
+
+/** The sale's filter for whoever is acting: a store reaches only its own. */
+function scopeFilter(scope?: FlashSaleScope) {
+  const vendorId = vendorObjectId(scope);
+  return vendorId ? { vendorId } : {};
+}
+
+/**
+ * A store's limits, checked on every save: the feature switched on for
+ * stores, its discount and product caps, and every product its own.
+ */
+async function checkVendorSale(vendorId: Types.ObjectId, items: Array<{ productId: Types.ObjectId; discountPercent: number }>) {
+  const rules = await getFlashSaleVendorRules();
+  if (!rules.vendorsEnabled) {
+    throw new ValidationError("Flash Sales for stores are switched off by the marketplace");
+  }
+  if (items.length > rules.maxProducts) {
+    throw new ValidationError({ items: [`A store sale holds at most ${rules.maxProducts} products`] });
+  }
+  if (items.some((item) => item.discountPercent > rules.maxDiscount)) {
+    throw new ValidationError({ items: [`The marketplace allows discounts up to ${rules.maxDiscount}%`] });
+  }
+  const own = await Product.countDocuments({ _id: { $in: items.map((item) => item.productId) }, vendorId });
+  if (own !== items.length) {
+    throw new ValidationError({ items: ["Only your own store's products can be in your Flash Sale"] });
+  }
+}
 
 interface ProductLean {
   _id: Types.ObjectId;
@@ -97,6 +163,8 @@ async function checkOverlap(params: {
   startsAt: Date;
   endsAt: Date;
   productIds: Types.ObjectId[];
+  /** A store is not told the name of another seller's (or the marketplace's) sale. */
+  hideName?: boolean;
 }) {
   const clash = await FlashSale.findOne({
     ...(params.id ? { _id: { $ne: params.id } } : {}),
@@ -109,20 +177,32 @@ async function checkOverlap(params: {
     .lean<{ name: string } | null>();
   if (clash) {
     throw new ValidationError({
-      items: [`Some of these products are already in "${clash.name}" at an overlapping time`],
+      items: [
+        params.hideName
+          ? "Some of these products are already in another Flash Sale at an overlapping time"
+          : `Some of these products are already in "${clash.name}" at an overlapping time`,
+      ],
     });
   }
 }
 
-export async function createFlashSale(input: FlashSaleInput, userId?: string) {
+export async function createFlashSale(input: FlashSaleInput, userId?: string, scope?: FlashSaleScope) {
   await connectDB();
   const name = input.name.trim().slice(0, 120);
   if (!name) throw new ValidationError({ name: ["Name the sale"] });
   checkWindow(input.startsAt, input.endsAt);
   const items = cleanItems(input.items);
-  await checkOverlap({ startsAt: input.startsAt, endsAt: input.endsAt, productIds: items.map((i) => i.productId) });
+  const vendorId = vendorObjectId(scope);
+  if (vendorId) await checkVendorSale(vendorId, items);
+  await checkOverlap({
+    startsAt: input.startsAt,
+    endsAt: input.endsAt,
+    productIds: items.map((i) => i.productId),
+    hideName: Boolean(vendorId),
+  });
   const sale = await FlashSale.create({
     name,
+    vendorId,
     startsAt: input.startsAt,
     endsAt: input.endsAt,
     items: items.map((item) => ({ ...item, soldCount: 0, endedEarly: false })),
@@ -136,10 +216,10 @@ export async function createFlashSale(input: FlashSaleInput, userId?: string) {
  * Changes a sale. A live one is taken off the products first and put back on
  * with the new terms, so a changed discount or item list is what shows.
  */
-export async function updateFlashSale(id: string, input: FlashSaleInput) {
+export async function updateFlashSale(id: string, input: FlashSaleInput, scope?: FlashSaleScope) {
   await connectDB();
   if (!Types.ObjectId.isValid(id)) throw new NotFoundError("Flash sale");
-  const sale = await FlashSale.findById(id);
+  const sale = await FlashSale.findOne({ _id: new Types.ObjectId(id), ...scopeFilter(scope) });
   if (!sale) throw new NotFoundError("Flash sale");
   if (sale.state === "ended" || sale.state === "cancelled") {
     throw new ValidationError("This sale is over and can no longer be changed");
@@ -148,7 +228,20 @@ export async function updateFlashSale(id: string, input: FlashSaleInput) {
   if (!name) throw new ValidationError({ name: ["Name the sale"] });
   checkWindow(input.startsAt, input.endsAt);
   const items = cleanItems(input.items);
-  await checkOverlap({ id: sale._id, startsAt: input.startsAt, endsAt: input.endsAt, productIds: items.map((i) => i.productId) });
+  // The sale's own store, whoever edits it: an admin changing a store's sale
+  // keeps it to that store's products.
+  if (sale.vendorId) {
+    const own = await Product.countDocuments({ _id: { $in: items.map((i) => i.productId) }, vendorId: sale.vendorId });
+    if (own !== items.length) throw new ValidationError({ items: ["Only the store's own products can be in its Flash Sale"] });
+  }
+  if (vendorObjectId(scope)) await checkVendorSale(vendorObjectId(scope)!, items);
+  await checkOverlap({
+    id: sale._id,
+    startsAt: input.startsAt,
+    endsAt: input.endsAt,
+    productIds: items.map((i) => i.productId),
+    hideName: Boolean(vendorObjectId(scope)),
+  });
 
   if (sale.state === "live") await restorePrices(sale);
   const previous = new Map(sale.items.map((item) => [String(item.productId), item]));
@@ -167,10 +260,10 @@ export async function updateFlashSale(id: string, input: FlashSaleInput) {
 }
 
 /** Stops a sale now (or drops one not started), putting regular prices back. */
-export async function cancelFlashSale(id: string) {
+export async function cancelFlashSale(id: string, scope?: FlashSaleScope) {
   await connectDB();
   if (!Types.ObjectId.isValid(id)) throw new NotFoundError("Flash sale");
-  const sale = await FlashSale.findById(id);
+  const sale = await FlashSale.findOne({ _id: new Types.ObjectId(id), ...scopeFilter(scope) });
   if (!sale) throw new NotFoundError("Flash sale");
   if (sale.state === "live") await restorePrices(sale);
   if (sale.state === "scheduled" || sale.state === "live") {
@@ -181,24 +274,26 @@ export async function cancelFlashSale(id: string) {
   return sale.toObject();
 }
 
-export async function deleteFlashSale(id: string) {
-  await cancelFlashSale(id);
-  await FlashSale.deleteOne({ _id: new Types.ObjectId(id) });
+export async function deleteFlashSale(id: string, scope?: FlashSaleScope) {
+  await cancelFlashSale(id, scope);
+  await FlashSale.deleteOne({ _id: new Types.ObjectId(id), ...scopeFilter(scope) });
 }
 
-export async function listFlashSales() {
+/** Sales, newest first: a store's own, or (for the admin) every one. */
+export async function listFlashSales(scope?: FlashSaleScope) {
   await connectDB();
-  return FlashSale.find({})
+  return FlashSale.find(scopeFilter(scope))
     .sort({ startsAt: -1 })
     .limit(200)
-    .populate({ path: "items.productId", select: "name images price slug" })
+    .populate({ path: "items.productId", select: "name images price comparePrice slug" })
+    .populate({ path: "vendorId", select: "storeName slug logo" })
     .lean<IFlashSale[]>();
 }
 
-export async function getFlashSale(id: string) {
+export async function getFlashSale(id: string, scope?: FlashSaleScope) {
   await connectDB();
   if (!Types.ObjectId.isValid(id)) throw new NotFoundError("Flash sale");
-  const sale = await FlashSale.findById(id)
+  const sale = await FlashSale.findOne({ _id: new Types.ObjectId(id), ...scopeFilter(scope) })
     .populate({ path: "items.productId", select: "name images price comparePrice slug variants" })
     .lean<IFlashSale | null>();
   if (!sale) throw new NotFoundError("Flash sale");
@@ -403,6 +498,8 @@ export interface PublicFlashSale {
   startsAt: string;
   endsAt: string;
   live: boolean;
+  /** The store running it; null for the marketplace's own sales. */
+  vendor: { id: string; name: string; slug: string; logo?: string } | null;
   items: Array<{
     productId: string;
     discountPercent: number;
@@ -412,25 +509,54 @@ export interface PublicFlashSale {
   }>;
 }
 
-/** Sales on now, and those starting within a week, for the storefront. */
-export async function publicFlashSales(): Promise<PublicFlashSale[]> {
+interface PublicSaleRow extends Omit<IFlashSale, "vendorId"> {
+  vendorId?: { _id: Types.ObjectId; storeName?: string; slug?: string; logo?: string } | null;
+}
+
+/**
+ * Sales on now (ending soonest first), then those starting within a week, for
+ * the storefront. `productId` narrows to the sales holding one product.
+ */
+export async function publicFlashSales(options: { productId?: string; limit?: number } = {}): Promise<PublicFlashSale[]> {
   await connectDB();
   const now = new Date();
-  const sales = await FlashSale.find({
-    $or: [
-      { state: "live", endsAt: { $gt: now } },
-      { state: "scheduled", startsAt: { $lte: new Date(now.getTime() + 7 * 86_400_000) }, endsAt: { $gt: now } },
-    ],
-  })
-    .sort({ startsAt: 1 })
-    .limit(10)
-    .lean<IFlashSale[]>();
-  return sales.map((sale) => ({
+  const limit = Math.min(Math.max(options.limit ?? 30, 1), 60);
+  const product =
+    options.productId && Types.ObjectId.isValid(options.productId)
+      ? { "items.productId": new Types.ObjectId(options.productId) }
+      : {};
+  const [live, upcoming] = await Promise.all([
+    FlashSale.find({ ...product, state: "live", endsAt: { $gt: now } })
+      .sort({ endsAt: 1 })
+      .limit(limit)
+      .populate({ path: "vendorId", select: "storeName slug logo" })
+      .lean<PublicSaleRow[]>(),
+    FlashSale.find({
+      ...product,
+      state: "scheduled",
+      startsAt: { $lte: new Date(now.getTime() + 7 * 86_400_000) },
+      endsAt: { $gt: now },
+    })
+      .sort({ startsAt: 1 })
+      .limit(limit)
+      .populate({ path: "vendorId", select: "storeName slug logo" })
+      .lean<PublicSaleRow[]>(),
+  ]);
+  return [...live, ...upcoming].slice(0, limit).map((sale) => ({
     id: String(sale._id),
     name: sale.name,
     startsAt: sale.startsAt.toISOString(),
     endsAt: sale.endsAt.toISOString(),
     live: sale.state === "live",
+    vendor:
+      sale.vendorId && typeof sale.vendorId === "object" && sale.vendorId.slug
+        ? {
+            id: String(sale.vendorId._id),
+            name: sale.vendorId.storeName ?? "",
+            slug: sale.vendorId.slug,
+            ...(sale.vendorId.logo ? { logo: sale.vendorId.logo } : {}),
+          }
+        : null,
     items: sale.items
       .filter((item) => item.skippedReason !== "live_deal" && item.skippedReason !== "missing")
       .map((item) => ({

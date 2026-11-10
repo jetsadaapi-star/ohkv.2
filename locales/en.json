@@ -17982,7 +17982,27 @@
       "noLimit": "No cap",
       "note": "Units are counted from orders placed during the sale; once a cap is reached that product goes back to its regular price within a minute. The discount reduces the seller's revenue on their own products.",
       "cancel": "Cancel",
-      "save": "Save sale"
+      "save": "Save sale",
+      "vendorDescription": "Put your products on sale for a short window, with a countdown on your store page, the Flash Sale page and product pages. The discount comes off your own selling price.",
+      "vendorLocked": "The marketplace has switched store Flash Sales off",
+      "vendorLockedHint": "You can still see your sales, but cannot create or change one until the marketplace turns them back on.",
+      "vendorRules": "Discounts up to {discount}% and at most {products} products per sale, from your own store only.",
+      "rules": {
+        "title": "Store Flash Sales",
+        "description": "Let stores run Flash Sales of their own products from their Flash Sale menu.",
+        "enabled": "Let stores create Flash Sales",
+        "maxDiscount": "Deepest discount a store may set",
+        "maxProducts": "Most products per sale",
+        "save": "Save rules",
+        "saved": "Rules saved",
+        "note": "Switching this off does not stop a sale already running — end it below if you need to. Stores fund their own discount, as their sales are counted at the Flash price."
+      },
+      "owner": {
+        "all": "All",
+        "platform": "Marketplace",
+        "stores": "Stores",
+        "platformBadge": "Marketplace"
+      }
     }
   },
   "vendor": {
@@ -23081,6 +23101,35 @@
     "none": "No flash sale right now",
     "noneHint": "Check back soon for the next deal.",
     "browse": "Browse products",
-    "upcoming": "Coming up"
+    "upcoming": "Coming up",
+    "unit": {
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Mins",
+      "seconds": "Secs"
+    },
+    "soldCount": "{count} sold",
+    "almostGone": "Only {count} left!",
+    "startsAtShort": "Starts {time}",
+    "flashPrice": "Flash price",
+    "viewAll": "View all",
+    "previous": "Previous",
+    "next": "Next",
+    "rounds": "Flash Sale rounds",
+    "onNow": "On now",
+    "storeSubtitle": "Limited-time deals from {store} — while stocks last.",
+    "stats": {
+      "deals": "Deals",
+      "upTo": "Up to",
+      "stores": "Stores"
+    },
+    "storesTakingPart": "Stores taking part",
+    "allStores": "All",
+    "onNowTitle": "On sale now",
+    "upcomingTitle": "Next round",
+    "dealCount": "{count, plural, one {# deal} other {# deals}}",
+    "byStore": "By {store}",
+    "noDealsHere": "This store has nothing in this round. Pick another round or see every store.",
+    "storeDeals": "Deals at {store}"
   }
 }

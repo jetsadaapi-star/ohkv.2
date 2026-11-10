@@ -48,6 +48,7 @@ import {
 } from "@/components/store/vendor-storefront-header";
 import { VendorStoreSearch } from "@/components/store/vendor-store-search";
 import { VendorAnnouncement } from "@/components/store/vendor-announcement";
+import { VendorFlashSale } from "@/components/flash-sale/vendor-flash-sale";
 import { StoreSections } from "@/components/store/store-sections";
 import { getStorefrontProductFilters } from "@/lib/products/storefront-product-filters";
 import { getStorefrontSettings } from "@/lib/storefront/storefront-settings";
@@ -544,6 +545,18 @@ export async function VendorStorefront({
           }}
         />
       </div>
+
+      {/* The store's deals in the Flash Sale on now, above Home and Products
+          alike: the first thing a shopper arriving from a deal looks for. */}
+      {!preview && (activeTab === "home" || activeTab === "products") ? (
+        <Suspense fallback={null}>
+          <VendorFlashSale
+            vendorId={vendor.id}
+            vendorSlug={vendor.slug}
+            title={trv("flashSale.storeDeals", "Deals at {store}", { store: vendor.storeName })}
+          />
+        </Suspense>
+      ) : null}
 
       {activeTab === "about" ? (
         <div className="mt-6 sm:mt-8">

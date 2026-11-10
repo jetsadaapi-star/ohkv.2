@@ -284,12 +284,12 @@ function BankAccounts({ view }: { view: View }) {
 }
 
 function SlipUpload({
-  token,
+  slipUrl,
   disabled,
   onUploaded,
   rejected,
 }: {
-  token: string;
+  slipUrl: string;
   disabled?: boolean;
   onUploaded: (view: View) => void;
   rejected?: boolean;
@@ -336,7 +336,7 @@ function SlipUpload({
     try {
       const body = new FormData();
       body.append("file", file);
-      const res = await fetch(`/api/payments/transfer/${encodeURIComponent(token)}/slip`, { method: "POST", body });
+      const res = await fetch(slipUrl, { method: "POST", body });
       const json = await res.json().catch(() => null);
       if (!res.ok || !json?.success) {
         throw new Error(json?.message || json?.error || t("slipSendError"));
@@ -466,8 +466,30 @@ function ResultCard({
 
 /* ---------------------------------- page ---------------------------------- */
 
-export function TransferPaymentView({ token, initial }: { token: string; initial: View }) {
+/**
+ * Who is paying. `order` (the default) is a shopper paying a transfer order;
+ * `platform` is a vendor paying the marketplace — an ad, a plan, commission —
+ * on the same page, with its own API, wording and way back.
+ */
+export interface TransferPaymentPlatformContext {
+  /** GET for the view; POST `${apiUrl}/slip` for the slip. */
+  apiUrl: string;
+  doneHref: string;
+}
+
+export function TransferPaymentView({
+  token,
+  initial,
+  platform,
+}: {
+  token: string;
+  initial: View;
+  platform?: TransferPaymentPlatformContext;
+}) {
   const t = useTranslations("storeText.transferPay");
+  const apiUrl = platform?.apiUrl ?? `/api/payments/transfer/${encodeURIComponent(token)}`;
+  // The vendor's wording where it differs from a shopper's.
+  const tx = (key: string) => (platform ? t(`platform.${key}`) : t(key));
   const locale = useLocale();
   const [view, setView] = useState<View>(initial);
   const [refreshing, setRefreshing] = useState(false);
@@ -481,13 +503,13 @@ export function TransferPaymentView({ token, initial }: { token: string; initial
   const refresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      const res = await fetch(`/api/payments/transfer/${encodeURIComponent(token)}`, { cache: "no-store" });
+      const res = await fetch(apiUrl, { cache: "no-store" });
       const json = await res.json().catch(() => null);
       if (res.ok && json?.success) setView(json.data as View);
     } finally {
       setRefreshing(false);
     }
-  }, [token]);
+  }, [apiUrl]);
 
   // Poll while the store is checking, slower while the shopper is paying.
   useEffect(() => {
@@ -514,17 +536,19 @@ export function TransferPaymentView({ token, initial }: { token: string; initial
 
   if (view.outcome === "paid") {
     return wrap(
-      <ResultCard tone="success" icon={<CheckCircle2 className="size-10" />} title={t("paidTitle")} body={t("paidBody")}>
+      <ResultCard tone="success" icon={<CheckCircle2 className="size-10" />} title={t("paidTitle")} body={tx("paidBody")}>
         <div className="mt-6 rounded-2xl bg-slate-50 p-4 text-sm">
-          <div className="flex justify-between"><span className="text-muted-foreground">{t("orderNumber")}</span><span className="font-semibold">{view.orderNumber}</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">{tx("orderNumber")}</span><span className="font-semibold">{view.orderNumber}</span></div>
           <div className="mt-1 flex justify-between"><span className="text-muted-foreground">{t("amountPaid")}</span><span className="font-bold">{amount}</span></div>
         </div>
         <div className="mt-6 grid gap-2">
-          <Link href="/account/orders" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800">
-            {t("viewOrders")}
+          <Link href={platform?.doneHref ?? "/account/orders"} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800">
+            {tx("viewOrders")}
             <ArrowRight className="size-4" />
           </Link>
-          <Link href="/" className="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">{t("continueShopping")}</Link>
+          {platform ? null : (
+            <Link href="/" className="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">{t("continueShopping")}</Link>
+          )}
         </div>
       </ResultCard>,
     );
@@ -536,14 +560,14 @@ export function TransferPaymentView({ token, initial }: { token: string; initial
         tone="warning"
         icon={<XCircle className="size-10" />}
         title={view.status === "expired" ? t("expiredTitle") : t("cancelledTitle")}
-        body={t("expiredBody")}
+        body={tx("expiredBody")}
       >
         <div className="mt-6 rounded-2xl bg-slate-50 p-4 text-sm">
-          <div className="flex justify-between"><span className="text-muted-foreground">{t("orderNumber")}</span><span className="font-semibold">{view.orderNumber}</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">{tx("orderNumber")}</span><span className="font-semibold">{view.orderNumber}</span></div>
           <div className="mt-1 flex justify-between"><span className="text-muted-foreground">{t("amount")}</span><span className="font-bold">{amount}</span></div>
         </div>
-        <Link href="/" className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800">
-          {t("backToShop")}
+        <Link href={platform?.doneHref ?? "/"} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800">
+          {tx("backToShop")}
         </Link>
       </ResultCard>,
     );
@@ -553,7 +577,7 @@ export function TransferPaymentView({ token, initial }: { token: string; initial
     return wrap(
       <>
         <div className="mx-auto mb-6 max-w-md"><Stepper current={3} /></div>
-        <ResultCard tone="info" icon={<Clock3 className="size-10" />} title={t("reviewTitle")} body={t("reviewBody")}>
+        <ResultCard tone="info" icon={<Clock3 className="size-10" />} title={t("reviewTitle")} body={tx("reviewBody")}>
           <span className="mt-4 inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">
             <span className="relative flex size-2">
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-amber-400 opacity-75" />
@@ -562,7 +586,7 @@ export function TransferPaymentView({ token, initial }: { token: string; initial
             {t("reviewing")}
           </span>
           <div className="mt-6 space-y-1.5 rounded-2xl bg-slate-50 p-4 text-start text-sm">
-            <div className="flex justify-between gap-3"><span className="text-muted-foreground">{t("orderNumber")}</span><span className="font-semibold">{view.orderNumber}</span></div>
+            <div className="flex justify-between gap-3"><span className="text-muted-foreground">{tx("orderNumber")}</span><span className="font-semibold">{view.orderNumber}</span></div>
             <div className="flex justify-between gap-3"><span className="text-muted-foreground">{t("amount")}</span><span className="font-bold">{amount}</span></div>
             <div className="flex justify-between gap-3"><span className="text-muted-foreground">{t("method")}</span><span className="font-semibold">{methodLabel}</span></div>
             {view.slipUploadedAt ? (
@@ -608,7 +632,7 @@ export function TransferPaymentView({ token, initial }: { token: string; initial
         <Stepper current={1} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] lg:items-start">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] lg:items-start">
         {/* Summary */}
         <aside className="space-y-4 lg:sticky lg:top-24">
           <div className="overflow-hidden rounded-3xl bg-slate-900 p-5 text-white shadow-xl">
@@ -619,10 +643,10 @@ export function TransferPaymentView({ token, initial }: { token: string; initial
             </div>
             <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-white/10 px-3.5 py-2.5">
               <div className="min-w-0">
-                <p className="text-[11px] text-white/60">{t("orderNumber")}</p>
+                <p className="text-[11px] text-white/60">{tx("orderNumber")}</p>
                 <p className="truncate font-mono text-sm font-bold">{view.orderNumber}</p>
               </div>
-              <CopyButton value={view.orderNumber} label={t("orderNumber")} className="border-white/20 bg-white/10 text-white hover:text-white" />
+              <CopyButton value={view.orderNumber} label={tx("orderNumber")} className="border-white/20 bg-white/10 text-white hover:text-white" />
             </div>
           </div>
 
@@ -637,7 +661,7 @@ export function TransferPaymentView({ token, initial }: { token: string; initial
                 onClick={() => setItemsOpen((o) => !o)}
                 className="flex w-full items-center justify-between px-4 py-3 text-sm font-semibold"
               >
-                {t("itemsCount", { count: view.items.reduce((n, i) => n + i.quantity, 0) })}
+                {platform ? t("platform.itemsTitle") : t("itemsCount", { count: view.items.reduce((n, i) => n + i.quantity, 0) })}
                 <ChevronDown className={cn("size-4 transition-transform", itemsOpen && "rotate-180")} />
               </button>
               {itemsOpen ? (
@@ -707,7 +731,7 @@ export function TransferPaymentView({ token, initial }: { token: string; initial
                 <p className="text-sm text-muted-foreground">{t("step2Body")}</p>
               </div>
             </div>
-            <SlipUpload token={token} onUploaded={setView} rejected={rejected} />
+            <SlipUpload slipUrl={`${apiUrl}/slip`} onUploaded={setView} rejected={rejected} />
           </section>
         </div>
       </div>

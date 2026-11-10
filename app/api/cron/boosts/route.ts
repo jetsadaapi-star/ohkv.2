@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { reconcileBoostCampaigns } from "@/lib/boosts/boosts";
+import { expireLapsedPlatformTransfers } from "@/lib/payments/platform-transfers";
 import { withCronRun } from "@/lib/cron/health";
 
 /**
@@ -23,6 +24,9 @@ import { withCronRun } from "@/lib/cron/health";
  */
 export const GET = withCronRun("boosts", async () => {
   await connectDB();
+  // Transfers with no slip by their deadline expire first, so the hold
+  // release below can give their days back in the same run.
+  await expireLapsedPlatformTransfers().catch((error) => console.error("Transfer expiry sweep failed:", error));
   const summary = await reconcileBoostCampaigns(100);
 
   return NextResponse.json({ success: true, data: summary });

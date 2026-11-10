@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { CreditCard, Smartphone } from "lucide-react";
+import { CreditCard, Landmark, QrCode, Smartphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ApiClientError } from "@/lib/api/client";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,9 @@ export type PlatformGateway =
   | "pesapal"
   | "iotec"
   | "orange_money"
-  | "mtn_momo";
+  | "mtn_momo"
+  | "promptpay"
+  | "bank_transfer";
 
 /** Shared so screens that only report a chosen gateway (the billing page's
  *  "paid with" column) name it exactly as the picker did. */
@@ -30,7 +32,12 @@ export const GATEWAY_LABELS: Record<PlatformGateway, string> = {
   iotec: "ioTec Pay",
   orange_money: "Orange Money",
   mtn_momo: "MTN Mobile Money",
+  promptpay: "PromptPay (QR)",
+  bank_transfer: "Bank transfer",
 };
+
+/** Paid by the vendor's own transfer and approved from the slip. */
+const TRANSFER_METHODS = new Set<PlatformGateway>(["promptpay", "bank_transfer"]);
 
 /**
  * What a vendor reads when starting a vendor→platform payment failed.
@@ -112,8 +119,14 @@ export function PaymentMethodPicker(props: {
           )}
         >
           <span className="flex items-center gap-2 font-medium">
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
-            {GATEWAY_LABELS[method]}
+            {method === "promptpay" ? (
+              <QrCode className="h-4 w-4 text-muted-foreground" />
+            ) : method === "bank_transfer" ? (
+              <Landmark className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <CreditCard className="h-4 w-4 text-muted-foreground" />
+            )}
+            {label(`boosts.purchase.method.${method}`, GATEWAY_LABELS[method])}
           </span>
           <span
             className={cn(
@@ -125,6 +138,15 @@ export function PaymentMethodPicker(props: {
           />
         </button>
       ))}
+
+      {props.value && TRANSFER_METHODS.has(props.value) ? (
+        <p className="rounded-lg border border-dashed bg-muted/30 p-3 text-xs leading-relaxed text-muted-foreground">
+          {label(
+            "boosts.purchase.transferHint",
+            "You'll see where to transfer next. Attach the slip there and the marketplace confirms it, usually within one business day.",
+          )}
+        </p>
+      ) : null}
 
       {props.value === "iotec" ? (
         <div className="space-y-3 rounded-lg border p-3">

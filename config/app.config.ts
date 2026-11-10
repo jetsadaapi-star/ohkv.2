@@ -385,6 +385,10 @@ export const PLATFORM_PAYMENT_PROVIDER = {
   IOTEC: "iotec",
   ORANGE_MONEY: "orange_money",
   MTN_MOMO: "mtn_momo",
+  /** PromptPay QR into the store's PromptPay ID; an admin checks the slip. */
+  PROMPTPAY: "promptpay",
+  /** A transfer into one of the store's bank accounts; an admin checks the slip. */
+  BANK_TRANSFER: "bank_transfer",
   MANUAL: "manual",
 } as const;
 
@@ -401,7 +405,23 @@ export const PLATFORM_PAYMENT_GATEWAYS = [
   PLATFORM_PAYMENT_PROVIDER.IOTEC,
   PLATFORM_PAYMENT_PROVIDER.ORANGE_MONEY,
   PLATFORM_PAYMENT_PROVIDER.MTN_MOMO,
+  PLATFORM_PAYMENT_PROVIDER.PROMPTPAY,
+  PLATFORM_PAYMENT_PROVIDER.BANK_TRANSFER,
 ] as const;
+
+/**
+ * The gateways above that are a transfer the vendor makes by hand: the
+ * vendor pays in their banking app, attaches the slip, and an admin approves
+ * it (lib/payments/platform-transfers.ts).
+ */
+export const PLATFORM_TRANSFER_METHODS = [
+  PLATFORM_PAYMENT_PROVIDER.PROMPTPAY,
+  PLATFORM_PAYMENT_PROVIDER.BANK_TRANSFER,
+] as const;
+export type PlatformTransferMethod = (typeof PLATFORM_TRANSFER_METHODS)[number];
+export function isPlatformTransferMethod(value: unknown): value is PlatformTransferMethod {
+  return typeof value === "string" && (PLATFORM_TRANSFER_METHODS as readonly string[]).includes(value);
+}
 
 export type PlatformPaymentGateway =
   (typeof PLATFORM_PAYMENT_GATEWAYS)[number];

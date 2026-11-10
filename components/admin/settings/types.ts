@@ -38,6 +38,8 @@ export interface PlatformPaymentMethodToggles {
   orange_money: boolean;
   iotec: boolean;
   mtn_momo: boolean;
+  promptpay: boolean;
+  bank_transfer: boolean;
 }
 
 /**

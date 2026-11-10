@@ -14,6 +14,7 @@ import { ObjectIdSchema } from "@/lib/validations";
 import { withApi } from "@/lib/api/handler";
 import { BoostSlotDay, Product } from "@/models";
 import { assertBoostingEnabled, releaseLapsedBoostHolds } from "@/lib/boosts/boosts";
+import { expireLapsedPlatformTransfers } from "@/lib/payments/platform-transfers";
 import { addDays, BOOST_DAY_PATTERN, utcDay } from "@/lib/boosts/boost-days";
 
 const AvailabilityQuerySchema = z.object({
@@ -72,7 +73,10 @@ export const GET = withApi({ auth: "user" }, async ({ request, session }) => {
   // A lapsed hold must not read as sold on a store whose cron never runs.
   // Bounded and detached: each release fires vendor notifications and a
   // storefront revalidation, and the vendor is waiting on this response.
-  void releaseLapsedBoostHolds(new Date(), 20).catch(() => undefined);
+  void expireLapsedPlatformTransfers()
+    .catch(() => 0)
+    .then(() => releaseLapsedBoostHolds(new Date(), 20))
+    .catch(() => undefined);
 
   // Ownership-checked, not merely echoed. `productBookedDays` is a per-product
   // schedule; answering it for someone else's product would expose exactly the

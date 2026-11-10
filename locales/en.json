@@ -4295,7 +4295,8 @@
       "mobileDescription": "Links to every part of the dashboard.",
       "activityLog": "Activity log",
       "staffMembers": "Members",
-      "flashSales": "Flash Sale"
+      "flashSales": "Flash Sale",
+      "vendorTransferSlips": "Transfer slips"
     },
     "pos": "Point of Sale",
     "posLocations": "POS Locations",
@@ -6815,7 +6816,12 @@
           "allow": "Let vendors pay with {name}",
           "offInPayments": "Off in Payment Settings: {gateways}.",
           "noneOn": "No gateway is on in Payment Settings yet.",
-          "noneAllowed": "With every method off, vendors have no way to pay."
+          "noneAllowed": "With every method off, vendors have no way to pay.",
+          "method": {
+            "promptpay": "PromptPay (QR)",
+            "bank_transfer": "Bank transfer"
+          },
+          "transferHint": "The store transfers and attaches the slip; you approve it in Vendors → Transfer slips."
         }
       },
       "demoMode": "Demo mode",
@@ -18003,6 +18009,47 @@
         "stores": "Stores",
         "platformBadge": "Marketplace"
       }
+    },
+    "vendorTransfers": {
+      "title": "Transfer slips",
+      "description": "Stores paying for ads, plans or commission by PromptPay or bank transfer. Check the amount against your bank, then approve to activate it at once.",
+      "filter": {
+        "reviewing": "To check",
+        "all": "All"
+      },
+      "loadFailed": "Couldn’t load the list",
+      "emptyReviewing": "No slips to check",
+      "emptyAll": "No store has paid by transfer yet",
+      "emptyHint": "When a store attaches a slip it appears here and you are notified.",
+      "status": {
+        "reviewing": "To check",
+        "awaiting_slip": "Awaiting slip",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "expired": "Expired"
+      },
+      "method": {
+        "promptpay": "PromptPay",
+        "bank_transfer": "Bank transfer"
+      },
+      "reference": "Reference",
+      "slipAt": "Slip sent",
+      "slipCount": "Attempt {count}",
+      "deadline": "Slip due by",
+      "reason": "Reason",
+      "approve": "Approve — received",
+      "reject": "Reject",
+      "waitingForSlip": "The store has not attached a slip yet",
+      "viewSlip": "View slip",
+      "slipAlt": "Transfer slip {reference}",
+      "approved": "Approved — active now",
+      "rejected": "The store was asked for a new slip",
+      "reviewFailed": "That didn’t work",
+      "rejectTitle": "Reject this slip",
+      "rejectHint": "The store sees this reason and can send a new slip within a day.",
+      "reasonPlaceholder": "e.g. the amount does not match, no such transfer in the account",
+      "cancel": "Cancel",
+      "confirmReject": "Reject slip"
     }
   },
   "vendor": {
@@ -20390,7 +20437,12 @@
       "availabilityFailed": "Failed to load the booking calendar",
       "booked": "Your booking is confirmed.",
       "tooManyHolds": "You already have too many checkouts open. Finish or cancel one first.",
-      "gatewayUnavailable": "{gateway} could not start the payment. Try again, or choose another payment method."
+      "gatewayUnavailable": "{gateway} could not start the payment. Try again, or choose another payment method.",
+      "method": {
+        "promptpay": "PromptPay (QR)",
+        "bank_transfer": "Bank transfer"
+      },
+      "transferHint": "You’ll see where to transfer next. Attach the slip there and the marketplace confirms it, usually within one business day."
     },
     "booking": {
       "vendorTitle": "Boost a product",
@@ -23081,7 +23133,16 @@
       "step1BankBody": "Transfer exactly {amount} to one of these accounts.",
       "step2Title": "Attach the transfer slip",
       "step2Body": "Choose the slip image, then tap “Send slip” before time runs out.",
-      "itemsCount": "{count, plural, one {# item} other {# items}} in this order"
+      "itemsCount": "{count, plural, one {# item} other {# items}} in this order",
+      "platform": {
+        "orderNumber": "Reference",
+        "paidBody": "The marketplace has received your payment. What you paid for is now active.",
+        "reviewBody": "The marketplace team is checking your slip. Once confirmed, what you paid for starts right away and you will be notified.",
+        "expiredBody": "Time ran out before a slip arrived, so this payment was cancelled. If you already transferred, contact the marketplace admin with the slip, or start the payment again.",
+        "viewOrders": "Back to my store",
+        "backToShop": "Back to my store",
+        "itemsTitle": "What you are paying for"
+      }
     },
     "carrierPick": {
       "label": "Couriers",

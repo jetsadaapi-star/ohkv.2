@@ -3149,7 +3149,9 @@ export function vendorRepaymentPostings(repayment: {
  * balance grew an account by money no gateway ever held.
  */
 function platformPaymentCashAccount(provider?: string | null): LedgerAccount {
-  return String(provider || "").trim().toLowerCase() === "manual"
+  // Recorded by hand, or transferred straight into the store's own account
+  // (PromptPay, bank transfer): the money is in the bank, not at a gateway.
+  return ["manual", "promptpay", "bank_transfer"].includes(String(provider || "").trim().toLowerCase())
     ? LEDGER_ACCOUNT.CASH_BANK
     : LEDGER_ACCOUNT.CASH_GATEWAY;
 }

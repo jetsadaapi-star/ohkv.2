@@ -1058,6 +1058,10 @@ export interface IPlatformPaymentMethodSettings {
   iotec: boolean;
   orange_money: boolean;
   mtn_momo: boolean;
+  /** PromptPay QR, approved by an admin from the slip. */
+  promptpay: boolean;
+  /** A transfer into the store's bank account, approved from the slip. */
+  bank_transfer: boolean;
 }
 
 interface IVendorConfigSettings {
@@ -1533,6 +1537,8 @@ const PlatformPaymentMethodsSchema = new Schema<IPlatformPaymentMethodSettings>(
     iotec: { type: Boolean, default: true },
     orange_money: { type: Boolean, default: true },
     mtn_momo: { type: Boolean, default: true },
+    promptpay: { type: Boolean, default: true },
+    bank_transfer: { type: Boolean, default: true },
   },
   { _id: false },
 );

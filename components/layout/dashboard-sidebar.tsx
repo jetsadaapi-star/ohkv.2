@@ -444,6 +444,11 @@ const adminNavGroups: {
             icon: "ClipboardList",
           },
           {
+            label: "admin.sidebar.vendorTransferSlips",
+            href: "/admin/vendors/transfer-slips",
+            icon: "Receipt",
+          },
+          {
             label: "admin.sidebar.accessRequests",
             href: "/admin/access-requests",
             icon: "ShieldCheck",

@@ -96,7 +96,8 @@ export function assertTransferAllowed(params: {
   }
 }
 
-function snapshotFor(settings: PaymentSettingsLike, method: TransferPaymentMethod): TransferSnapshot {
+/** Where to pay, frozen: the store's PromptPay ID or bank accounts as they are now. */
+export function snapshotFor(settings: PaymentSettingsLike, method: TransferPaymentMethod): TransferSnapshot {
   if (method === "promptpay") {
     const pp = settings.payment?.promptpay ?? {};
     return {

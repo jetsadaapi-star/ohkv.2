@@ -97,6 +97,8 @@ import {
   submitIotecCollection,
 } from "@/lib/payments/iotec";
 import { cancelBoostCampaign, fulfillBoostCampaign } from "@/lib/boosts/boosts";
+import { isTransferMethodReady, snapshotFor } from "@/lib/payments/transfer-orders";
+import { clampTimeLimit } from "@/lib/payments/transfer-payment";
 import { createSystemAuditContext, type AuditContext } from "@/lib/audit";
 import { auditPlatformPaymentReceived } from "@/lib/finance/audit-money";
 import {
@@ -105,6 +107,7 @@ import {
   PLATFORM_PAYMENT_KIND,
   PLATFORM_PAYMENT_PROVIDER,
   PLATFORM_PAYMENT_STATUS,
+  isPlatformTransferMethod,
   type PlatformPaymentGateway,
   type PlatformPaymentKind,
 } from "@/config/app.config";
@@ -188,6 +191,9 @@ export function resolvePlatformPaymentMethods(
   const currency = storeCurrencyCode(settings);
   return PLATFORM_PAYMENT_GATEWAYS.filter((gateway) => {
     if ((allowlist?.[gateway] ?? true) === false) return false;
+    // PromptPay and bank transfer: ready as checkout reads them (switched on,
+    // an ID or an account to pay into, a baht store). An admin checks the slip.
+    if (isPlatformTransferMethod(gateway)) return isTransferMethodReady(settings, gateway);
     if (!settings.payment?.[gateway]?.enabled) return false;
     // A gateway offered under a currency it cannot settle sends the vendor to
     // its error at the last step — after a boost checkout has already reserved
@@ -793,6 +799,37 @@ async function startGatewayFlow(
       return isCard
         ? { type: "redirect", url: collection.cardRedirectUrl as string }
         : { type: "polling" };
+    }
+
+    case PLATFORM_PAYMENT_PROVIDER.PROMPTPAY:
+    case PLATFORM_PAYMENT_PROVIDER.BANK_TRANSFER: {
+      // No gateway: the vendor transfers in their banking app and attaches the
+      // slip on our own page, where an admin approves it. Where to pay is
+      // frozen now, so a changed account cannot redirect a transfer under way.
+      if (!isTransferMethodReady(settings, payment.provider)) {
+        throw new ValidationError("This payment method is not available right now. Choose another one.");
+      }
+      // A business payment: at least an hour to reach the bank app.
+      const minutes = Math.max(60, clampTimeLimit(settings.payment?.transfer?.timeLimitMinutes));
+      await PlatformPayment.updateOne(
+        { _id: payment._id, status: PLATFORM_PAYMENT_STATUS.PENDING },
+        {
+          $set: {
+            transfer: {
+              status: "awaiting_slip",
+              snapshot: snapshotFor(settings, payment.provider),
+              description: input.description.slice(0, 300),
+              timeLimitMinutes: minutes,
+              expiresAt: new Date(Date.now() + minutes * 60_000),
+              slipCount: 0,
+            },
+          },
+        },
+      );
+      // Back to our own payment page, in the language the vendor was using.
+      const success = new URL(input.successUrl);
+      const prefix = /^\/[a-z]{2}(?=\/)/.exec(success.pathname)?.[0] ?? "";
+      return { type: "redirect", url: `${success.origin}${prefix}/payment/platform/${paymentId}` };
     }
 
     default:

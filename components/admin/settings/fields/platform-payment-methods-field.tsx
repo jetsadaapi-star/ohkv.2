@@ -18,7 +18,12 @@ const GATEWAYS: Array<{ key: keyof PlatformPaymentMethodToggles; label: string }
   { key: "iotec", label: "ioTec Pay" },
   { key: "orange_money", label: "Orange Money" },
   { key: "mtn_momo", label: "MTN Mobile Money" },
+  { key: "promptpay", label: "PromptPay" },
+  { key: "bank_transfer", label: "Bank transfer" },
 ];
+
+/** Paid by hand and approved from the slip in Vendors → Transfer slips. */
+const TRANSFER_KEYS = new Set<keyof PlatformPaymentMethodToggles>(["promptpay", "bank_transfer"]);
 
 /**
  * Allowlist toggles for which gateways may collect vendor→platform money
@@ -60,7 +65,12 @@ export function PlatformPaymentMethodsField(props: {
               key={key}
               className="bg-card flex cursor-pointer items-center gap-3 px-4 py-3"
             >
-              <span className="min-w-0 flex-1 text-sm font-medium">{label}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium">{TRANSFER_KEYS.has(key) ? t(`method.${key}`) : label}</span>
+                {TRANSFER_KEYS.has(key) ? (
+                  <span className="text-muted-foreground block text-xs">{t("transferHint")}</span>
+                ) : null}
+              </span>
               <Switch
                 checked={allowed(key)}
                 aria-label={t("allow", { name: label })}
@@ -79,7 +89,7 @@ export function PlatformPaymentMethodsField(props: {
         <p className="text-muted-foreground text-sm">
           {t("offInPayments", {
             gateways: formatList(
-              notOffered.map((gateway) => gateway.label),
+              notOffered.map((gateway) => (TRANSFER_KEYS.has(gateway.key) ? t(`method.${gateway.key}`) : gateway.label)),
               locale,
             ),
           })}

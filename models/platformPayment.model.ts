@@ -12,6 +12,7 @@
  */
 
 import mongoose, { Schema, Document, Model, Types } from "mongoose";
+import type { PromptPayIdType } from "@/lib/payments/promptpay";
 import {
   PLATFORM_PAYMENT_KIND,
   PLATFORM_PAYMENT_PROVIDER,
@@ -53,6 +54,33 @@ interface IBoostPaymentTerms {
   position: number;
   startDay: string;
   endDay: string;
+}
+
+/**
+ * Provider "promptpay" / "bank_transfer": the vendor's transfer, from the
+ * page that shows where to pay to the admin's check of the slip
+ * (lib/payments/platform-transfers.ts).
+ */
+export interface IPlatformTransfer {
+  status: "awaiting_slip" | "reviewing" | "approved" | "rejected" | "expired";
+  /** Where to pay, frozen when the vendor chose the method. */
+  snapshot: {
+    promptpay?: { idType: PromptPayIdType; idValue: string; accountName?: string };
+    accounts?: Array<{ bankName: string; accountName: string; accountNumber: string; branch?: string }>;
+    instructions?: string;
+  };
+  /** What the vendor is paying for, in words, for both sides to read. */
+  description?: string;
+  timeLimitMinutes: number;
+  /** No slip by then and the attempt expires (what it held goes back). */
+  expiresAt: Date;
+  slipKey?: string;
+  slipName?: string;
+  slipUploadedAt?: Date;
+  slipCount: number;
+  rejectReason?: string;
+  reviewedAt?: Date;
+  reviewedBy?: string;
 }
 
 export interface IPlatformPayment extends Document {
@@ -133,6 +161,7 @@ export interface IPlatformPayment extends Document {
    * taken offline — a bank transfer id, a receipt number.
    */
   note: string | null;
+  transfer?: IPlatformTransfer | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -246,6 +275,30 @@ const PlatformPaymentSchema = new Schema<IPlatformPayment>(
     failedAt: { type: Date, default: null },
     failureReason: { type: String, default: null },
     note: { type: String, default: null, trim: true, maxlength: 200 },
+    transfer: {
+      type: new Schema<IPlatformTransfer>(
+        {
+          status: {
+            type: String,
+            enum: ["awaiting_slip", "reviewing", "approved", "rejected", "expired"],
+            required: true,
+          },
+          snapshot: { type: Schema.Types.Mixed, default: () => ({}) },
+          description: { type: String, maxlength: 300 },
+          timeLimitMinutes: { type: Number, required: true },
+          expiresAt: { type: Date, required: true },
+          slipKey: String,
+          slipName: { type: String, maxlength: 160 },
+          slipUploadedAt: Date,
+          slipCount: { type: Number, default: 0 },
+          rejectReason: { type: String, maxlength: 300 },
+          reviewedAt: Date,
+          reviewedBy: String,
+        },
+        { _id: false },
+      ),
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -259,6 +312,11 @@ PlatformPaymentSchema.index({ kind: 1, commissionInvoiceId: 1, createdAt: -1 });
 // The MTN MoMo / Orange Money reconciliation crons sweep pending attempts by
 // provider inside a time window; without this they scan the collection.
 PlatformPaymentSchema.index({ provider: 1, status: 1, createdAt: -1 });
+// The admin's slip queue and the transfer expiry sweep.
+PlatformPaymentSchema.index(
+  { "transfer.status": 1, "transfer.expiresAt": 1 },
+  { partialFilterExpression: { "transfer.status": { $exists: true } } },
+);
 
 // Each dispatch key is unique among the documents that carry it. Completion
 // routes resolve attempts by exactly one of these, so a duplicate would make
